@@ -4,6 +4,15 @@
 
 **Short:** Create a LaTeX protocol letter for a thesis colloquium by extracting annotations and producing a template with rewritten questions.
 
+## Application scenario 
+When grading a thesis, you may annotate the PDF with comments that reflect the questions you want to ask in the colloquium. This tool can then help by automatically generating a LaTeX letter template to accompany the official assessment form. The generated letter includes:
+
+- Your annotated questions, rewritten by an LLM into clear and well-phrased questions.
+- A summary of the thesis based on its first pages.
+- The student's name, matriculation number, and the thesis title.
+
+This way, you receive a ready-to-use protocol template for the colloquium.
+
 **Important:** This project **does not grade** a thesis. It extracts comments/annotations from a thesis PDF, rewrites them into clearer questions using a language model, summarizes the thesis (first pages), and generates a LaTeX template that can be used for the colloquium's protocol.
 
 ## Features
@@ -31,6 +40,36 @@ colloquium-protocol-creator /path/to/Bachelorarbeit_xy.pdf --groq-key $GROQ_API_
 ```
 
 A bewertung_brief_<matr>.tex (and .pdf if compilation succeeds) will be written into the thesis folder.
+
+## Installation
+
+You can install the project either with **pip** or with **Anaconda/Miniconda**.  
+
+### Option 1: For developers (recommended)
+
+Clone the repository and install in editable mode. This will pick up all dependencies
+from `pyproject.toml` and let you make changes to the source code without reinstalling:
+
+```bash
+git clone https://github.com/your-username/colloquium-protocol-creator.git
+cd colloquium-protocol-creator
+pip install -e .
+```
+
+### Option 2: For users with pip
+If you just want to use the tool without editing the source code, install the dependencies from requirements.txt:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Option 3: With Anaconda/Miniconda
+If you prefer conda, use the provided environment.yml:
+
+```bash
+conda env create -f environment.yml
+conda activate colloquium-protocol-creator
+```
 
 ## Requirements
 - Python 3.9+

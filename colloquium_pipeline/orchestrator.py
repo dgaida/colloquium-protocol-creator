@@ -8,15 +8,64 @@ from colloquium_creator import pdf_processing, llm_interface, latex_generation, 
 
 def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, output_folder: str = None,
                  compile_pdf: bool = True) -> Tuple[str, str]:
-    """Run the full pipeline. Returns (tex_path, pdf_path_or_empty).
+    """Execute the full colloquium protocol generation pipeline.
 
-    Steps:
-      - parse PDF for annotations
-      - rewrite comments via LLM
-      - detect language
-      - produce summary & metadata
-      - create tex file (bewertung_brief_<matr>.tex)
-      - optionally compile to PDF
+    This function orchestrates the complete workflow for creating a LaTeX
+    template (and optionally a compiled PDF) that documents the protocol
+    of a thesis colloquium. It processes the thesis PDF, extracts metadata,
+    rewrites examiner comments, and generates a formal letter in LaTeX format.
+
+    The pipeline performs the following steps:
+        1. Parse the thesis PDF for annotations and extract comments.
+        2. Rewrite rough comments into clear, polite questions using a Groq LLM.
+        3. Detect the language (German/English) of the comments.
+        4. Summarize the thesis and extract metadata such as author, matriculation number,
+           title, and examiner names.
+        5. Concatenate and LaTeX-format the rewritten comments.
+        6. Create a formal letter as a `.tex` file using the collected data.
+        7. Optionally compile the `.tex` file into a PDF.
+
+    Args:
+        pdf_path: Path to the thesis PDF file.
+        groq_api_key: API key for accessing the Groq LLM service.
+        groq_free: Whether to apply request throttling to comply with
+            Groq's free-tier rate limits. Defaults to False.
+        output_folder: Directory where the output `.tex` (and `.pdf` if compiled)
+            will be written. If None, defaults to the folder containing `pdf_path`.
+        compile_pdf: If True, the generated `.tex` file is compiled into a PDF
+            using `lualatex`. Defaults to True.
+
+    Returns:
+        tuple[str, str]: A tuple `(tex_path, pdf_path_or_empty)` where:
+            - `tex_path`: Path to the generated `.tex` file.
+            - `pdf_path_or_empty`: Path to the generated `.pdf` if `compile_pdf=True`,
+              otherwise an empty string.
+
+    Raises:
+        FileNotFoundError: If the provided `pdf_path` does not exist.
+        subprocess.CalledProcessError: If LaTeX compilation fails when `compile_pdf=True`.
+        Exception: Any errors raised by the Groq API (e.g., authentication issues).
+
+    Example:
+        >>> tex_file, pdf_file = run_pipeline(
+        ...     pdf_path="Bachelorarbeit_Mueller.pdf",
+        ...     groq_api_key="sk-123...",
+        ...     groq_free=True,
+        ...     output_folder="./out",
+        ...     compile_pdf=True
+        ... )
+        >>> print(tex_file)
+        ./out/bewertung_brief_123456.tex
+        >>> print(pdf_file)
+        ./out/bewertung_brief_123456.pdf
+
+    Notes:
+        - The generated `.tex` file is always created, regardless of the value of
+          `compile_pdf`.
+        - If the matriculation number cannot be detected, the output file name
+          defaults to `bewertung_brief_unknown.tex`.
+        - The pipeline **does not grade a thesis**; it only generates a template
+          for documenting the colloquium protocol.
     """
     if output_folder is None:
         output_folder = os.path.dirname(pdf_path)

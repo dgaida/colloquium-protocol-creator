@@ -78,7 +78,8 @@ def extract_annotations_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
     return annotations
 
 
-def words_overlapping_rect(words: List[dict], rect: Tuple[float, float, float, float], tol: float = 0.5) -> List[dict]:
+def words_overlapping_rect(words: List[dict], rect: Tuple[float, float, float, float],
+                           tol: float = 0.5) -> List[dict]:
     """Find all words that overlap with a given rectangle.
 
     Args:
@@ -224,4 +225,3 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
         page_text = " ".join(words)
         pages_text[zero_idx] = page_text
     return pages_text
-

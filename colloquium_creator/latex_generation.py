@@ -276,4 +276,3 @@ def compile_latex_to_pdf(tex_path: str, output_dir: str = None, engine: str = "l
 
     pdf_path = os.path.join(output_dir, os.path.splitext(os.path.basename(tex_path))[0] + ".pdf")
     return pdf_path
-

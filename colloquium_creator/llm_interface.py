@@ -1,11 +1,11 @@
 # colloquium_creator/llm_interface.py
 """LLM (Groq) wrapper: rewriting, summarization, metadata extraction."""
 
-from typing import Dict, Tuple
+from typing import Dict
 import json
 import time
 from groq import Groq
-from colloquium_creator import pdf_processing
+from colloquium_creator import pdf_processing, latex_generation
 
 
 def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free: bool = False,
@@ -41,7 +41,7 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
         for item in items:
             if groq_free:  # always wait 2 seconds, because rate limit of 30 requests per minute
                 # https://console.groq.com/docs/rate-limits
-                time.sleep(3)
+                time.sleep(4)
 
             comment = item["comment"]
             paragraph = item["paragraph"]
@@ -82,7 +82,7 @@ Rewritten Comment (same language as original):
                 print(response)
 
             rewritten_raw = response.choices[0].message.content.strip()
-            rewritten_text = escape_for_latex(rewritten_raw, preserve_latex=True)
+            rewritten_text = latex_generation.escape_for_latex(rewritten_raw, preserve_latex=True)
 
             rewritten_items.append({
                 "original": comment,
@@ -201,7 +201,7 @@ Now provide the LaTeX-formatted summary:
     )
 
     latex_summary_raw = response.choices[0].message.content.strip()
-    return escape_for_latex(latex_summary_raw, preserve_latex=True)
+    return latex_generation.escape_for_latex(latex_summary_raw, preserve_latex=True)
 
 
 def detect_language(results: Dict[int, list], groq_api_key: str, groq_free: bool, sample_size: int = 3) -> str:
@@ -357,4 +357,3 @@ def get_summary_and_metadata_of_pdf(pdf_path: str, language: str, groq_api_key: 
         time.sleep(2)
 
     return summary, metadata
-

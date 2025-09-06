@@ -39,7 +39,13 @@ export GROQ_API_KEY="your_key_here"
 colloquium-protocol-creator /path/to/Bachelorarbeit_xy.pdf --groq-key $GROQ_API_KEY
 ```
 
-A bewertung_brief_<matr>.tex (and .pdf if compilation succeeds) will be written into the thesis folder.
+Instead of step 2 and 3 you can also edit the file main.py and then run:
+
+```bash
+python main.py
+```
+
+A bewertung_brief_matrikelnr.tex (and .pdf if compilation succeeds) will be written into the thesis folder.
 
 ## Installation
 
@@ -51,7 +57,7 @@ Clone the repository and install in editable mode. This will pick up all depende
 from `pyproject.toml` and let you make changes to the source code without reinstalling:
 
 ```bash
-git clone https://github.com/your-username/colloquium-protocol-creator.git
+git clone https://github.com/dgaida/colloquium-protocol-creator.git
 cd colloquium-protocol-creator
 pip install -e .
 ```
@@ -73,9 +79,13 @@ conda activate colloquium-protocol-creator
 
 ## Requirements
 - Python 3.9+
-- TeX (LuaLaTeX recommended for full Unicode)
-- Groq API key
-- Docling-parse, pypdf, groq Python packages
+- [TeX](https://www.latex-project.org/get/) (LuaLaTeX recommended for full Unicode)
+- [Groq API key](https://console.groq.com/keys)
+- Python packages:
+  - [docling-parse](https://pypi.org/project/docling-parse/)
+  - [docling-core](https://pypi.org/project/docling-core/)
+  - [pypdf](https://pypi.org/project/pypdf/)
+  - [groq](https://pypi.org/project/groq/)
 
 ## License
 This project is released under the MIT License (see LICENSE).

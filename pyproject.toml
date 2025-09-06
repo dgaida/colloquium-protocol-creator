@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "colloquium-protocol-creator"
+version = "0.1.0"
+description = "Create colloquium protocol letters from thesis PDFs (annotation extraction, comment rewriting, LaTeX generation)."
+authors = [{name = "Daniel Gaida", email = "daniel.gaida@th-koeln.de"}]
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "pypdf",
+    "docling-parse",
+    "docling-core",
+    "groq",
+]
+
+[project.scripts]
+colloquium-protocol-creator = "colloquium_pipeline.cli:main"

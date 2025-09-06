@@ -1,0 +1,10 @@
+name: ragllm
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - docling
+      - groq
+      - pypdf

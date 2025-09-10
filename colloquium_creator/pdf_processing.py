@@ -43,7 +43,7 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
     return pages_words
 
 
-def extract_annotations_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
+def extract_annotations_with_positions_alt(pdf_path: str) -> Dict[int, List[dict]]:
     """Extract annotations (comments/highlights) and their positions using pypdf.
 
     Args:
@@ -76,6 +76,66 @@ def extract_annotations_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
         if page_annots:
             annotations[idx] = page_annots
     return annotations
+
+
+def extract_annotations_with_positions(pdf_path: str,
+                                       ignore_source: bool = True) -> Tuple[Dict[int, List[dict]], Dict[str, int]]:
+    """Extract annotations (comments/highlights) and their positions using pypdf,
+    and categorize special comments.
+
+    Args:
+        pdf_path: Path to PDF.
+
+    Returns:
+        Tuple of:
+        - annotations: Dict mapping 0-based page index -> list of annotation dicts:
+            { "comment": str, "subtype": ..., "rect": [...], "quadpoints": [...],
+              "category": "llm"|"quelle"|"language"|"ignore" }
+        - stats: Dict with counts of special comment categories:
+            { "quelle": int, "language": int }
+    """
+    reader = PdfReader(pdf_path)
+    annotations: Dict[int, List[dict]] = {}
+    stats = {"quelle": 0, "language": 0}
+
+    for idx, page in enumerate(reader.pages):
+        page_annots = []
+        if "/Annots" in page:
+            for annot_ref in page["/Annots"]:
+                annot = annot_ref.get_object()
+                subtype = annot.get("/Subtype")
+                rect = annot.get("/Rect")
+                quadpoints = annot.get("/QuadPoints")
+                content = annot.get("/Contents")
+
+                if content:
+                    text = content.strip()
+                    category = "llm"  # default
+
+                    # --- Categorize ---
+                    if text.lower() == "ab hier":
+                        category = "ignore"
+
+                    elif ignore_source and ("quelle" in text.lower() or "source" in text.lower()) and len(text) < 15:
+                        category = "quelle"
+                        stats["quelle"] += 1
+
+                    elif any(kw in text.lower() for kw in ["rechtschreibung", "grammatik", "tippfehler", "ausdruck"]):
+                        category = "language"
+                        stats["language"] += 1
+
+                    page_annots.append({
+                        "comment": text,
+                        "subtype": subtype,
+                        "rect": rect,
+                        "quadpoints": quadpoints,
+                        "category": category
+                    })
+
+        if page_annots:
+            annotations[idx] = page_annots
+
+    return annotations, stats
 
 
 def words_overlapping_rect(words: List[dict], rect: Tuple[float, float, float, float],

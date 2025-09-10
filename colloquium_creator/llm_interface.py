@@ -12,16 +12,29 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
                      verbose: bool = False) -> Dict[int, list]:
     """Rewrite rough comments into clear, polite questions using Groq.
 
+    Only comments categorized as "llm" are rewritten. Comments with category
+    "quelle" or "language" are skipped but retained in the results for later
+    analysis. Comments with category "ignore" are excluded entirely.
+
     Args:
-        context_dict (dict): Mapping page numbers to annotation contexts
-            with 'comment', 'highlighted', and 'paragraph'.
+        context_dict (dict): Mapping page numbers to annotation contexts,
+            where each annotation dict contains:
+              - "comment": str
+              - "highlighted": str
+              - "paragraph": str
+              - "category": str ("llm", "quelle", "language", "ignore")
         groq_api_key (str): API key for Groq.
         groq_free (bool): Whether to apply request throttling to stay under
             Groq's free-tier rate limits.
         verbose (bool, optional): If True, prints debug information. Defaults to False.
 
     Returns:
-        dict: Dictionary mapping page numbers to rewritten comments.
+        dict: Dictionary mapping page numbers to rewritten comments with keys:
+              - "original" (str): Original comment
+              - "rewritten" (str|None): Rewritten comment (or None if skipped)
+              - "highlighted" (str): Highlighted text
+              - "paragraph" (str): Context paragraph
+              - "category" (str): Category of the comment
     """
     client = Groq(api_key=groq_api_key)
     rewritten = {}
@@ -39,6 +52,23 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
             time.sleep(10)
 
         for item in items:
+            category = item.get("category", "llm")
+
+            # Skip ignored comments
+            if category == "ignore":
+                continue
+
+            if category != "llm":
+                # Keep comment but don't rewrite
+                rewritten_items.append({
+                    "original": item["comment"],
+                    "rewritten": None,
+                    "highlighted": item["highlighted"],
+                    "paragraph": item["paragraph"],
+                    "category": category
+                })
+                continue
+
             if groq_free:  # always wait 2 seconds, because rate limit of 30 requests per minute
                 # https://console.groq.com/docs/rate-limits
                 time.sleep(4)
@@ -88,10 +118,12 @@ Rewritten Comment (same language as original):
                 "original": comment,
                 "rewritten": rewritten_text,
                 "highlighted": highlighted,
-                "paragraph": paragraph
+                "paragraph": paragraph,
+                "category": category
             })
 
-        rewritten[page_num] = rewritten_items
+        if rewritten_items:
+            rewritten[page_num] = rewritten_items
 
     return rewritten
 
@@ -291,13 +323,17 @@ def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = 
 
     pages_words = extract_text_with_positions(pdf_path)
 
-    annotations = extract_annotations_with_positions(pdf_path)
+    annotations, stats = extract_annotations_with_positions(pdf_path)
 
     context_dict = find_annotation_context(pages_words, annotations)
 
     comments_rewritten = rewrite_comments(context_dict, groq_api_key, groq_free)
 
     if verbose:
+        # annotations[page][i]["category"] tells you how to handle the comment
+        # stats contains the counts
+        print(stats)
+
         # Print results
         for page, items in comments_rewritten.items():
             print(f"\n--- Page {page} ---")
@@ -308,7 +344,7 @@ def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = 
                 print("Paragraph:", item["paragraph"])
                 print()
 
-    return comments_rewritten
+    return comments_rewritten, stats
 
 
 def get_summary_and_metadata_of_pdf(pdf_path: str, language: str, groq_api_key: str,

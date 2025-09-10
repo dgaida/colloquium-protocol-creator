@@ -71,13 +71,21 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
         output_folder = os.path.dirname(pdf_path)
 
     # 1) rewrite comments
-    rewritten = llm_interface.rewrite_comments_in_pdf(pdf_path, groq_api_key, groq_free=groq_free)
+    rewritten, stats = llm_interface.rewrite_comments_in_pdf(pdf_path, groq_api_key, groq_free=groq_free)
 
     # 2) detect language
     language = llm_interface.detect_language(rewritten, groq_api_key, groq_free)
 
     # 3) summary & metadata
     summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(pdf_path, language, groq_api_key, groq_free)
+
+    # Example for stats: {"quelle": 3, "language": 7}
+    if stats["quelle"] > 4:
+        summary = summary + "\\\\Häufig fehlen Quellenangaben."
+        print("Häufig fehlen Quellenangaben")
+    if stats["language"] > 5:
+        summary = summary + "\\\\Viele sprachliche Fehler."
+        print("Viele sprachliche Fehler")
 
     author = metadata.get("author", "Unknown")
     matriculation = metadata.get("matriculation_number", "unknown")

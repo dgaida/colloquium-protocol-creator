@@ -22,6 +22,20 @@ This way, you receive a ready-to-use protocol template for the colloquium.
 - Create a LaTeX (`scrlttr2`) letter with TH Köln footer and optionally compile to PDF (LuaLaTeX recommended).
 - Handles Unicode dashes and German `ß` for LaTeX-safe output.
 
+## Peer Review Support
+
+Besides thesis colloquium protocols, the project can also assist with peer reviews of journal or conference papers.
+
+When reviewing a paper, you can annotate the PDF with your comments. This tool will:
+
+- Extract your annotations and identify the corresponding page and line number (using the printed line numbers in the PDF margin, or estimating them if necessary).
+
+- Rewrite your short notes into clear, polite, and constructive comments suitable for authors.
+
+- Generate a ready-to-send Markdown review document that starts with a courteous introduction, followed by your rephrased comments, each labeled with its page and line reference.
+
+This extension provides a lightweight workflow to turn your raw margin notes into a professional-looking peer review.
+
 ## Quickstart
 
 1. Clone repo and install dependencies:

@@ -119,6 +119,7 @@ def create_formal_letter_tex(
 \\usepackage[ngerman]{{babel}}
 \\usepackage{{geometry}}
 \\geometry{{a4paper, top=25mm, left=25mm, right=25mm, bottom=30mm}}
+\\usepackage{{url}}
 
 % Sender info
 \\setkomavar{{fromname}}{{{first_examiner}}}
@@ -169,7 +170,20 @@ Bewertung folgender Thesis:\\\\
 
 \\textbf{{Vortrag:}} xx Minuten\\\\
 
-Folien waren:
+Bewertung des Vortrags:
+
+1. Inhaltliche Qualität \& Struktur:
+
+Kriterien:
+\\begin{{itemize}}
+\\item Verständlichkeit von Ziel, Problemstellung und Ergebnissen
+\\item Fachliche Richtigkeit
+\\item Logischer Aufbau, klarer roter Faden, sinnvolle Schwerpunktsetzung
+\\item Einhaltung der Zeit
+\\end{{itemize}}
+
+Bewertung der Kriterien:
+
 \\begin{{itemize}}
 \\item sehr gut
 \\item gut
@@ -177,13 +191,64 @@ Folien waren:
 \\item ausreichend
 \\end{{itemize}}
 
-Vortrag war:
+2. Darstellung \& Visualisierung:
+
+Kriterien:
 \\begin{{itemize}}
-\\item sehr gut (überzeugend, flüssig, in der Zeit)
+\\item Unterstützung des Vortrags durch Folien und Visualisierungen
+\\item Übersichtlichkeit und Angemessenheit der Gestaltung
+\\item Verständliche Vermittlung auch komplexer Inhalte
+\\end{{itemize}}
+
+Bewertung der Kriterien:
+
+\\begin{{itemize}}
+\\item sehr gut
 \\item gut
 \\item befriedigend
 \\item ausreichend
 \\end{{itemize}}
+
+3. Präsentation \& Auftreten:
+
+Kriterien:
+\\begin{{itemize}}
+\\item Freier, sicherer und verständlicher Vortrag (Sprache, Tempo, Körpersprache)
+\\item Souveräner Umgang mit Fragen
+\\item Kritische Reflexion der eigenen Arbeit (Stärken, Grenzen, Ausblick)
+\\end{{itemize}}
+
+Bewertung der Kriterien:
+
+\\begin{{itemize}}
+\\item sehr gut
+\\item gut
+\\item befriedigend
+\\item ausreichend
+\\end{{itemize}}
+
+% Fachliche Qualität (Inhalt)
+% Klarheit und Nachvollziehbarkeit: Werden Ziel, Problemstellung und Ergebnisse verständlich erläutert?
+% Tiefe und Relevanz: Sind die wichtigsten Aspekte des Projekts dargestellt, ohne sich in Details zu verlieren?
+% Richtigkeit: Sind die dargestellten Inhalte fachlich korrekt und konsistent?
+
+% Struktur und Aufbau
+% Roter Faden: Ist die Präsentation logisch gegliedert (Einleitung – Hauptteil – Fazit)?
+% Zeitmanagement: Wird die vorgegebene Zeit sinnvoll eingehalten?
+% Schwerpunktsetzung: Werden die zentralen Punkte angemessen hervorgehoben?
+
+% Visualisierung
+% Foliengestaltung: Sind die Folien übersichtlich, nicht überladen und unterstützen den Vortrag?
+% Visualisierung komplexer Inhalte: Werden Grafiken, Diagramme oder Beispiele sinnvoll eingesetzt?
+
+% Vortragstechnik
+% Sprachliche Verständlichkeit: Deutliche Aussprache, angemessenes Tempo, Vermeidung von Füllwörtern.
+% Präsentationsstil: Freier, sicherer Vortrag statt reines Ablesen.
+% Körpersprache und Kontakt: Blickkontakt, Gestik, Haltung unterstützen den Vortrag.
+
+% Reflexion und Ergebnisdarstellung
+% Eigenständigkeit: Werden die eigenen Beiträge und deren Bedeutung klar herausgestellt?
+% Kritische Einordnung: Werden Stärken, Grenzen und mögliche Weiterentwicklungen benannt?
 
 Demo:
 \\begin{{itemize}}

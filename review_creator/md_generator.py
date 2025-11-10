@@ -1,9 +1,9 @@
-#
+# review_creator/md_generator.py
 
 import os
 import time
 from typing import Dict, List, Tuple
-from groq import Groq
+from llm_client import LLMClient
 from colloquium_creator import latex_generation  # reuse escape_for_latex
 
 
@@ -49,7 +49,8 @@ def find_line_number_from_text(words: list, annot_bbox: tuple, x_threshold: floa
     return candidate if candidate is not None else -1
 
 
-def find_annotation_context_with_lines(pages_words: dict, annotations: dict, page_heights: dict) -> Dict[int, List[dict]]:
+def find_annotation_context_with_lines(pages_words: dict, annotations: dict,
+                                      page_heights: dict) -> Dict[int, List[dict]]:
     """Like find_annotation_context, but also attach estimated line numbers.
 
     Args:
@@ -87,27 +88,26 @@ def find_annotation_context_with_lines(pages_words: dict, annotations: dict, pag
     return context_dict
 
 
-def rewrite_comments_markdown(context_dict: Dict[int, List[dict]], groq_api_key: str,
+def rewrite_comments_markdown(context_dict: Dict[int, List[dict]], llm_client: LLMClient,
                               groq_free: bool = False, verbose: bool = False) -> Dict[int, List[dict]]:
     """Rewrite comments for peer review (Markdown output).
 
     Args:
         context_dict: Mapping page numbers to annotation dicts including "line".
-        groq_api_key: Groq API key.
+        llm_client: LLMClient instance for API access.
         groq_free: Whether to apply throttling for free-tier.
         verbose: Print debugging info.
 
     Returns:
         Dict with rewritten comments per page.
     """
-    client = Groq(api_key=groq_api_key)
     rewritten = {}
 
     for page_num, items in context_dict.items():
         rewritten_items = []
 
         if groq_free and (len(rewritten) + 1) % 5 == 0:
-            print("Waiting 10s for Groq free-tier rate limit")
+            print("Waiting 10s for free-tier rate limit")
             time.sleep(10)
 
         for item in items:
@@ -136,13 +136,8 @@ Original Comment:
 Rewritten comment (Markdown):
 """
 
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.4,
-            )
-
-            rewritten_raw = response.choices[0].message.content.strip()
+            messages = [{"role": "user", "content": prompt}]
+            rewritten_raw = llm_client.chat_completion(messages)
 
             rewritten_items.append({
                 "original": comment,

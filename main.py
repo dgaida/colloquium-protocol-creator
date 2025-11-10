@@ -1,8 +1,8 @@
-#
+# main.py
 
 import os
+from llm_client import LLMClient
 from colloquium_pipeline import orchestrator
-
 
 # -------------------
 # Example usage
@@ -12,18 +12,16 @@ if __name__ == "__main__":
     folder = os.path.join("..", "BachelorThesen", "2025_26_WS", "xy")
     pdf_filename = "Bachelorarbeit_xy.pdf"
 
-    # make sure you have an API key from groq
-    # for google colab
-    # from google.colab import userdata
-    # groq_api_key = userdata.get("GROQ_API_KEY")
+    # Create LLMClient - will automatically detect available API
+    # You can also specify: LLMClient(api_choice="openai", llm="gpt-4o")
+    llm_client = LLMClient()
 
-    groq_api_key = os.getenv("GROQ_API_KEY")
+    print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     pdf_path = os.path.join(folder, pdf_filename)
 
     orchestrator.run_pipeline(
         pdf_path=pdf_path,
-        groq_api_key=groq_api_key,
-        groq_free=True
+        llm_client=llm_client,
+        groq_free=True  # Set to False if not using free tier
     )
-

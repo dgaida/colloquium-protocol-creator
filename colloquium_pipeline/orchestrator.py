@@ -3,11 +3,12 @@
 
 from typing import Tuple
 import os
+from llm_client import LLMClient
 from colloquium_creator import pdf_processing, llm_interface, latex_generation, utils
 
 
-def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, output_folder: str = None,
-                 compile_pdf: bool = True) -> Tuple[str, str]:
+def run_pipeline(pdf_path: str, llm_client: LLMClient = None, groq_free: bool = False,
+                output_folder: str = None, compile_pdf: bool = True) -> Tuple[str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX
@@ -17,7 +18,7 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
 
     The pipeline performs the following steps:
         1. Parse the thesis PDF for annotations and extract comments.
-        2. Rewrite rough comments into clear, polite questions using a Groq LLM.
+        2. Rewrite rough comments into clear, polite questions using an LLM.
         3. Detect the language (German/English) of the comments.
         4. Summarize the thesis and extract metadata such as author, matriculation number,
            title, and examiner names.
@@ -27,9 +28,10 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
 
     Args:
         pdf_path: Path to the thesis PDF file.
-        groq_api_key: API key for accessing the Groq LLM service.
+        llm_client: LLMClient instance for API access. If None, creates a new one
+            with automatic API selection.
         groq_free: Whether to apply request throttling to comply with
-            Groq's free-tier rate limits. Defaults to False.
+            free-tier rate limits. Defaults to False.
         output_folder: Directory where the output `.tex` (and `.pdf` if compiled)
             will be written. If None, defaults to the folder containing `pdf_path`.
         compile_pdf: If True, the generated `.tex` file is compiled into a PDF
@@ -44,12 +46,14 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
         subprocess.CalledProcessError: If LaTeX compilation fails when `compile_pdf=True`.
-        Exception: Any errors raised by the Groq API (e.g., authentication issues).
+        Exception: Any errors raised by the LLM API (e.g., authentication issues).
 
     Example:
+        >>> from llm_client import LLMClient
+        >>> client = LLMClient()  # Automatic API selection
         >>> tex_file, pdf_file = run_pipeline(
         ...     pdf_path="Bachelorarbeit_Mueller.pdf",
-        ...     groq_api_key="sk-123...",
+        ...     llm_client=client,
         ...     groq_free=True,
         ...     output_folder="./out",
         ...     compile_pdf=True
@@ -70,14 +74,23 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
     if output_folder is None:
         output_folder = os.path.dirname(pdf_path)
 
+    # Create LLMClient if not provided
+    if llm_client is None:
+        llm_client = LLMClient()
+        print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
+
     # 1) rewrite comments
-    rewritten, stats = llm_interface.rewrite_comments_in_pdf(pdf_path, groq_api_key, groq_free=groq_free)
+    rewritten, stats = llm_interface.rewrite_comments_in_pdf(
+        pdf_path, llm_client, groq_free=groq_free
+    )
 
     # 2) detect language
-    language = llm_interface.detect_language(rewritten, groq_api_key, groq_free)
+    language = llm_interface.detect_language(rewritten, llm_client, groq_free)
 
     # 3) summary & metadata
-    summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(pdf_path, language, groq_api_key, groq_free)
+    summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
+        pdf_path, language, llm_client, groq_free
+    )
 
     # Example for stats: {"quelle": 3, "language": 7}
     if stats["quelle"] > 4:
@@ -95,7 +108,6 @@ def run_pipeline(pdf_path: str, groq_api_key: str, groq_free: bool = False, outp
         f"{metadata.get('first_examiner_christian','')}.{metadata.get('first_examiner_family','')}@th-koeln.de"
 
     # 4) concatenate comments and escape/format as needed
-    # The rewritten entries are expected to be LaTeX snippets; ensure safe handling:
     questions = latex_generation.concatenate_comments(rewritten, language)
 
     tex_name = f"bewertung_brief_{matriculation}.tex"

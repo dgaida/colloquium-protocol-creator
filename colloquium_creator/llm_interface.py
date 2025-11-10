@@ -1,16 +1,16 @@
 # colloquium_creator/llm_interface.py
-"""LLM (Groq) wrapper: rewriting, summarization, metadata extraction."""
+"""LLM (LLMClient) wrapper: rewriting, summarization, metadata extraction."""
 
 from typing import Dict
 import json
 import time
-from groq import Groq
+from llm_client import LLMClient
 from colloquium_creator import pdf_processing, latex_generation
 
 
-def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free: bool = False,
-                     verbose: bool = False) -> Dict[int, list]:
-    """Rewrite rough comments into clear, polite questions using Groq.
+def rewrite_comments(context_dict: Dict[int, list], llm_client: LLMClient,
+                     groq_free: bool = False, verbose: bool = False) -> Dict[int, list]:
+    """Rewrite rough comments into clear, polite questions using LLMClient.
 
     Only comments categorized as "llm" are rewritten. Comments with category
     "quelle" or "language" are skipped but retained in the results for later
@@ -23,7 +23,7 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
               - "highlighted": str
               - "paragraph": str
               - "category": str ("llm", "quelle", "language", "ignore")
-        groq_api_key (str): API key for Groq.
+        llm_client: LLMClient instance for API access.
         groq_free (bool): Whether to apply request throttling to stay under
             Groq's free-tier rate limits.
         verbose (bool, optional): If True, prints debug information. Defaults to False.
@@ -36,19 +36,13 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
               - "paragraph" (str): Context paragraph
               - "category" (str): Category of the comment
     """
-    client = Groq(api_key=groq_api_key)
     rewritten = {}
 
     for page_num, items in context_dict.items():
         rewritten_items = []
-        # TODO: only go over first 4 comments. delete this in final version
-        # print(len(rewritten))
-        # if len(rewritten) > 10:
-        #     print("stop")
-        #     break
 
         if groq_free and (len(rewritten) + 1) % 5 == 0:
-            print("Waiting for 10 seconds to avoid error from Groq: Too Many Requests")
+            print("Waiting for 10 seconds to avoid error from API: Too Many Requests")
             time.sleep(10)
 
         for item in items:
@@ -70,7 +64,6 @@ def rewrite_comments(context_dict: Dict[int, list], groq_api_key: str, groq_free
                 continue
 
             if groq_free:  # always wait 2 seconds, because rate limit of 30 requests per minute
-                # https://console.groq.com/docs/rate-limits
                 time.sleep(4)
 
             comment = item["comment"]
@@ -102,16 +95,12 @@ Original Comment:
 Rewritten Comment (same language as original):
 """
 
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.4,
-            )
+            messages = [{"role": "user", "content": prompt}]
+            rewritten_raw = llm_client.chat_completion(messages)
 
             if verbose:
-                print(response)
+                print(f"Response: {rewritten_raw}")
 
-            rewritten_raw = response.choices[0].message.content.strip()
             rewritten_text = latex_generation.escape_for_latex(rewritten_raw, preserve_latex=True)
 
             rewritten_items.append({
@@ -128,13 +117,14 @@ Rewritten Comment (same language as original):
     return rewritten
 
 
-def extract_document_metadata(pages_text: Dict[int, str], language: str, groq_api_key: str) -> dict:
+def extract_document_metadata(pages_text: Dict[int, str], language: str,
+                              llm_client: LLMClient) -> dict:
     """Extract author, matriculation number, title, and examiners from the first two pages.
 
     Args:
         pages_text (dict): Dictionary mapping page indices to text.
         language (str): Language the thesis is written in. Either German or English.
-        groq_api_key (str): API key for Groq.
+        llm_client: LLMClient instance for API access.
 
     Returns:
         dict: Dictionary with keys "author", "matriculation_number", "title",
@@ -142,8 +132,6 @@ def extract_document_metadata(pages_text: Dict[int, str], language: str, groq_ap
     """
     # Collect first two pages of text (if available)
     sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]])
-
-    client = Groq(api_key=groq_api_key)
 
     prompt = f"""
 You are given the first pages of a thesis submitted at a University. 
@@ -170,13 +158,8 @@ Document text:
 {sample_text}
 """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0,
-    )
-
-    content = response.choices[0].message.content.strip()
+    messages = [{"role": "user", "content": prompt}]
+    content = llm_client.chat_completion(messages)
 
     try:
         metadata = json.loads(content)
@@ -186,19 +169,18 @@ Document text:
     return metadata
 
 
-def summarize_thesis(pages_text: Dict[int, str], language: str, groq_api_key: str) -> str:
+def summarize_thesis(pages_text: Dict[int, str], language: str,
+                     llm_client: LLMClient) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
     Args:
         pages_text (dict): Dictionary mapping page indices to text.
         language (str): Language the thesis is written in. Either German or English.
-        groq_api_key (str): API key for Groq.
+        llm_client: LLMClient instance for API access.
 
     Returns:
         str: A LaTeX-formatted summary.
     """
-    client = Groq(api_key=groq_api_key)
-
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
     prompt = f"""
@@ -226,31 +208,26 @@ Text:
 Now provide the LaTeX-formatted summary:
 """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-    )
+    messages = [{"role": "user", "content": prompt}]
+    latex_summary_raw = llm_client.chat_completion(messages)
 
-    latex_summary_raw = response.choices[0].message.content.strip()
     return latex_generation.escape_for_latex(latex_summary_raw, preserve_latex=True)
 
 
-def detect_language(results: Dict[int, list], groq_api_key: str, groq_free: bool, sample_size: int = 3) -> str:
+def detect_language(results: Dict[int, list], llm_client: LLMClient,
+                    groq_free: bool, sample_size: int = 3) -> str:
     """Detect the language (German or English) of the comments.
 
     Args:
         results (dict): Dictionary containing rewritten comments per page.
-        groq_api_key (str): API key for Groq.
+        llm_client: LLMClient instance for API access.
         groq_free (bool): Whether to apply request throttling to stay under
-            Groq's free-tier rate limits.
+            free-tier rate limits.
         sample_size (int, optional): Number of sample comments to analyze. Defaults to 3.
 
     Returns:
         str: "German" if German, "English" if English.
     """
-    client = Groq(api_key=groq_api_key)
-
     # Collect a few rewritten comments for language detection
     texts = []
     for page, items in results.items():
@@ -271,37 +248,32 @@ Text:
 {sample_text}
 """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0,
-    )
+    messages = [{"role": "user", "content": prompt}]
+    lang = llm_client.chat_completion(messages)
 
-    lang = response.choices[0].message.content.strip()
-
-    if groq_free:  # wait 2 seconds, 30 RPM
-        # https://console.groq.com/docs/rate-limits
+    if groq_free:  # wait 2 seconds
         time.sleep(2)
 
     return lang
 
 
-def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = False, verbose: bool = False,
+def rewrite_comments_in_pdf(pdf_path: str, llm_client: LLMClient = None,
+                            groq_free: bool = False, verbose: bool = False,
                             pdf_processor=None):
     """Extract and rewrite PDF comments into clear, polite questions.
 
     This function parses the given PDF, extracts annotations, finds their
-    textual context, and uses a Groq LLM to rewrite rough comments into
+    textual context, and uses an LLM to rewrite rough comments into
     more understandable, well-phrased questions or feedback.
 
     Args:
         pdf_path (str): Path to the PDF file containing comments/annotations.
-        groq_api_key (str): API key for accessing Groq's LLM.
+        llm_client: LLMClient instance for API access. If None, creates a new one.
         groq_free (bool): Whether to apply request throttling to stay under
-            Groq's free-tier rate limits.
+            free-tier rate limits.
         verbose (bool, optional): If True, prints detailed information about
             original and rewritten comments. Defaults to False.
-        pdf_processor:
+        pdf_processor: Optional PDF processor module (for testing).
 
     Returns:
         dict: A dictionary mapping page numbers (int) to lists of dictionaries
@@ -311,6 +283,10 @@ def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = 
             - "highlighted" (str): The exact highlighted text the comment refers to.
             - "paragraph" (str): The paragraph providing context for the comment.
     """
+    if llm_client is None:
+        llm_client = LLMClient()
+        print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
+
     if pdf_processor is None:
         from .pdf_processing import extract_text_with_positions, extract_annotations_with_positions, \
             find_annotation_context
@@ -322,19 +298,12 @@ def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = 
     print(f"Starting to rewrite comments in the thesis {pdf_path}")
 
     pages_words = extract_text_with_positions(pdf_path)
-
     annotations, stats = extract_annotations_with_positions(pdf_path)
-
     context_dict = find_annotation_context(pages_words, annotations)
-
-    comments_rewritten = rewrite_comments(context_dict, groq_api_key, groq_free)
+    comments_rewritten = rewrite_comments(context_dict, llm_client, groq_free)
 
     if verbose:
-        # annotations[page][i]["category"] tells you how to handle the comment
-        # stats contains the counts
         print(stats)
-
-        # Print results
         for page, items in comments_rewritten.items():
             print(f"\n--- Page {page} ---")
             for item in items:
@@ -347,20 +316,21 @@ def rewrite_comments_in_pdf(pdf_path: str, groq_api_key: str, groq_free: bool = 
     return comments_rewritten, stats
 
 
-def get_summary_and_metadata_of_pdf(pdf_path: str, language: str, groq_api_key: str,
-                                    groq_free: bool, verbose: bool = False):
+def get_summary_and_metadata_of_pdf(pdf_path: str, language: str,
+                                    llm_client: LLMClient = None,
+                                    groq_free: bool = False, verbose: bool = False):
     """Extract thesis metadata and generate a summary from the PDF.
 
     This function uses the first pages of the PDF to detect metadata such as
     author, matriculation number, thesis title, and examiners, and generates
-    a LaTeX-formatted summary of the thesis content using a Groq LLM.
+    a LaTeX-formatted summary of the thesis content using an LLM.
 
     Args:
         pdf_path (str): Path to the thesis PDF.
         language (str): Language the thesis is written in. Either German or English.
-        groq_api_key (str): API key for accessing Groq's LLM.
+        llm_client: LLMClient instance for API access. If None, creates a new one.
         groq_free (bool): Whether to apply request throttling to stay under
-            Groq's free-tier rate limits.
+            free-tier rate limits.
         verbose (bool, optional): If True, prints the generated summary.
             Defaults to False.
 
@@ -371,25 +341,28 @@ def get_summary_and_metadata_of_pdf(pdf_path: str, language: str, groq_api_key: 
                 "author", "matriculation_number", "title",
                 "first_examiner", "second_examiner".
     """
+    if llm_client is None:
+        llm_client = LLMClient()
+        print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
+
     print("Starting to get summary and metadata of the thesis.")
 
     # get plain text (for metadata detection)
     pages_text = pdf_processing.extract_text_per_page(pdf_path)
 
-    # pages_text = {1: "...", 2: "..."} from your Docling parsing
-    metadata = extract_document_metadata(pages_text, language, groq_api_key)
+    # Extract metadata
+    metadata = extract_document_metadata(pages_text, language, llm_client)
 
     if groq_free:
-        print("Waiting for 20 seconds to avoid error from Groq: Too Many Requests")
+        print("Waiting for 20 seconds to avoid error: Too Many Requests")
         time.sleep(20)
 
-    summary = summarize_thesis(pages_text, language, groq_api_key)
+    summary = summarize_thesis(pages_text, language, llm_client)
 
     if verbose:
         print("Summary of thesis:\n", summary)
 
-    if groq_free:  # wait 2 seconds, 30 RPM
-        # https://console.groq.com/docs/rate-limits
+    if groq_free:
         time.sleep(2)
 
     return summary, metadata

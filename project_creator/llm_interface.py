@@ -3,22 +3,20 @@
 
 import json
 from typing import Dict
-from groq import Groq
+from llm_client import LLMClient
 from colloquium_creator.pdf_processing import extract_text_per_page
 
 
-def determine_gender_from_name(first_name: str, groq_api_key: str) -> str:
+def determine_gender_from_name(first_name: str, llm_client: LLMClient) -> str:
     """Determine the formal German address (Herr/Frau) from a first name using LLM.
-    
+
     Args:
         first_name: First/given name of the person.
-        groq_api_key: API key for Groq.
-        
+        llm_client: LLMClient instance for API access.
+
     Returns:
         str: Either "Herr" or "Frau" based on the name.
     """
-    client = Groq(api_key=groq_api_key)
-    
     prompt = f"""
 Based on the following German or international first name, determine whether 
 the person should be addressed as "Herr" (Mr.) or "Frau" (Ms./Mrs.) in a 
@@ -29,33 +27,28 @@ First name: {first_name}
 Respond with ONLY one word: either "Herr" or "Frau".
 If uncertain, respond with "Herr/Frau".
 """
-    
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0,
-    )
-    
-    result = response.choices[0].message.content.strip()
-    
+
+    messages = [{"role": "user", "content": prompt}]
+    result = llm_client.chat_completion(messages)
+
     # Ensure valid output
     if result not in ["Herr", "Frau", "Herr/Frau"]:
         return "Herr/Frau"
-    
+
     return result
 
 
-def extract_project_metadata(pdf_path: str, groq_api_key: str) -> Dict[str, str]:
+def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, str]:
     """Extract metadata from a project work PDF (title page).
-    
+
     This function reads the first two pages of the PDF and uses an LLM to
     extract relevant information such as student name, matriculation number,
     project title, examiner name, and work type.
-    
+
     Args:
         pdf_path: Path to the project work PDF file.
-        groq_api_key: API key for Groq.
-        
+        llm_client: LLMClient instance for API access.
+
     Returns:
         dict: Dictionary containing extracted metadata with keys:
             - "student_name": Full name of the student
@@ -70,9 +63,7 @@ def extract_project_metadata(pdf_path: str, groq_api_key: str) -> Dict[str, str]
     # Extract text from first two pages
     pages_text = extract_text_per_page(pdf_path, max_pages=2)
     sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
-    
-    client = Groq(api_key=groq_api_key)
-    
+
     prompt = f"""
 You are given the first pages of a project work (Praxisprojekt) submitted 
 at TH Köln University. Extract the following information if available:
@@ -97,18 +88,13 @@ Do not include any extra text, only valid JSON.
 Document text:
 {sample_text}
 """
-    
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0,
-    )
-    
-    content = response.choices[0].message.content.strip()
-    
+
+    messages = [{"role": "user", "content": prompt}]
+    content = llm_client.chat_completion(messages)
+
     try:
         metadata = json.loads(content)
     except json.JSONDecodeError:
         metadata = {"error": "Could not parse JSON", "raw": content}
-    
+
     return metadata

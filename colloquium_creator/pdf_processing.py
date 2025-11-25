@@ -30,10 +30,6 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
         for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
             r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
 
-            # xs = [rect.r_x0, rect.r_x1, rect.r_x2, rect.r_x3]
-            # ys = [rect.r_y0, rect.r_y1, rect.r_y2, rect.r_y3]
-            # bbox = (min(xs), min(ys), max(xs), max(ys))
-
             words.append({
                 "text": cell.text,
                 "bbox": (float(r.r_x0), float(r.r_y0), float(r.r_x1), float(r.r_y1))
@@ -43,39 +39,26 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
     return pages_words
 
 
-def extract_annotations_with_positions_alt(pdf_path: str) -> Dict[int, List[dict]]:
-    """Extract annotations (comments/highlights) and their positions using pypdf.
+def is_quelle_comment(text: str, max_length: int = 20) -> bool:
+    """Check if a comment is a source-related comment that should be counted but not rewritten.
 
     Args:
-        pdf_path: Path to PDF.
+        text: The comment text to check.
+        max_length: Maximum length for a comment to be considered a "Quelle" comment.
 
     Returns:
-        Dict mapping 0-based page index -> list of annotation dicts:
-        { "comment": str, "subtype": ..., "rect": [...], "quadpoints": [...] }
+        True if the comment is a source-related comment, False otherwise.
     """
-    reader = PdfReader(pdf_path)
-    annotations = {}
+    # Normalize text
+    normalized = text.strip().lower()
 
-    for idx, page in enumerate(reader.pages):
-        page_annots = []
-        if "/Annots" in page:
-            for annot_ref in page["/Annots"]:
-                annot = annot_ref.get_object()
-                subtype = annot.get("/Subtype")
-                rect = annot.get("/Rect")
-                quadpoints = annot.get("/QuadPoints")
-                content = annot.get("/Contents")
+    # Check length constraint
+    if len(normalized) > max_length:
+        return False
 
-                if content:
-                    page_annots.append({
-                        "comment": content.strip(),
-                        "subtype": subtype,
-                        "rect": rect,
-                        "quadpoints": quadpoints
-                    })
-        if page_annots:
-            annotations[idx] = page_annots
-    return annotations
+    # Check for "quelle" or "source" keywords using regex
+    quelle_pattern = r'\bquelle\b|\bsource\b'
+    return bool(re.search(quelle_pattern, normalized, re.IGNORECASE))
 
 
 def extract_annotations_with_positions(pdf_path: str,
@@ -85,6 +68,7 @@ def extract_annotations_with_positions(pdf_path: str,
 
     Args:
         pdf_path: Path to PDF.
+        ignore_source: Whether to categorize "Quelle" comments (default True).
 
     Returns:
         Tuple of:
@@ -92,11 +76,11 @@ def extract_annotations_with_positions(pdf_path: str,
             { "comment": str, "subtype": ..., "rect": [...], "quadpoints": [...],
               "category": "llm"|"quelle"|"language"|"ignore" }
         - stats: Dict with counts of special comment categories:
-            { "quelle": int, "language": int }
+            { "quelle": int, "language": int, "ignore": int }
     """
     reader = PdfReader(pdf_path)
     annotations: Dict[int, List[dict]] = {}
-    stats = {"quelle": 0, "language": 0}
+    stats = {"quelle": 0, "language": 0, "ignore": 0}
 
     for idx, page in enumerate(reader.pages):
         page_annots = []
@@ -113,13 +97,17 @@ def extract_annotations_with_positions(pdf_path: str,
                     category = "llm"  # default
 
                     # --- Categorize ---
+                    # Check for "ab hier" first (highest priority, complete ignore)
                     if text.lower() == "ab hier":
                         category = "ignore"
+                        stats["ignore"] += 1
 
-                    elif ignore_source and ("quelle" in text.lower() or "source" in text.lower()) and len(text) < 15:
+                    # Check for "Quelle" comments
+                    elif ignore_source and is_quelle_comment(text):
                         category = "quelle"
                         stats["quelle"] += 1
 
+                    # Check for language-related comments
                     elif any(kw in text.lower() for kw in ["rechtschreibung", "grammatik", "tippfehler", "ausdruck"]):
                         category = "language"
                         stats["language"] += 1
@@ -209,16 +197,12 @@ def find_annotation_context(pages_words: Dict[int, List[dict]],
 
     Returns:
         dict: Dictionary mapping 1-based page numbers to a list of dicts
-        with 'comment', 'highlighted', and 'paragraph'.
+        with 'comment', 'highlighted', 'paragraph', and 'category'.
     """
     context_dict = {}
 
     for page_num, annots in annotations.items():
-        # words = pages_words.get(page_num, [])
         page_results = []
-
-        # full_page_text = " ".join([w["text"] for w in words])
-        # paragraphs = re.split(r"\n\s*\n| {2,}", full_page_text)
 
         for annot in annots:
             rect = annot["rect"]
@@ -253,7 +237,8 @@ def find_annotation_context(pages_words: Dict[int, List[dict]],
             page_results.append({
                 "comment": annot["comment"],
                 "highlighted": highlighted_text,
-                "paragraph": para_match
+                "paragraph": para_match,
+                "category": annot.get("category", "llm")
             })
 
         if page_results:

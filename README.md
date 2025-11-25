@@ -4,6 +4,17 @@
 
 **Short:** Create a LaTeX protocol letter for a thesis colloquium by extracting annotations and producing a template with rewritten questions.
 
+## Badges
+
+![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/dgaida/colloquium-protocol-creator/branch/master/graph/badge.svg)](https://codecov.io/gh/dgaida/colloquium-protocol-creator)
+[![Tests](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml)
+[![Code Quality](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/lint.yml/badge.svg)](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/lint.yml)
+[![CodeQL](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/codeql.yml/badge.svg)](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/codeql.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 ## Application scenario 
 When grading a thesis, you may annotate the PDF with comments that reflect the questions you want to ask in the colloquium. This tool can then help by automatically generating a LaTeX letter template to accompany the official assessment form. The generated letter includes:
 

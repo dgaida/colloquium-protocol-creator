@@ -4,7 +4,7 @@
 from typing import Tuple
 import os
 from llm_client import LLMClient
-from colloquium_creator import pdf_processing, llm_interface, latex_generation, utils
+from colloquium_creator import llm_interface, latex_generation
 
 
 def run_pipeline(pdf_path: str, llm_client: LLMClient = None, groq_free: bool = False,

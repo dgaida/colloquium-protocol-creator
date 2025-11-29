@@ -1,10 +1,8 @@
 # review_creator/md_generator.py
 
-import os
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from llm_client import LLMClient
-from colloquium_creator import latex_generation  # reuse escape_for_latex
 
 
 def estimate_line_number(y_coord: float, page_height: float, line_height: float = 12.0) -> int:

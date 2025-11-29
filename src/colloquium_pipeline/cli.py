@@ -2,7 +2,6 @@
 """Simple CLI for the pipeline."""
 
 import argparse
-import os
 from llm_client import LLMClient
 from .orchestrator import run_pipeline
 

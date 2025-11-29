@@ -4,7 +4,7 @@
 from typing import Dict, List, Tuple
 import re
 from pypdf import PdfReader
-from docling_parse.pdf_parser import DoclingPdfParser, PdfDocument
+from docling_parse.pdf_parser import DoclingPdfParser
 from docling_core.types.doc.page import TextCellUnit
 
 

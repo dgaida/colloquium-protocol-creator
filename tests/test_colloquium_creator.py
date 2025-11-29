@@ -5,7 +5,7 @@ Unit tests for the colloquium-protocol-creator package.
 import pytest
 import os
 import tempfile
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock
 from colloquium_creator import pdf_processing, llm_interface, latex_generation, utils
 
 

@@ -63,6 +63,9 @@ def create_project_grading_letter_tex(
     student_name_safe = escape_for_latex(student_name, preserve_latex=False)
     project_title_safe = escape_for_latex(project_title, preserve_latex=False)
     work_type_safe = escape_for_latex(work_type, preserve_latex=False)
+
+    sein_ihr = "sein" if gender == "Herr" else "ihr"
+    er_sie = "Er" if gender == "Herr" else "Sie"
     
     tex_template = f"""\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}
@@ -103,7 +106,7 @@ def create_project_grading_letter_tex(
 
 {student_name_safe}, Matrikelnr. {matriculation_number},
 
-hat im {semester} sein/ihr {work_type_safe} bei mir gemacht. Er/Sie hat die Note \\underline{{\\hspace{{2cm}}}} erhalten.
+hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note \\underline{{\\hspace{{2cm}}}} erhalten.
 
 Das Thema war:
 

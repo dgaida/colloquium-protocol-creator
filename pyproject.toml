@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,6 +9,7 @@ description = "Create colloquium protocol letters from thesis PDFs (annotation e
 authors = [{name = "Daniel Gaida", email = "daniel.gaida@th-koeln.de"}]
 readme = "README.md"
 requires-python = ">=3.9"
+license = {text = "MIT"}
 
 dependencies = [
     "pypdf>=4.0.0",
@@ -30,3 +31,9 @@ dev = [
     "black>=24.0.0",
     "mypy>=1.8.0",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

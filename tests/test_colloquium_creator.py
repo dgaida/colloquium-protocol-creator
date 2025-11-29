@@ -127,19 +127,15 @@ class TestLLMInterface:
             ]
         }
         
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            mock_client = MagicMock()
-            mock_response = MagicMock()
-            mock_response.choices[0].message.content = "Rewritten question"
-            mock_client.chat.completions.create.return_value = mock_response
-            mock_groq.return_value = mock_client
-            
-            result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
-            
-            # Should only have one result (the "llm" category)
-            assert 1 in result
-            assert len(result[1]) == 1
-            assert result[1][0]["category"] == "llm"
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = "Rewritten question"
+
+        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+
+        # Should only have one result (the "llm" category)
+        assert 1 in result
+        assert len(result[1]) == 1
+        assert result[1][0]["category"] == "llm"
 
     def test_rewrite_comments_skips_quelle(self):
         """Test that 'Quelle' comments are kept but not rewritten."""
@@ -149,18 +145,19 @@ class TestLLMInterface:
             ]
         }
         
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
-            
-            # Should be in output but not rewritten
-            assert 1 in result
-            assert len(result[1]) == 1
-            assert result[1][0]["category"] == "quelle"
-            assert result[1][0]["rewritten"] is None
-            assert result[1][0]["original"] == "Quelle?"
-            
-            # Groq should not have been called
-            mock_groq.assert_not_called()
+        mock_client = MagicMock()
+
+        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+
+        # Should be in output but not rewritten
+        assert 1 in result
+        assert len(result[1]) == 1
+        assert result[1][0]["category"] == "quelle"
+        assert result[1][0]["rewritten"] is None
+        assert result[1][0]["original"] == "Quelle?"
+
+        # Client should not have been called
+        mock_client.assert_not_called()
 
     def test_rewrite_comments_skips_language(self):
         """Test that language comments are kept but not rewritten."""
@@ -169,14 +166,15 @@ class TestLLMInterface:
                 {"comment": "Rechtschreibung", "highlighted": "text", "paragraph": "para", "category": "language"},
             ]
         }
-        
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+
+        mock_client = MagicMock()
+
+        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
             
-            assert 1 in result
-            assert result[1][0]["category"] == "language"
-            assert result[1][0]["rewritten"] is None
-            mock_groq.assert_not_called()
+        assert 1 in result
+        assert result[1][0]["category"] == "language"
+        assert result[1][0]["rewritten"] is None
+        mock_client.assert_not_called()
 
     def test_rewrite_comments_processes_llm(self):
         """Test that LLM comments are rewritten."""
@@ -186,20 +184,16 @@ class TestLLMInterface:
             ]
         }
         
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            mock_client = MagicMock()
-            mock_response = MagicMock()
-            mock_response.choices[0].message.content = "Why is this approach used?"
-            mock_client.chat.completions.create.return_value = mock_response
-            mock_groq.return_value = mock_client
-            
-            result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
-            
-            assert 1 in result
-            assert result[1][0]["category"] == "llm"
-            assert result[1][0]["rewritten"] is not None
-            assert "Why is this approach used?" in result[1][0]["rewritten"]
-            mock_client.chat.completions.create.assert_called_once()
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = "Why is this approach used?"
+
+        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+
+        assert 1 in result
+        assert result[1][0]["category"] == "llm"
+        assert result[1][0]["rewritten"] is not None
+        assert "Why is this approach used?" in result[1][0]["rewritten"]
+        mock_client.chat_completion.assert_called_once()
 
     def test_detect_language_german(self):
         """Test language detection for German."""
@@ -210,16 +204,12 @@ class TestLLMInterface:
             ]
         }
         
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            mock_client = MagicMock()
-            mock_response = MagicMock()
-            mock_response.choices[0].message.content = "German"
-            mock_client.chat.completions.create.return_value = mock_response
-            mock_groq.return_value = mock_client
-            
-            lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
-            
-            assert lang == "German"
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = "German"
+
+        lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
+
+        assert lang == "German"
 
     def test_detect_language_english(self):
         """Test language detection for English."""
@@ -229,17 +219,13 @@ class TestLLMInterface:
                 {"rewritten": "Can you explain this further?"},
             ]
         }
-        
-        with patch("colloquium_creator.llm_interface.Groq") as mock_groq:
-            mock_client = MagicMock()
-            mock_response = MagicMock()
-            mock_response.choices[0].message.content = "English"
-            mock_client.chat.completions.create.return_value = mock_response
-            mock_groq.return_value = mock_client
+
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = "English"
+
+        lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
             
-            lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
-            
-            assert lang == "English"
+        assert lang == "English"
 
 
 # ============================================================================

@@ -126,11 +126,11 @@ class TestLLMInterface:
                 {"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"},
             ]
         }
-        
+
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten question"
 
-        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         # Should only have one result (the "llm" category)
         assert 1 in result
@@ -147,7 +147,7 @@ class TestLLMInterface:
         
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         # Should be in output but not rewritten
         assert 1 in result
@@ -169,12 +169,12 @@ class TestLLMInterface:
 
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
             
         assert 1 in result
         assert result[1][0]["category"] == "language"
         assert result[1][0]["rewritten"] is None
-        mock_client.assert_not_called()
+        mock_client.chat_completion.assert_not_called()
 
     def test_rewrite_comments_processes_llm(self):
         """Test that LLM comments are rewritten."""
@@ -187,7 +187,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Why is this approach used?"
 
-        result = llm_interface.rewrite_comments(context_dict, "fake_key", groq_free=False)
+        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         assert 1 in result
         assert result[1][0]["category"] == "llm"
@@ -207,7 +207,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "German"
 
-        lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
+        lang = llm_interface.detect_language(results, mock_client, groq_free=False)
 
         assert lang == "German"
 
@@ -223,7 +223,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "English"
 
-        lang = llm_interface.detect_language(results, "fake_key", groq_free=False)
+        lang = llm_interface.detect_language(results, mock_client, groq_free=False)
             
         assert lang == "English"
 

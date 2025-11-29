@@ -6,7 +6,7 @@
 
 ## Badges
 
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/dgaida/colloquium-protocol-creator/branch/master/graph/badge.svg)](https://codecov.io/gh/dgaida/colloquium-protocol-creator)
 [![Tests](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml)

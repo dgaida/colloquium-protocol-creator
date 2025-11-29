@@ -2,7 +2,6 @@
 """Command-line interface for project work grading letter generation."""
 
 import argparse
-import os
 from llm_client import LLMClient
 from .orchestrator import run_project_pipeline
 

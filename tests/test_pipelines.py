@@ -3,9 +3,8 @@ Unit tests for the pipeline orchestrators and CLIs.
 """
 
 import pytest
-import os
 import tempfile
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 from colloquium_pipeline import orchestrator as colloquium_orchestrator
 from colloquium_pipeline import cli as colloquium_cli
 from project_pipeline import orchestrator as project_orchestrator

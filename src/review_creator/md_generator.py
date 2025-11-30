@@ -38,8 +38,11 @@ def find_line_number_from_text(words: list, annot_bbox: tuple, x_threshold: floa
 
     for w in words:
         wx0, wy0, wx1, wy1 = w["bbox"]
-        if wx1 < x_threshold:  # very left margin
-            if (wy0 <= ay1 and wy1 >= ay0):  # overlaps in vertical range
+        # Check if word is at left margin (x position)
+        if wx0 < x_threshold:
+            # Check if word vertically overlaps with annotation
+            if wy0 <= ay1 and wy1 >= ay0:
+                # Check if text is a number
                 if w["text"].isdigit():
                     candidate = int(w["text"])
                     break
@@ -68,7 +71,7 @@ def find_annotation_context_with_lines(pages_words: dict, annotations: dict,
                 continue
             x0, y0, x1, y1 = rect
 
-            line_number = find_line_number_from_text(pages_words[page_num], rect)
+            line_number = find_line_number_from_text(pages_words.get(page_num, []), rect)
 
             if line_number == -1:
                 # fallback to geometric estimation

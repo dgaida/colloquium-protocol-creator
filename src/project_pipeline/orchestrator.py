@@ -4,17 +4,20 @@
 import os
 from typing import Tuple
 from llm_client import LLMClient
-from project_creator.llm_interface import extract_project_metadata, determine_gender_from_name
+from project_creator.llm_interface import (
+    extract_project_metadata,
+    determine_gender_from_name,
+)
 from project_creator.latex_generation import create_project_grading_letter_tex
 from colloquium_creator.latex_generation import compile_latex_to_pdf
 
 
 def run_project_pipeline(
-        pdf_path: str,
-        llm_client: LLMClient = None,
-        output_folder: str = None,
-        compile_pdf: bool = True,
-        signature_file: str = "signature.png"
+    pdf_path: str,
+    llm_client: LLMClient = None,
+    output_folder: str = None,
+    compile_pdf: bool = True,
+    signature_file: str = "signature.png",
 ) -> Tuple[str, str]:
     """Execute the full project work grading letter generation pipeline.
 
@@ -114,7 +117,7 @@ def run_project_pipeline(
         examiner_mail=examiner_mail,
         gender=gender,
         work_type=work_type,
-        signature_file=signature_file
+        signature_file=signature_file,
     )
 
     # Compile to PDF if requested

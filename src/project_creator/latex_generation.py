@@ -7,17 +7,17 @@ from colloquium_creator.latex_generation import escape_for_latex
 
 def get_current_semester() -> str:
     """Determine the current semester based on the current date.
-    
+
     Winter semester (WS) runs from October 1 to end of February.
     Summer semester (SoSe) runs from March 1 to end of September.
-    
+
     Returns:
         str: Semester string in format "WS25/26" or "SoSe25".
     """
     now = datetime.now()
     month = now.month
     year = now.year
-    
+
     if 3 <= month <= 9:
         # Summer semester (March to September)
         return f"SoSe{year % 100}"
@@ -40,10 +40,10 @@ def create_project_grading_letter_tex(
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
     date: str = r"\today",
-    signature_file: str = "signature.png"
+    signature_file: str = "signature.png",
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
-    
+
     Args:
         filename: Output path for the LaTeX file.
         student_name: Full name of the student.
@@ -58,7 +58,7 @@ def create_project_grading_letter_tex(
         signature_file: Path to signature image file (default: "signature.png").
     """
     semester = get_current_semester()
-    
+
     # Escape all text inputs for LaTeX
     student_name_safe = escape_for_latex(student_name, preserve_latex=False)
     project_title_safe = escape_for_latex(project_title, preserve_latex=False)
@@ -66,7 +66,7 @@ def create_project_grading_letter_tex(
 
     sein_ihr = "sein" if gender == "Herr" else "ihr"
     er_sie = "Er" if gender == "Herr" else "Sie"
-    
+
     tex_template = f"""\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}
 \\setmainfont{{Latin Modern Roman}}
@@ -123,7 +123,7 @@ Das Thema war:
 
 \\end{{document}}
 """
-    
+
     with open(filename, "w", encoding="utf-8") as f:
         f.write(tex_template)
     print(f"LaTeX file for project grading created: {filename}")

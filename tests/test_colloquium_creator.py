@@ -13,6 +13,7 @@ from colloquium_creator import pdf_processing, llm_interface, latex_generation, 
 # Tests for pdf_processing.py
 # ============================================================================
 
+
 class TestPdfProcessing:
     """Tests for PDF processing functions."""
 
@@ -30,7 +31,9 @@ class TestPdfProcessing:
     def test_is_quelle_comment_invalid(self):
         """Test that invalid 'Quelle' comments are not detected."""
         # Too long
-        assert not pdf_processing.is_quelle_comment("Quelle fehlt hier an dieser Stelle komplett")
+        assert not pdf_processing.is_quelle_comment(
+            "Quelle fehlt hier an dieser Stelle komplett"
+        )
         # Doesn't contain keyword
         assert not pdf_processing.is_quelle_comment("Why?")
         assert not pdf_processing.is_quelle_comment("Explain this")
@@ -50,20 +53,20 @@ class TestPdfProcessing:
             {"text": "World", "bbox": (60, 10, 100, 20)},
             {"text": "Far", "bbox": (200, 10, 250, 20)},
         ]
-        
+
         # Rectangle overlapping first word
         rect = (5, 5, 55, 25)
         hits = pdf_processing.words_overlapping_rect(words, rect)
         assert len(hits) == 1
         assert hits[0]["text"] == "Hello"
-        
+
         # Rectangle overlapping first two words
         rect = (5, 5, 105, 25)
         hits = pdf_processing.words_overlapping_rect(words, rect)
         assert len(hits) == 2
         assert hits[0]["text"] == "Hello"
         assert hits[1]["text"] == "World"
-        
+
         # Rectangle not overlapping anything
         rect = (300, 300, 400, 400)
         hits = pdf_processing.words_overlapping_rect(words, rect)
@@ -72,11 +75,11 @@ class TestPdfProcessing:
     def test_rect_overlap(self):
         """Test bounding box overlap detection."""
         word_bbox = (10, 10, 50, 20)
-        
+
         # Overlapping
         assert pdf_processing.rect_overlap(word_bbox, (5, 5, 55, 25))
         assert pdf_processing.rect_overlap(word_bbox, (40, 15, 60, 25))
-        
+
         # Not overlapping
         assert not pdf_processing.rect_overlap(word_bbox, (60, 10, 100, 20))
         assert not pdf_processing.rect_overlap(word_bbox, (10, 30, 50, 40))
@@ -88,9 +91,9 @@ class TestPdfProcessing:
             1: [{"text": "Page1", "bbox": (10, 10, 50, 20)}],
             2: [{"text": "Page2", "bbox": (10, 10, 50, 20)}],
         }
-        
+
         rect = (5, 5, 55, 25)
-        
+
         # Find on same page
         page_idx, words = pdf_processing.get_words_for_annotation_on_page(
             pages_words, 1, rect
@@ -98,7 +101,7 @@ class TestPdfProcessing:
         assert page_idx == 1
         assert len(words) == 1
         assert words[0]["text"] == "Page1"
-        
+
         # Test fallback to next page
         pages_words_mod = {
             0: [{"text": "Page0", "bbox": (100, 100, 150, 120)}],  # No overlap
@@ -115,6 +118,7 @@ class TestPdfProcessing:
 # Tests for llm_interface.py
 # ============================================================================
 
+
 class TestLLMInterface:
     """Tests for LLM interface functions."""
 
@@ -122,15 +126,27 @@ class TestLLMInterface:
         """Test that ignored comments are not included in output."""
         context_dict = {
             1: [
-                {"comment": "ab hier", "highlighted": "text", "paragraph": "para", "category": "ignore"},
-                {"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"},
+                {
+                    "comment": "ab hier",
+                    "highlighted": "text",
+                    "paragraph": "para",
+                    "category": "ignore",
+                },
+                {
+                    "comment": "Why?",
+                    "highlighted": "text",
+                    "paragraph": "para",
+                    "category": "llm",
+                },
             ]
         }
 
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten question"
 
-        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
+        result = llm_interface.rewrite_comments(
+            context_dict, mock_client, groq_free=False
+        )
 
         # Should only have one result (the "llm" category)
         assert 1 in result
@@ -141,13 +157,20 @@ class TestLLMInterface:
         """Test that 'Quelle' comments are kept but not rewritten."""
         context_dict = {
             1: [
-                {"comment": "Quelle?", "highlighted": "text", "paragraph": "para", "category": "quelle"},
+                {
+                    "comment": "Quelle?",
+                    "highlighted": "text",
+                    "paragraph": "para",
+                    "category": "quelle",
+                },
             ]
         }
-        
+
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
+        result = llm_interface.rewrite_comments(
+            context_dict, mock_client, groq_free=False
+        )
 
         # Should be in output but not rewritten
         assert 1 in result
@@ -163,14 +186,21 @@ class TestLLMInterface:
         """Test that language comments are kept but not rewritten."""
         context_dict = {
             1: [
-                {"comment": "Rechtschreibung", "highlighted": "text", "paragraph": "para", "category": "language"},
+                {
+                    "comment": "Rechtschreibung",
+                    "highlighted": "text",
+                    "paragraph": "para",
+                    "category": "language",
+                },
             ]
         }
 
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
-            
+        result = llm_interface.rewrite_comments(
+            context_dict, mock_client, groq_free=False
+        )
+
         assert 1 in result
         assert result[1][0]["category"] == "language"
         assert result[1][0]["rewritten"] is None
@@ -180,14 +210,21 @@ class TestLLMInterface:
         """Test that LLM comments are rewritten."""
         context_dict = {
             1: [
-                {"comment": "Why?", "highlighted": "some text", "paragraph": "full para", "category": "llm"},
+                {
+                    "comment": "Why?",
+                    "highlighted": "some text",
+                    "paragraph": "full para",
+                    "category": "llm",
+                },
             ]
         }
-        
+
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Why is this approach used?"
 
-        result = llm_interface.rewrite_comments(context_dict, mock_client, groq_free=False)
+        result = llm_interface.rewrite_comments(
+            context_dict, mock_client, groq_free=False
+        )
 
         assert 1 in result
         assert result[1][0]["category"] == "llm"
@@ -203,7 +240,7 @@ class TestLLMInterface:
                 {"rewritten": "Können Sie das näher erläutern?"},
             ]
         }
-        
+
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "German"
 
@@ -224,13 +261,14 @@ class TestLLMInterface:
         mock_client.chat_completion.return_value = "English"
 
         lang = llm_interface.detect_language(results, mock_client, groq_free=False)
-            
+
         assert lang == "English"
 
 
 # ============================================================================
 # Tests for latex_generation.py
 # ============================================================================
+
 
 class TestLatexGeneration:
     """Tests for LaTeX generation functions."""
@@ -252,7 +290,9 @@ class TestLatexGeneration:
         """Test dash normalization."""
         # Various Unicode dashes should be normalized
         text_with_dashes = "test–dash—test"  # en-dash and em-dash
-        result = latex_generation.escape_for_latex(text_with_dashes, preserve_latex=True)
+        result = latex_generation.escape_for_latex(
+            text_with_dashes, preserve_latex=True
+        )
         assert "{-}" in result
 
     def test_escape_for_latex_preserve_latex_commands(self):
@@ -278,11 +318,11 @@ class TestLatexGeneration:
             ],
             2: [
                 {"rewritten": "Third question?"},
-            ]
+            ],
         }
-        
+
         output = latex_generation.concatenate_comments(results, "German", verbose=False)
-        
+
         assert "Seite 1: First question?" in output
         assert "Seite 1: Second question?" in output
         assert "Seite 2: Third question?" in output
@@ -290,9 +330,9 @@ class TestLatexGeneration:
 
     def test_create_formal_letter_tex(self):
         """Test LaTeX letter generation."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.tex', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
             tex_path = f.name
-        
+
         try:
             latex_generation.create_formal_letter_tex(
                 filename=tex_path,
@@ -304,14 +344,14 @@ class TestLatexGeneration:
                 first_examiner="Prof. Test",
                 second_examiner="Dr. Test2",
                 first_examiner_mail="test@example.com",
-                questions="Seite 1: Test question?"
+                questions="Seite 1: Test question?",
             )
-            
+
             assert os.path.exists(tex_path)
-            
-            with open(tex_path, 'r', encoding='utf-8') as f:
+
+            with open(tex_path, "r", encoding="utf-8") as f:
                 content = f.read()
-                
+
             assert "Test Recipient" in content
             assert "Test Subject" in content
             assert "Test Thesis Title" in content
@@ -319,7 +359,7 @@ class TestLatexGeneration:
             assert "This is a test summary" in content
             assert "Test question?" in content
             assert r"\documentclass" in content
-            
+
         finally:
             if os.path.exists(tex_path):
                 os.unlink(tex_path)
@@ -328,6 +368,7 @@ class TestLatexGeneration:
 # ============================================================================
 # Tests for utils.py
 # ============================================================================
+
 
 class TestUtils:
     """Tests for utility functions."""
@@ -342,9 +383,9 @@ class TestUtils:
         """Test finding latest tex with one file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             tex_path = os.path.join(tmpdir, "bewertung_brief_12345.tex")
-            with open(tex_path, 'w') as f:
+            with open(tex_path, "w") as f:
                 f.write("test")
-            
+
             result = utils.find_latest_tex(tmpdir)
             assert result == tex_path
 
@@ -353,17 +394,18 @@ class TestUtils:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create first file
             tex_path1 = os.path.join(tmpdir, "bewertung_brief_12345.tex")
-            with open(tex_path1, 'w') as f:
+            with open(tex_path1, "w") as f:
                 f.write("test1")
-            
+
             # Wait a bit and create second file (newer)
             import time
+
             time.sleep(0.01)
-            
+
             tex_path2 = os.path.join(tmpdir, "bewertung_brief_67890.tex")
-            with open(tex_path2, 'w') as f:
+            with open(tex_path2, "w") as f:
                 f.write("test2")
-            
+
             result = utils.find_latest_tex(tmpdir)
             assert result == tex_path2
 
@@ -372,14 +414,14 @@ class TestUtils:
         with tempfile.TemporaryDirectory() as tmpdir:
             # File matching default pattern
             tex_path1 = os.path.join(tmpdir, "bewertung_brief_12345.tex")
-            with open(tex_path1, 'w') as f:
+            with open(tex_path1, "w") as f:
                 f.write("test1")
-            
+
             # File matching custom pattern
             tex_path2 = os.path.join(tmpdir, "review_12345.tex")
-            with open(tex_path2, 'w') as f:
+            with open(tex_path2, "w") as f:
                 f.write("test2")
-            
+
             result = utils.find_latest_tex(tmpdir, pattern="review_*.tex")
             assert result == tex_path2
 
@@ -387,6 +429,7 @@ class TestUtils:
 # ============================================================================
 # Integration Tests
 # ============================================================================
+
 
 class TestIntegration:
     """Integration tests for the full pipeline."""
@@ -402,15 +445,15 @@ class TestIntegration:
                 {"comment": "Why?", "category": "llm"},
             ]
         }
-        
+
         stats = {"quelle": 1, "language": 1, "ignore": 1}
-        
+
         # Verify categories are set correctly
         assert annotations[0][0]["category"] == "ignore"
         assert annotations[0][1]["category"] == "quelle"
         assert annotations[0][2]["category"] == "language"
         assert annotations[0][3]["category"] == "llm"
-        
+
         # Verify stats
         assert stats["quelle"] == 1
         assert stats["language"] == 1

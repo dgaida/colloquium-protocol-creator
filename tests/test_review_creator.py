@@ -13,6 +13,7 @@ from review_creator import md_generator
 # Tests for review_creator/md_generator.py
 # ============================================================================
 
+
 class TestMdGenerator:
     """Tests for peer review markdown generation."""
 
@@ -22,9 +23,7 @@ class TestMdGenerator:
 
         # Top of page (y close to page_height)
         line_num = md_generator.estimate_line_number(
-            y_coord=780.0,
-            page_height=page_height,
-            line_height=12.0
+            y_coord=780.0, page_height=page_height, line_height=12.0
         )
         assert line_num == 2  # Near top = line 1 or 2
 
@@ -34,9 +33,7 @@ class TestMdGenerator:
 
         # Middle of page
         line_num = md_generator.estimate_line_number(
-            y_coord=400.0,
-            page_height=page_height,
-            line_height=12.0
+            y_coord=400.0, page_height=page_height, line_height=12.0
         )
         assert 30 < line_num < 40  # Approximately line 33
 
@@ -46,9 +43,7 @@ class TestMdGenerator:
 
         # Bottom of page (y close to 0)
         line_num = md_generator.estimate_line_number(
-            y_coord=50.0,
-            page_height=page_height,
-            line_height=12.0
+            y_coord=50.0, page_height=page_height, line_height=12.0
         )
         assert line_num > 60  # Near bottom = high line number
 
@@ -58,14 +53,10 @@ class TestMdGenerator:
 
         # Same y-coord but different line heights should give different results
         line_num_12pt = md_generator.estimate_line_number(
-            y_coord=400.0,
-            page_height=page_height,
-            line_height=12.0
+            y_coord=400.0, page_height=page_height, line_height=12.0
         )
         line_num_24pt = md_generator.estimate_line_number(
-            y_coord=400.0,
-            page_height=page_height,
-            line_height=24.0
+            y_coord=400.0, page_height=page_height, line_height=24.0
         )
 
         # Larger line height = fewer lines
@@ -79,7 +70,7 @@ class TestMdGenerator:
         line_num = md_generator.estimate_line_number(
             y_coord=800.0,  # Above page height
             page_height=page_height,
-            line_height=12.0
+            line_height=12.0,
         )
         assert line_num >= 1
 
@@ -157,7 +148,7 @@ class TestMdGenerator:
                 {
                     "comment": "Why is this important?",
                     "rect": (45, 495, 165, 515),  # Overlaps with y=500-510
-                    "category": "llm"
+                    "category": "llm",
                 }
             ]
         }
@@ -185,11 +176,7 @@ class TestMdGenerator:
 
         annotations = {
             0: [
-                {
-                    "comment": "Check this",
-                    "rect": (45, 95, 165, 115),
-                    "category": "llm"
-                }
+                {"comment": "Check this", "rect": (45, 95, 165, 115), "category": "llm"}
             ]
         }
 
@@ -206,13 +193,7 @@ class TestMdGenerator:
         """Test handling of annotations without rectangles."""
         pages_words = {0: []}
         annotations = {
-            0: [
-                {
-                    "comment": "Test comment",
-                    "rect": None,
-                    "category": "llm"
-                }
-            ]
+            0: [{"comment": "Test comment", "rect": None, "category": "llm"}]
         }
         page_heights = {0: 792.0}
 
@@ -232,13 +213,15 @@ class TestMdGenerator:
                     "paragraph": "Some paragraph",
                     "highlighted": "important text",
                     "category": "llm",
-                    "line": 42
+                    "line": 42,
                 }
             ]
         }
 
         mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "Could you please explain the rationale behind this approach?"
+        mock_client.chat_completion.return_value = (
+            "Could you please explain the rationale behind this approach?"
+        )
 
         result = md_generator.rewrite_comments_markdown(
             context_dict, mock_client, groq_free=False
@@ -246,7 +229,10 @@ class TestMdGenerator:
 
         assert 1 in result
         assert len(result[1]) == 1
-        assert result[1][0]["rewritten"] == "Could you please explain the rationale behind this approach?"
+        assert (
+            result[1][0]["rewritten"]
+            == "Could you please explain the rationale behind this approach?"
+        )
         assert result[1][0]["line"] == 42
         assert result[1][0]["page"] == 1
         mock_client.chat_completion.assert_called_once()
@@ -260,15 +246,15 @@ class TestMdGenerator:
                     "paragraph": "",
                     "highlighted": "",
                     "category": "quelle",
-                    "line": 10
+                    "line": 10,
                 },
                 {
                     "comment": "Rechtschreibung",
                     "paragraph": "",
                     "highlighted": "",
                     "category": "language",
-                    "line": 20
-                }
+                    "line": 20,
+                },
             ]
         }
 
@@ -291,7 +277,7 @@ class TestMdGenerator:
                     "paragraph": "para1",
                     "highlighted": "text1",
                     "category": "llm",
-                    "line": 10
+                    "line": 10,
                 }
             ],
             2: [
@@ -300,15 +286,15 @@ class TestMdGenerator:
                     "paragraph": "para2",
                     "highlighted": "text2",
                     "category": "llm",
-                    "line": 25
+                    "line": 25,
                 }
-            ]
+            ],
         }
 
         mock_client = MagicMock()
         mock_client.chat_completion.side_effect = [
             "Rewritten first question?",
-            "Rewritten second question?"
+            "Rewritten second question?",
         ]
 
         result = md_generator.rewrite_comments_markdown(
@@ -321,7 +307,7 @@ class TestMdGenerator:
         assert result[2][0]["page"] == 2
         assert mock_client.chat_completion.call_count == 2
 
-    @patch('review_creator.md_generator.time.sleep')
+    @patch("review_creator.md_generator.time.sleep")
     def test_rewrite_comments_markdown_groq_free_throttle(self, mock_sleep):
         """Test that groq_free applies throttling."""
         context_dict = {
@@ -331,7 +317,7 @@ class TestMdGenerator:
                     "paragraph": "",
                     "highlighted": "",
                     "category": "llm",
-                    "line": 1
+                    "line": 1,
                 }
             ]
         }
@@ -349,16 +335,10 @@ class TestMdGenerator:
     def test_create_review_markdown_single_page(self):
         """Test creating markdown review with single page."""
         rewritten = {
-            1: [
-                {
-                    "rewritten": "Please clarify this point.",
-                    "line": 42,
-                    "page": 1
-                }
-            ]
+            1: [{"rewritten": "Please clarify this point.", "line": 42, "page": 1}]
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             md_path = f.name
 
         try:
@@ -366,7 +346,7 @@ class TestMdGenerator:
 
             assert os.path.exists(md_path)
 
-            with open(md_path, 'r', encoding='utf-8') as f:
+            with open(md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             assert "# Peer Review" in content
@@ -381,33 +361,19 @@ class TestMdGenerator:
         """Test creating markdown review with multiple comments."""
         rewritten = {
             1: [
-                {
-                    "rewritten": "First comment.",
-                    "line": 10,
-                    "page": 1
-                },
-                {
-                    "rewritten": "Second comment.",
-                    "line": 20,
-                    "page": 1
-                }
+                {"rewritten": "First comment.", "line": 10, "page": 1},
+                {"rewritten": "Second comment.", "line": 20, "page": 1},
             ],
-            2: [
-                {
-                    "rewritten": "Third comment.",
-                    "line": 5,
-                    "page": 2
-                }
-            ]
+            2: [{"rewritten": "Third comment.", "line": 5, "page": 2}],
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             md_path = f.name
 
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, 'r', encoding='utf-8') as f:
+            with open(md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             assert "Page 1, Line 10: First comment." in content
@@ -422,13 +388,13 @@ class TestMdGenerator:
         """Test creating markdown review with no comments."""
         rewritten = {}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             md_path = f.name
 
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, 'r', encoding='utf-8') as f:
+            with open(md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Should still have header structure
@@ -443,6 +409,7 @@ class TestMdGenerator:
 # ============================================================================
 # Integration Tests
 # ============================================================================
+
 
 class TestReviewIntegration:
     """Integration tests for review pipeline."""
@@ -460,7 +427,10 @@ class TestReviewIntegration:
                 {"text": "15", "bbox": (10, y_for_line_15, 20, y_for_line_15 + 10)},
                 {"text": "This", "bbox": (50, y_for_line_15, 80, y_for_line_15 + 10)},
                 {"text": "needs", "bbox": (85, y_for_line_15, 120, y_for_line_15 + 10)},
-                {"text": "review", "bbox": (125, y_for_line_15, 170, y_for_line_15 + 10)},
+                {
+                    "text": "review",
+                    "bbox": (125, y_for_line_15, 170, y_for_line_15 + 10),
+                },
             ]
         }
 
@@ -469,7 +439,7 @@ class TestReviewIntegration:
                 {
                     "comment": "unclear",
                     "rect": (45, y_for_line_15 - 5, 175, y_for_line_15 + 15),
-                    "category": "llm"
+                    "category": "llm",
                 }
             ]
         }
@@ -486,7 +456,9 @@ class TestReviewIntegration:
 
         # Step 2: Rewrite comments
         mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "This section requires further clarification."
+        mock_client.chat_completion.return_value = (
+            "This section requires further clarification."
+        )
 
         rewritten = md_generator.rewrite_comments_markdown(
             context, mock_client, groq_free=False
@@ -496,16 +468,19 @@ class TestReviewIntegration:
         assert rewritten[1][0]["line"] == 15
 
         # Step 3: Create markdown
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             md_path = f.name
 
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, 'r', encoding='utf-8') as f:
+            with open(md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            assert "Page 1, Line 15: This section requires further clarification." in content
+            assert (
+                "Page 1, Line 15: This section requires further clarification."
+                in content
+            )
 
         finally:
             if os.path.exists(md_path):

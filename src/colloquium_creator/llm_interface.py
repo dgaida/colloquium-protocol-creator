@@ -8,8 +8,12 @@ from llm_client import LLMClient
 from colloquium_creator import pdf_processing, latex_generation
 
 
-def rewrite_comments(context_dict: Dict[int, list], llm_client: LLMClient,
-                     groq_free: bool = False, verbose: bool = False) -> Dict[int, list]:
+def rewrite_comments(
+    context_dict: Dict[int, list],
+    llm_client: LLMClient,
+    groq_free: bool = False,
+    verbose: bool = False,
+) -> Dict[int, list]:
     """Rewrite rough comments into clear, polite questions using LLMClient.
 
     Only comments categorized as "llm" are rewritten. Comments with category
@@ -54,16 +58,20 @@ def rewrite_comments(context_dict: Dict[int, list], llm_client: LLMClient,
 
             if category != "llm":
                 # Keep comment but don't rewrite
-                rewritten_items.append({
-                    "original": item["comment"],
-                    "rewritten": None,
-                    "highlighted": item["highlighted"],
-                    "paragraph": item["paragraph"],
-                    "category": category
-                })
+                rewritten_items.append(
+                    {
+                        "original": item["comment"],
+                        "rewritten": None,
+                        "highlighted": item["highlighted"],
+                        "paragraph": item["paragraph"],
+                        "category": category,
+                    }
+                )
                 continue
 
-            if groq_free:  # always wait 2 seconds, because rate limit of 30 requests per minute
+            if (
+                groq_free
+            ):  # always wait 2 seconds, because rate limit of 30 requests per minute
                 time.sleep(4)
 
             comment = item["comment"]
@@ -101,15 +109,19 @@ Rewritten Comment (same language as original):
             if verbose:
                 print(f"Response: {rewritten_raw}")
 
-            rewritten_text = latex_generation.escape_for_latex(rewritten_raw, preserve_latex=True)
+            rewritten_text = latex_generation.escape_for_latex(
+                rewritten_raw, preserve_latex=True
+            )
 
-            rewritten_items.append({
-                "original": comment,
-                "rewritten": rewritten_text,
-                "highlighted": highlighted,
-                "paragraph": paragraph,
-                "category": category
-            })
+            rewritten_items.append(
+                {
+                    "original": comment,
+                    "rewritten": rewritten_text,
+                    "highlighted": highlighted,
+                    "paragraph": paragraph,
+                    "category": category,
+                }
+            )
 
         if rewritten_items:
             rewritten[page_num] = rewritten_items
@@ -117,8 +129,9 @@ Rewritten Comment (same language as original):
     return rewritten
 
 
-def extract_document_metadata(pages_text: Dict[int, str], language: str,
-                              llm_client: LLMClient) -> dict:
+def extract_document_metadata(
+    pages_text: Dict[int, str], language: str, llm_client: LLMClient
+) -> dict:
     """Extract author, matriculation number, title, and examiners from the first two pages.
 
     Args:
@@ -131,7 +144,9 @@ def extract_document_metadata(pages_text: Dict[int, str], language: str,
         "first_examiner", "second_examiner".
     """
     # Collect first two pages of text (if available)
-    sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]])
+    sample_text = "\n\n".join(
+        [pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]]
+    )
 
     prompt = f"""
 You are given the first pages of a thesis submitted at a University. 
@@ -169,8 +184,9 @@ Document text:
     return metadata
 
 
-def summarize_thesis(pages_text: Dict[int, str], language: str,
-                     llm_client: LLMClient) -> str:
+def summarize_thesis(
+    pages_text: Dict[int, str], language: str, llm_client: LLMClient
+) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
     Args:
@@ -214,8 +230,12 @@ Now provide the LaTeX-formatted summary:
     return latex_generation.escape_for_latex(latex_summary_raw, preserve_latex=True)
 
 
-def detect_language(results: Dict[int, list], llm_client: LLMClient,
-                    groq_free: bool, sample_size: int = 3) -> str:
+def detect_language(
+    results: Dict[int, list],
+    llm_client: LLMClient,
+    groq_free: bool,
+    sample_size: int = 3,
+) -> str:
     """Detect the language (German or English) of the comments.
 
     Args:
@@ -257,9 +277,13 @@ Text:
     return lang
 
 
-def rewrite_comments_in_pdf(pdf_path: str, llm_client: LLMClient = None,
-                            groq_free: bool = False, verbose: bool = False,
-                            pdf_processor=None):
+def rewrite_comments_in_pdf(
+    pdf_path: str,
+    llm_client: LLMClient = None,
+    groq_free: bool = False,
+    verbose: bool = False,
+    pdf_processor=None,
+):
     """Extract and rewrite PDF comments into clear, polite questions.
 
     This function parses the given PDF, extracts annotations, finds their
@@ -288,11 +312,16 @@ def rewrite_comments_in_pdf(pdf_path: str, llm_client: LLMClient = None,
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     if pdf_processor is None:
-        from .pdf_processing import extract_text_with_positions, extract_annotations_with_positions, \
-            find_annotation_context
+        from .pdf_processing import (
+            extract_text_with_positions,
+            extract_annotations_with_positions,
+            find_annotation_context,
+        )
     else:
         extract_text_with_positions = pdf_processor.extract_text_with_positions
-        extract_annotations_with_positions = pdf_processor.extract_annotations_with_positions
+        extract_annotations_with_positions = (
+            pdf_processor.extract_annotations_with_positions
+        )
         find_annotation_context = pdf_processor.find_annotation_context
 
     print(f"Starting to rewrite comments in the thesis {pdf_path}")
@@ -316,9 +345,13 @@ def rewrite_comments_in_pdf(pdf_path: str, llm_client: LLMClient = None,
     return comments_rewritten, stats
 
 
-def get_summary_and_metadata_of_pdf(pdf_path: str, language: str,
-                                    llm_client: LLMClient = None,
-                                    groq_free: bool = False, verbose: bool = False):
+def get_summary_and_metadata_of_pdf(
+    pdf_path: str,
+    language: str,
+    llm_client: LLMClient = None,
+    groq_free: bool = False,
+    verbose: bool = False,
+):
     """Extract thesis metadata and generate a summary from the PDF.
 
     This function uses the first pages of the PDF to detect metadata such as

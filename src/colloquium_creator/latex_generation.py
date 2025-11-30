@@ -12,7 +12,7 @@ def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
 
     Args:
         text (str): Input string (may contain Unicode dashes).
-        preserve_latex (bool, optional): 
+        preserve_latex (bool, optional):
             - True: keep LaTeX commands, replace dash-like chars with "{-}".
             - False: escape all LaTeX specials, normalize dash-like chars to "-".
             Defaults to True.
@@ -26,7 +26,7 @@ def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
     text = unicodedata.normalize("NFKC", text)
 
     # Remove invisible chars (soft hyphen, zero-width spaces, etc.)
-    for ch in ("\u00AD", "\u200B", "\u200C", "\u200D", "\uFEFF"):
+    for ch in ("\u00ad", "\u200b", "\u200c", "\u200d", "\ufeff"):
         text = text.replace(ch, "")
 
     # Replace dash-like characters
@@ -80,18 +80,18 @@ def return_seite_page(lang: str) -> str:
 
 
 def create_formal_letter_tex(
-        filename: str,
-        recipient: str,
-        subject: str,
-        title: str,
-        author: str,
-        summary: str,
-        first_examiner: str,
-        second_examiner: str,
-        first_examiner_mail: str,
-        questions: str,
-        place: str = "Gummersbach",
-        date: str = r"\today"
+    filename: str,
+    recipient: str,
+    subject: str,
+    title: str,
+    author: str,
+    summary: str,
+    first_examiner: str,
+    second_examiner: str,
+    first_examiner_mail: str,
+    questions: str,
+    place: str = "Gummersbach",
+    date: str = r"\today",
 ):
     """Create a LaTeX file for a formal letter with TH Köln footer.
 
@@ -284,7 +284,9 @@ Dauer des Kolloquiums: 45 Minuten
     print(f"LaTeX file created: {filename}")
 
 
-def concatenate_comments(results: Dict[int, list], language: str, verbose: bool = False) -> str:
+def concatenate_comments(
+    results: Dict[int, list], language: str, verbose: bool = False
+) -> str:
     """Concatenate rewritten comments into a LaTeX-formatted string.
 
     Each comment is prefixed with the page number and separated by two
@@ -316,7 +318,9 @@ def concatenate_comments(results: Dict[int, list], language: str, verbose: bool 
     return questions
 
 
-def compile_latex_to_pdf(tex_path: str, output_dir: str = None, engine: str = "lualatex") -> str:
+def compile_latex_to_pdf(
+    tex_path: str, output_dir: str = None, engine: str = "lualatex"
+) -> str:
     """Compile a LaTeX file into a PDF using pdflatex.
 
     Args:
@@ -339,5 +343,7 @@ def compile_latex_to_pdf(tex_path: str, output_dir: str = None, engine: str = "l
 
     subprocess.run(cmd, check=True)
 
-    pdf_path = os.path.join(output_dir, os.path.splitext(os.path.basename(tex_path))[0] + ".pdf")
+    pdf_path = os.path.join(
+        output_dir, os.path.splitext(os.path.basename(tex_path))[0] + ".pdf"
+    )
     return pdf_path

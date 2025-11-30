@@ -7,8 +7,13 @@ from llm_client import LLMClient
 from colloquium_creator import llm_interface, latex_generation
 
 
-def run_pipeline(pdf_path: str, llm_client: LLMClient = None, groq_free: bool = False,
-                output_folder: str = None, compile_pdf: bool = True) -> Tuple[str, str]:
+def run_pipeline(
+    pdf_path: str,
+    llm_client: LLMClient = None,
+    groq_free: bool = False,
+    output_folder: str = None,
+    compile_pdf: bool = True,
+) -> Tuple[str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX
@@ -104,8 +109,7 @@ def run_pipeline(pdf_path: str, llm_client: LLMClient = None, groq_free: bool = 
     matriculation = metadata.get("matriculation_number", "unknown")
     first_examiner = metadata.get("first_examiner", "Unbekannt")
     second_examiner = metadata.get("second_examiner", "Unbekannt")
-    first_examiner_mail = \
-        f"{metadata.get('first_examiner_christian','')}.{metadata.get('first_examiner_family','')}@th-koeln.de"
+    first_examiner_mail = f"{metadata.get('first_examiner_christian','')}.{metadata.get('first_examiner_family','')}@th-koeln.de"
 
     # 4) concatenate comments and escape/format as needed
     questions = latex_generation.concatenate_comments(rewritten, language)
@@ -123,11 +127,13 @@ def run_pipeline(pdf_path: str, llm_client: LLMClient = None, groq_free: bool = 
         first_examiner=first_examiner,
         second_examiner=second_examiner,
         first_examiner_mail=first_examiner_mail,
-        questions=questions
+        questions=questions,
     )
 
     pdf_path = ""
     if compile_pdf:
-        pdf_path = latex_generation.compile_latex_to_pdf(tex_path, output_dir=output_folder)
+        pdf_path = latex_generation.compile_latex_to_pdf(
+            tex_path, output_dir=output_folder
+        )
 
     return tex_path, pdf_path

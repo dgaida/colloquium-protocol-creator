@@ -28,12 +28,21 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[dict]]:
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         words = []
         for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
-            r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+            r = (
+                cell.rect
+            )  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
 
-            words.append({
-                "text": cell.text,
-                "bbox": (float(r.r_x0), float(r.r_y0), float(r.r_x1), float(r.r_y1))
-            })
+            words.append(
+                {
+                    "text": cell.text,
+                    "bbox": (
+                        float(r.r_x0),
+                        float(r.r_y0),
+                        float(r.r_x1),
+                        float(r.r_y1),
+                    ),
+                }
+            )
         pages_words[zero_idx] = words
 
     return pages_words
@@ -57,12 +66,13 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
         return False
 
     # Check for "quelle" or "source" keywords using regex
-    quelle_pattern = r'\bquelle\b|\bsource\b'
+    quelle_pattern = r"\bquelle\b|\bsource\b"
     return bool(re.search(quelle_pattern, normalized, re.IGNORECASE))
 
 
-def extract_annotations_with_positions(pdf_path: str,
-                                       ignore_source: bool = True) -> Tuple[Dict[int, List[dict]], Dict[str, int]]:
+def extract_annotations_with_positions(
+    pdf_path: str, ignore_source: bool = True
+) -> Tuple[Dict[int, List[dict]], Dict[str, int]]:
     """Extract annotations (comments/highlights) and their positions using pypdf,
     and categorize special comments.
 
@@ -108,17 +118,27 @@ def extract_annotations_with_positions(pdf_path: str,
                         stats["quelle"] += 1
 
                     # Check for language-related comments
-                    elif any(kw in text.lower() for kw in ["rechtschreibung", "grammatik", "tippfehler", "ausdruck"]):
+                    elif any(
+                        kw in text.lower()
+                        for kw in [
+                            "rechtschreibung",
+                            "grammatik",
+                            "tippfehler",
+                            "ausdruck",
+                        ]
+                    ):
                         category = "language"
                         stats["language"] += 1
 
-                    page_annots.append({
-                        "comment": text,
-                        "subtype": subtype,
-                        "rect": rect,
-                        "quadpoints": quadpoints,
-                        "category": category
-                    })
+                    page_annots.append(
+                        {
+                            "comment": text,
+                            "subtype": subtype,
+                            "rect": rect,
+                            "quadpoints": quadpoints,
+                            "category": category,
+                        }
+                    )
 
         if page_annots:
             annotations[idx] = page_annots
@@ -126,8 +146,9 @@ def extract_annotations_with_positions(pdf_path: str,
     return annotations, stats
 
 
-def words_overlapping_rect(words: List[dict], rect: Tuple[float, float, float, float],
-                           tol: float = 0.5) -> List[dict]:
+def words_overlapping_rect(
+    words: List[dict], rect: Tuple[float, float, float, float], tol: float = 0.5
+) -> List[dict]:
     """Find all words that overlap with a given rectangle.
 
     Args:
@@ -142,14 +163,16 @@ def words_overlapping_rect(words: List[dict], rect: Tuple[float, float, float, f
     hits = []
     for w in words:
         wx0, wy0, wx1, wy1 = w["bbox"]
-        if (wx1 >= x0 - tol and wx0 <= x1 + tol and
-                wy1 >= y0 - tol and wy0 <= y1 + tol):
+        if wx1 >= x0 - tol and wx0 <= x1 + tol and wy1 >= y0 - tol and wy0 <= y1 + tol:
             hits.append(w)
     return hits
 
 
-def get_words_for_annotation_on_page(pages_words: Dict[int, List[dict]], page_index: int,
-                                     rect: Tuple[float, float, float, float]) -> Tuple[int, List[dict]]:
+def get_words_for_annotation_on_page(
+    pages_words: Dict[int, List[dict]],
+    page_index: int,
+    rect: Tuple[float, float, float, float],
+) -> Tuple[int, List[dict]]:
     """Get words that match an annotation rectangle, checking neighboring pages if necessary.
 
     Args:
@@ -187,8 +210,9 @@ def rect_overlap(word_bbox, annot_bbox):
     return not (x2 < ax1 or x1 > ax2 or y2 < ay1 or y1 > ay2)
 
 
-def find_annotation_context(pages_words: Dict[int, List[dict]],
-                            annotations: Dict[int, List[dict]]) -> Dict[int, List[dict]]:
+def find_annotation_context(
+    pages_words: Dict[int, List[dict]], annotations: Dict[int, List[dict]]
+) -> Dict[int, List[dict]]:
     """Match annotations to the words and paragraphs they reference.
 
     Args:
@@ -217,11 +241,15 @@ def find_annotation_context(pages_words: Dict[int, List[dict]],
                 continue
 
             # Words under the annotation (with neighbor-page fallback)
-            page_idx_for_words, hit_words = get_words_for_annotation_on_page(pages_words, page_num, annot_bbox)
+            page_idx_for_words, hit_words = get_words_for_annotation_on_page(
+                pages_words, page_num, annot_bbox
+            )
             highlighted_text = " ".join([w["text"] for w in hit_words]).strip()
 
             # Use the full text of the page where words were actually found
-            full_page_text = " ".join([w["text"] for w in pages_words.get(page_idx_for_words, [])])
+            full_page_text = " ".join(
+                [w["text"] for w in pages_words.get(page_idx_for_words, [])]
+            )
             paragraphs = re.split(r"\n\s*\n| {2,}", full_page_text)
 
             # Find paragraph containing the highlighted words
@@ -234,12 +262,14 @@ def find_annotation_context(pages_words: Dict[int, List[dict]],
             if not para_match and paragraphs:
                 para_match = paragraphs[0]  # fallback
 
-            page_results.append({
-                "comment": annot["comment"],
-                "highlighted": highlighted_text,
-                "paragraph": para_match,
-                "category": annot.get("category", "llm")
-            })
+            page_results.append(
+                {
+                    "comment": annot["comment"],
+                    "highlighted": highlighted_text,
+                    "paragraph": para_match,
+                    "category": annot.get("category", "llm"),
+                }
+            )
 
         if page_results:
             # +1 so reported page number is human-readable
@@ -266,7 +296,9 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         if zero_idx >= max_pages:
             break
-        words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
+        words = [
+            cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)
+        ]
         page_text = " ".join(words)
         pages_text[zero_idx] = page_text
     return pages_text

@@ -5,7 +5,9 @@ from typing import Dict, List
 from llm_client import LLMClient
 
 
-def estimate_line_number(y_coord: float, page_height: float, line_height: float = 12.0) -> int:
+def estimate_line_number(
+    y_coord: float, page_height: float, line_height: float = 12.0
+) -> int:
     """Estimate the line number of a comment based on its y-coordinate.
 
     Args:
@@ -21,7 +23,9 @@ def estimate_line_number(y_coord: float, page_height: float, line_height: float 
     return max(1, int(distance_from_top / line_height) + 1)
 
 
-def find_line_number_from_text(words: list, annot_bbox: tuple, x_threshold: float = 20.0) -> int:
+def find_line_number_from_text(
+    words: list, annot_bbox: tuple, x_threshold: float = 20.0
+) -> int:
     """Try to find a printed line number near the annotation by scanning
     words at the left margin of the page.
 
@@ -50,8 +54,9 @@ def find_line_number_from_text(words: list, annot_bbox: tuple, x_threshold: floa
     return candidate if candidate is not None else -1
 
 
-def find_annotation_context_with_lines(pages_words: dict, annotations: dict,
-                                      page_heights: dict) -> Dict[int, List[dict]]:
+def find_annotation_context_with_lines(
+    pages_words: dict, annotations: dict, page_heights: dict
+) -> Dict[int, List[dict]]:
     """Like find_annotation_context, but also attach estimated line numbers.
 
     Args:
@@ -71,26 +76,36 @@ def find_annotation_context_with_lines(pages_words: dict, annotations: dict,
                 continue
             x0, y0, x1, y1 = rect
 
-            line_number = find_line_number_from_text(pages_words.get(page_num, []), rect)
+            line_number = find_line_number_from_text(
+                pages_words.get(page_num, []), rect
+            )
 
             if line_number == -1:
                 # fallback to geometric estimation
-                line_number = estimate_line_number(y1, page_heights[page_num])  # top of rect
+                line_number = estimate_line_number(
+                    y1, page_heights[page_num]
+                )  # top of rect
 
-            page_results.append({
-                "comment": annot["comment"],
-                "highlighted": "",
-                "paragraph": "",
-                "category": annot.get("category", "llm"),
-                "line": line_number
-            })
+            page_results.append(
+                {
+                    "comment": annot["comment"],
+                    "highlighted": "",
+                    "paragraph": "",
+                    "category": annot.get("category", "llm"),
+                    "line": line_number,
+                }
+            )
         if page_results:
             context_dict[page_num + 1] = page_results
     return context_dict
 
 
-def rewrite_comments_markdown(context_dict: Dict[int, List[dict]], llm_client: LLMClient,
-                              groq_free: bool = False, verbose: bool = False) -> Dict[int, List[dict]]:
+def rewrite_comments_markdown(
+    context_dict: Dict[int, List[dict]],
+    llm_client: LLMClient,
+    groq_free: bool = False,
+    verbose: bool = False,
+) -> Dict[int, List[dict]]:
     """Rewrite comments for peer review (Markdown output).
 
     Args:
@@ -140,12 +155,14 @@ Rewritten comment (Markdown):
             messages = [{"role": "user", "content": prompt}]
             rewritten_raw = llm_client.chat_completion(messages)
 
-            rewritten_items.append({
-                "original": comment,
-                "rewritten": rewritten_raw,
-                "line": item["line"],
-                "page": page_num
-            })
+            rewritten_items.append(
+                {
+                    "original": comment,
+                    "rewritten": rewritten_raw,
+                    "line": item["line"],
+                    "page": page_num,
+                }
+            )
 
         if rewritten_items:
             rewritten[page_num] = rewritten_items
@@ -163,7 +180,14 @@ def create_review_markdown(rewritten: Dict[int, List[dict]], output_file: str):
         rewritten: Dictionary of rewritten comments with page/line info.
         output_file: Path to the markdown file.
     """
-    lines = ["# Peer Review", "", "Dear authors,", "", "here are my comments on your manuscript:", ""]
+    lines = [
+        "# Peer Review",
+        "",
+        "Dear authors,",
+        "",
+        "here are my comments on your manuscript:",
+        "",
+    ]
     for page, items in rewritten.items():
         for item in items:
             lines.append(f"- Page {page}, Line {item['line']}: {item['rewritten']}")

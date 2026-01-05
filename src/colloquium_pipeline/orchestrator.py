@@ -5,14 +5,18 @@ from typing import Tuple
 import os
 from llm_client import LLMClient
 from colloquium_creator import llm_interface, latex_generation
+from . import pdf_form_filler
 
 
 def run_pipeline(
     pdf_path: str,
+    date_colloquium: str,
+    uhrzeit_colloquium: str,
     llm_client: LLMClient = None,
     groq_free: bool = False,
     output_folder: str = None,
     compile_pdf: bool = True,
+    fill_form_only: bool = False,
 ) -> Tuple[str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
@@ -84,26 +88,32 @@ def run_pipeline(
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
-    # 1) rewrite comments
-    rewritten, stats = llm_interface.rewrite_comments_in_pdf(
-        pdf_path, llm_client, groq_free=groq_free
-    )
+    if not fill_form_only:
+        # 1) rewrite comments
+        rewritten, stats = llm_interface.rewrite_comments_in_pdf(
+            pdf_path, llm_client, groq_free=groq_free
+        )
 
-    # 2) detect language
-    language = llm_interface.detect_language(rewritten, llm_client, groq_free)
+        # 2) detect language
+        language = llm_interface.detect_language(rewritten, llm_client, groq_free)
+    else:
+        # TODO: das könnte man noch dynamisch bestimmen lassen, bspw. aus den ersten 1-2 Seiten des Dokuments
+        #  erstmal manuell gesetzt, da Bestimmung aus rewritten text overkill ist
+        language = "German"
 
     # 3) summary & metadata
     summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
         pdf_path, language, llm_client, groq_free
     )
 
-    # Example for stats: {"quelle": 3, "language": 7}
-    if stats["quelle"] > 4:
-        summary = summary + "\\\\Häufig fehlen Quellenangaben."
-        print("Häufig fehlen Quellenangaben")
-    if stats["language"] > 5:
-        summary = summary + "\\\\Viele sprachliche Fehler."
-        print("Viele sprachliche Fehler")
+    if not fill_form_only:
+        # Example for stats: {"quelle": 3, "language": 7}
+        if stats["quelle"] > 4:
+            summary = summary + "\\\\Häufig fehlen Quellenangaben."
+            print("Häufig fehlen Quellenangaben")
+        if stats["language"] > 5:
+            summary = summary + "\\\\Viele sprachliche Fehler."
+            print("Viele sprachliche Fehler")
 
     author = metadata.get("author", "Unknown")
     matriculation = metadata.get("matriculation_number", "unknown")
@@ -111,29 +121,64 @@ def run_pipeline(
     second_examiner = metadata.get("second_examiner", "Unbekannt")
     first_examiner_mail = f"{metadata.get('first_examiner_christian','')}.{metadata.get('first_examiner_family','')}@th-koeln.de"
 
-    # 4) concatenate comments and escape/format as needed
-    questions = latex_generation.concatenate_comments(rewritten, language)
+    if not fill_form_only:
+        # 4) concatenate comments and escape/format as needed
+        questions = latex_generation.concatenate_comments(rewritten, language)
 
-    tex_name = f"bewertung_brief_{matriculation}.tex"
-    tex_path = os.path.join(output_folder, tex_name)
+        tex_name = f"bewertung_brief_{matriculation}.tex"
+        tex_path = os.path.join(output_folder, tex_name)
 
-    latex_generation.create_formal_letter_tex(
-        filename=tex_path,
-        recipient="Prüfungsausschuss der TH Köln",
-        subject=f"Bewertung {metadata.get('bachelor_master', 'Arbeit')} von {author}",
-        title=metadata.get("title", ""),
-        author=f"{author}, Matr.-Nr. {matriculation}",
-        summary=summary,
-        first_examiner=first_examiner,
-        second_examiner=second_examiner,
-        first_examiner_mail=first_examiner_mail,
-        questions=questions,
-    )
-
-    pdf_path = ""
-    if compile_pdf:
-        pdf_path = latex_generation.compile_latex_to_pdf(
-            tex_path, output_dir=output_folder
+        latex_generation.create_formal_letter_tex(
+            filename=tex_path,
+            recipient="Prüfungsausschuss der TH Köln",
+            subject=f"Bewertung {metadata.get('bachelor_master', 'Arbeit')} von {author}",
+            title=metadata.get("title", ""),
+            author=f"{author}, Matr.-Nr. {matriculation}",
+            summary=summary,
+            first_examiner=first_examiner,
+            second_examiner=second_examiner,
+            first_examiner_mail=first_examiner_mail,
+            questions=questions,
         )
+
+        pdf_path = ""
+        if compile_pdf:
+            pdf_path = latex_generation.compile_latex_to_pdf(
+                tex_path, output_dir=output_folder
+            )
+    else:
+        tex_path = pdf_path = ""
+
+    # fill form
+    # Beispieldaten basierend auf den tatsächlichen Feldnamen
+    daten = {
+        # Studierenden-Daten
+        "name_student": author,
+        "MatrNr": matriculation,
+
+        # Bachelorarbeit - Erstprüfer
+        "Datum_schrift_Erstpruefer": date_colloquium,
+        "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
+
+        # Bachelorarbeit - Zweitprüfer
+        "Datum_schrift_Zweitpruefer": date_colloquium,
+        "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
+
+        # Kolloquium - Details
+        "Datum der Prüfung": date_colloquium,
+        "Startzeit": uhrzeit_colloquium,
+        "Pruefungsfragen_Protokoll": True,  # Checkbox
+
+        # Kolloquium - Erstprüfer
+        "Datum_kolloq_Erstpruefer": date_colloquium,
+        "Kolloq_Begruendung": True,
+
+        # Kolloquium - Zweitprüfer
+        "Datum_kolloq_Zweitpruefer": date_colloquium,
+        "Kolloq_Anschluss_Begruendung": True,
+    }
+
+    # fülle PDF Formular aus
+    pdf_form_filler.fill_form(daten, output_folder)
 
     return tex_path, pdf_path

@@ -209,7 +209,7 @@ Formatting rules:
 - Use normal LaTeX text, not markdown.
 - Use line breaks (`\\\\`) between sentences to improve readability.
 - If appropriate, structure the summary as an itemized list with `\\begin{{itemize}} ... \\end{{itemize}}`.
-- If you use itemize, then do not add line breaks (`\\\\`) at the end of an item. 
+- If you use itemize, then DO NOT add line breaks (`\\\\`) at the end of an item. 
 - Avoid special characters that break LaTeX (like unescaped #, $, %, &, _, {{, }}).
 
 The summary should highlight:

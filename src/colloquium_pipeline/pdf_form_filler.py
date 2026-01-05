@@ -225,9 +225,16 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
     return round((note1 + note2) / 2, 1)
 
 
-def fill_form(data, output_folder):
-    # Pfad zur PDF-Datei
-    pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
+def fill_form(data, output_folder: str, degree: str):
+    if degree == "Master":
+        # Pfad zur PDF-Datei
+        pdf_path = os.path.join("data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf")
+    elif degree == "Bachelor":
+        # Pfad zur PDF-Datei
+        pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
+    else:
+        print(f"Error: Unknown degree: {degree}")
+        return
 
     # Prüfe ob Datei existiert
     if not Path(pdf_path).exists():
@@ -237,7 +244,7 @@ def fill_form(data, output_folder):
     # Handler initialisieren
     handler = PDFFormHandler(pdf_path)
 
-    path = os.path.join(output_folder, f"Bewertung Bachelorarbeit_Kolloq Inf_{data['name_student']}.pdf")
+    path = os.path.join(output_folder, f"Bewertung {degree}arbeit_Kolloq Inf_{data['name_student']}.pdf")
 
     data["Endzeit"] = add_minutes(data["Startzeit"], 45)
 

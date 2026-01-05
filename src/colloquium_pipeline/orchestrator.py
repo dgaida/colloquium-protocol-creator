@@ -178,7 +178,9 @@ def run_pipeline(
         "Kolloq_Anschluss_Begruendung": True,
     }
 
+    print(metadata.get("bachelor_master", "Unknown"))
+
     # fülle PDF Formular aus
-    pdf_form_filler.fill_form(daten, output_folder)
+    pdf_form_filler.fill_form(daten, output_folder, metadata.get("bachelor_master", "Unknown"))
 
     return tex_path, pdf_path

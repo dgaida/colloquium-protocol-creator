@@ -23,5 +23,5 @@ if __name__ == "__main__":
     orchestrator.run_review_pipeline(
         pdf_path=pdf_path,
         llm_client=llm_client,
-        groq_free=True  # Set to False if not using free tier
+        groq_free=True,  # Set to False if not using free tier
     )

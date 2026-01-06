@@ -225,37 +225,106 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
     return round((note1 + note2) / 2, 1)
 
 
-def fill_form(data, output_folder: str, degree: str):
+def fill_form(
+        data: Dict[str, any],
+        output_folder: str,
+        degree: str,
+        location_type: str = "campus",
+        room: str = None,
+        company_name: str = None,
+) -> Optional[str]:
+    """Füllt das PDF-Formular aus und generiert die Anmelde-E-Mail.
+
+    Args:
+        data: Dictionary mit Formulardaten.
+        output_folder: Ausgabeordner für PDF und E-Mail.
+        degree: "Bachelor" oder "Master".
+        location_type: "campus", "company" oder "online".
+        room: Raumnummer (optional, für Campus).
+        company_name: Firmenname (optional, für Firma).
+
+    Returns:
+        Tuple aus (pdf_path, email_path) mit Pfaden zu den generierten Dateien.
+    """
     if degree == "Master":
-        # Pfad zur PDF-Datei
         pdf_path = os.path.join("data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf")
     elif degree == "Bachelor":
-        # Pfad zur PDF-Datei
         pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
     else:
         print(f"Error: Unknown degree: {degree}")
-        return
+        return None
 
     # Prüfe ob Datei existiert
     if not Path(pdf_path).exists():
         print(f"❌ Datei nicht gefunden: {pdf_path}")
-        return
+        return None
 
     # Handler initialisieren
     handler = PDFFormHandler(pdf_path)
 
-    path = os.path.join(output_folder, f"Bewertung {degree}arbeit_Kolloq Inf_{data['name_student']}.pdf")
+    # Generiere Ort-Text für PDF und E-Mail
+    try:
+        pdf_location = generate_location_text(
+            location_type=location_type,
+            room=room,
+            company_name=company_name
+        )
+    except ValueError as e:
+        print(f"❌ Fehler bei der Orts-Generierung: {e}")
+        return None
 
+    # Füge Ort zum PDF-Formular hinzu
+    data["Ort"] = pdf_location
     data["Endzeit"] = add_minutes(data["Startzeit"], 45)
 
-    # Formular ausfüllen (flatten=False bedeutet: editierbar bleiben)
-    handler.fill_form(data, path, flatten=False)
+    # Speichere ausgefülltes PDF
+    pdf_output_path = os.path.join(
+        output_folder,
+        f"Bewertung {degree}arbeit_Kolloq Inf_{data['name_student']}.pdf"
+    )
+    handler.fill_form(data, pdf_output_path, flatten=False)
+
+    return pdf_output_path
 
 
 def add_minutes(time_str: str, minutes: int) -> str:
     time_obj = datetime.strptime(time_str, "%H:%M")
     new_time = time_obj + timedelta(minutes=minutes)
     return new_time.strftime("%H:%M")
+
+
+def generate_location_text(
+        location_type: str,
+        room: Optional[str] = None,
+        company_name: Optional[str] = None
+) -> str:
+    """Generiert den Ort für das PDF-Formular.
+
+    Args:
+        location_type: Art des Kolloquiums ("campus", "company", "online").
+        room: Raumnummer (nur für "campus").
+        company_name: Name der Firma (nur für "company").
+
+    Returns:
+        pdf_location_text
+
+    Raises:
+        ValueError: Wenn erforderliche Parameter fehlen.
+    """
+    if location_type == "campus":
+        if not room:
+            raise ValueError("Für Campus-Kolloquium wird 'room' benötigt")
+        pdf_text = f"Raum {room}, Campus Gummersbach"
+    elif location_type == "company":
+        if not company_name:
+            raise ValueError("Für Firmen-Kolloquium wird 'company_name' benötigt")
+        pdf_text = company_name
+    elif location_type == "online":
+        pdf_text = "Zoom"
+    else:
+        raise ValueError(f"Unbekannter location_type: {location_type}")
+
+    return pdf_text
 
 
 def main():

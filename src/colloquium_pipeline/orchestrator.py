@@ -1,11 +1,12 @@
 # colloquium_pipeline/orchestrator.py
 """High-level pipeline glue: parse PDF -> LLM -> tex -> pdf."""
 
-from typing import Tuple
+from typing import Tuple, Optional
 import os
 from llm_client import LLMClient
 from colloquium_creator import llm_interface, latex_generation
 from . import pdf_form_filler
+from . import email_generator
 
 
 def run_pipeline(
@@ -17,7 +18,13 @@ def run_pipeline(
     output_folder: str = None,
     compile_pdf: bool = True,
     fill_form_only: bool = False,
-) -> Tuple[str, str]:
+    location_type: str = "campus",
+    room: Optional[str] = None,
+    company_name: Optional[str] = None,
+    company_address: Optional[str] = None,
+    zoom_link: Optional[str] = None,
+    zoom_passcode: Optional[str] = None
+) -> Tuple[str, str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX
@@ -45,6 +52,12 @@ def run_pipeline(
             will be written. If None, defaults to the folder containing `pdf_path`.
         compile_pdf: If True, the generated `.tex` file is compiled into a PDF
             using `lualatex`. Defaults to True.
+        location_type: Art des Kolloquiums ("campus", "company", "online").
+        room: Raumnummer (nur für "campus").
+        company_name: Name der Firma (nur für "company").
+        company_address: Adresse der Firma (nur für "company").
+        zoom_link: Zoom-Meeting-Link (nur für "online").
+        zoom_passcode: Zoom-Zugangscode (nur für "online").
 
     Returns:
         tuple[str, str]: A tuple `(tex_path, pdf_path_or_empty)` where:
@@ -178,9 +191,28 @@ def run_pipeline(
         "Kolloq_Anschluss_Begruendung": True,
     }
 
-    print(metadata.get("bachelor_master", "Unknown"))
-
     # fülle PDF Formular aus
-    pdf_form_filler.fill_form(daten, output_folder, metadata.get("bachelor_master", "Unknown"))
+    pdf_form_filler.fill_form(daten, output_folder, metadata.get("bachelor_master", "Unknown"),
+                              location_type=location_type, room=room, company_name=company_name)
 
-    return tex_path, pdf_path
+    #
+
+    mymailgen = email_generator.EmailGenerator()
+    mymailgen.generate_and_save_email(
+        llm_client=llm_client,
+        output_folder=output_folder,
+        author=author,
+        matriculation=matriculation,
+        date_colloquium=date_colloquium,
+        uhrzeit_colloquium=uhrzeit_colloquium,
+        first_examiner=first_examiner,
+        location_type=location_type,
+        room=room,
+        company_name=company_name,
+        company_address=company_address,
+        zoom_link=zoom_link,
+        zoom_passcode=zoom_passcode
+    )
+    email_path = mymailgen.email_path
+
+    return tex_path, pdf_path, email_path

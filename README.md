@@ -1,10 +1,6 @@
 # Colloquium Protocol Creator
 
-**Project name:** colloquium-protocol-creator
-
-**Short:** Create a LaTeX protocol letter for a thesis colloquium by extracting annotations and producing a template with rewritten questions.
-
-## Badges
+**Create LaTeX protocol letters and grading documents for academic work at TH Köln**
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -15,336 +11,265 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-## Application scenario 
-When grading a thesis, you may annotate the PDF with comments that reflect the questions you want to ask in the colloquium. This tool can then help by automatically generating a LaTeX letter template to accompany the official assessment form. The generated letter includes:
+## What Is This?
 
-- Your annotated questions, rewritten by an LLM into clear and well-phrased questions.
-- A summary of the thesis based on its first pages.
-- The student's name, matriculation number, and the thesis title.
+A tool that transforms annotated PDFs into professional LaTeX documents using AI. Extract your PDF annotations, rewrite them into clear questions or feedback, and generate formatted letters automatically.
 
-This way, you receive a ready-to-use protocol template for the colloquium.
+## Three Use Cases
 
-**Important:** This project **does not grade** a thesis. It extracts comments/annotations from a thesis PDF, rewrites them into clearer questions using a language model, summarizes the thesis (first pages), and generates a LaTeX template that can be used for the colloquium's protocol.
+### 1. 📝 Thesis Colloquium Protocols
 
-## Features
-- 🔍 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
-- 🤖 **Automatic API Detection** - Uses available API keys or falls back to local Ollama
-- 📄 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
-- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted words and paragraph context
-- ✍️ **Question Refinement** - Rewrites terse comments (e.g. "Why?") to full, polite questions
-- 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer
-- 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)
-- 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output
-- 📊 **Project Work Support** - Generate grading letters for project work (Praxisprojekt)
-- 📖 **Peer Review Support** - Generate peer reviews for journal/conference papers
+Generate formal protocol letters for Bachelor/Master thesis colloquiums:
+- Extract and rewrite your rough annotations into clear, polite questions
+- Auto-detect student metadata (name, matriculation number, thesis title)
+- Generate thesis summary from first pages
+- Create LaTeX letter with TH Köln formatting
+- Pre-fill official grading forms with dates and checkboxes
 
-## Quickstart
+[**→ Full Documentation**](docs/COLLOQUIUM.md)
 
-1. Clone repo and install dependencies:
 ```bash
-pip install -e .
+colloquium-protocol-creator /path/to/Bachelorarbeit.pdf
 ```
 
-2. The tool uses the universal [llm_client](https://github.com/dgaida/llm_client) which automatically detects available APIs:
-
-   - **OpenAI**: Set `OPENAI_API_KEY` in `secrets.env` or environment
-   - **Groq**: Set `GROQ_API_KEY` in `secrets.env` or environment  
-   - **Google Gemini**: Set `GEMINI_API_KEY` in `secrets.env` or environment
-   - **Ollama**: No API key needed, runs locally (requires [Ollama installation](https://ollama.com/))
-
-3. Run the CLI:
-```bash
-colloquium-protocol-creator /path/to/Bachelorarbeit_xy.pdf
-```
-
-Or specify the API explicitly:
-```bash
-colloquium-protocol-creator /path/to/Bachelorarbeit_xy.pdf --api gemini --model gemini-2.0-flash-exp
-```
-
-A `bewertung_brief_matrikelnr.tex` (and `.pdf` if compilation succeeds) will be written into the thesis folder.
-
-### Project Work Grading Letters
+### 2. 🎓 Project Work Grading Letters
 
 Generate grading letters for project work (Praxisprojekt):
+- Auto-extract project metadata from title page
+- Detect appropriate formal address (Herr/Frau) from student's first name
+- Auto-calculate current semester (WS/SoSe)
+- Create LaTeX grading letter template
+
+[**→ Full Documentation**](docs/PROJECT.md)
 
 ```bash
 project-grading-letter /path/to/Praxisprojekt.pdf
 ```
 
-Or via Python:
-```python
-from llm_client import LLMClient
-from project_pipeline import orchestrator
+### 3. 📄 Peer Review Comments
 
-client = LLMClient()  # Auto-detects available API
-tex, pdf = orchestrator.run_project_pipeline(
-    pdf_path="Praxisprojekt_Mueller.pdf",
-    llm_client=client
-)
-```
+Generate professional peer review feedback for papers:
+- Extract and rewrite informal reviewer notes into constructive feedback
+- Auto-detect line numbers from PDF margins
+- Generate Markdown review document with page/line references
+- Always output in English for international publications
 
-### Peer Review Support
-
-Generate peer reviews for papers:
+[**→ Full Documentation**](docs/REVIEW.md)
 
 ```python
 from llm_client import LLMClient
 from review_pipeline import orchestrator
 
 client = LLMClient()
-md_path = orchestrator.run_review_pipeline(
-    pdf_path="paper.pdf",
-    llm_client=client
-)
+md_file = orchestrator.run_review_pipeline("paper.pdf", client)
 ```
 
-## Installation
+## Key Features
 
-You can install the project either with **pip** or with **Anaconda/Miniconda**.  
+- 🔍 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
+- 🤖 **Automatic API Detection** - Uses available API keys or falls back to local Ollama
+- 📄 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
+- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs
+- ✍️ **Intelligent Comment Refinement** - Rewrites terse notes (e.g., "Why?") into full questions
+- 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer
+- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms
+- 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)
+- 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output
 
-### Option 1: For developers (recommended)
+## Quick Start
 
-Clone the repository and install in editable mode. This will pick up all dependencies
-from `pyproject.toml` and let you make changes to the source code without reinstalling:
+### Installation
 
 ```bash
+# Clone repository
 git clone https://github.com/dgaida/colloquium-protocol-creator.git
 cd colloquium-protocol-creator
+
+# Install
 pip install -e .
 ```
 
-### Option 2: For users with pip
-If you just want to use the tool without editing the source code, install the dependencies from requirements.txt:
+[**→ Full Installation Guide**](docs/INSTALL.md)
+
+### API Configuration
+
+Create `secrets.env` in project root with at least one API key:
 
 ```bash
-pip install -r requirements.txt
+# Choose one or more
+OPENAI_API_KEY=sk-xxxxxxxx          # Paid, reliable
+GROQ_API_KEY=gsk-xxxxxxxx           # Free tier available
+GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
+# Or use Ollama (no key needed)
 ```
 
-### Option 3: With Anaconda/Miniconda
-If you prefer conda, use the provided environment.yml:
-
-```bash
-conda env create -f environment.yml
-conda activate colloquium-protocol-creator
-```
-
-## Requirements
-- Python 3.9+
-- [TeX](https://www.latex-project.org/get/) (LuaLaTeX recommended for full Unicode)
-- At least one of:
-  - [OpenAI API key](https://platform.openai.com/api-keys)
-  - [Groq API key](https://console.groq.com/keys)
-  - [Google Gemini API key](https://aistudio.google.com/apikey)
-  - [Ollama](https://ollama.com/) (local, no API key needed)
-- Python packages (automatically installed):
-  - [llm-client](https://github.com/dgaida/llm_client) - Universal LLM interface
-  - [docling-parse](https://pypi.org/project/docling-parse/)
-  - [docling-core](https://pypi.org/project/docling-core/)
-  - [pypdf](https://pypi.org/project/pypdf/)
-
-## Configuration
-
-### API Keys Setup
-
-Create a `secrets.env` file in the project root:
-
-```bash
-# Choose one or more APIs (tool will auto-select based on availability)
-
-# OpenAI
-OPENAI_API_KEY=sk-xxxxxxxx
-
-# Groq (fast, free tier available)
-GROQ_API_KEY=gsk-xxxxxxxx
-
-# Google Gemini
-GEMINI_API_KEY=AIzaSy-xxxxxxxx
-
-# Ollama - no key needed (local installation required)
-```
-
-### Supported APIs
-
-| API | Default Model | API Key Required | Notes |
-|-----|---------------|------------------|-------|
-| OpenAI | `gpt-4o-mini` | Yes | Reliable, paid |
-| Groq | `moonshotai/kimi-k2-instruct-0905` | Yes | Very fast, free tier |
-| Google Gemini | `gemini-2.0-flash-exp` | Yes | Fast, free tier |
-| Ollama | `llama3.2:1b` | No | Runs locally |
-
-The tool automatically selects the best available API based on your configuration.
-
-## Usage Examples
-
-### Basic Usage (Auto API Detection)
+### Usage Example
 
 ```python
 from llm_client import LLMClient
 from colloquium_pipeline import orchestrator
 
-# LLMClient auto-detects available API
+# Auto-detects available API
 client = LLMClient()
-print(f"Using: {client.api_choice} with {client.llm}")
 
+# Generate protocol letter
 tex, pdf = orchestrator.run_pipeline(
-    pdf_path="Bachelorarbeit_Mueller.pdf",
-    llm_client=client,
-    groq_free=True  # Enable rate limiting if using free tier
-)
-```
-
-### Specify API and Model
-
-```python
-from llm_client import LLMClient
-from colloquium_pipeline import orchestrator
-
-# Use Google Gemini explicitly
-client = LLMClient(
-    api_choice="gemini",
-    llm="gemini-2.0-flash-exp",
-    temperature=0.7
-)
-
-tex, pdf = orchestrator.run_pipeline(
-    pdf_path="Masterarbeit_Schmidt.pdf",
+    pdf_path="thesis.pdf",
+    date_colloquium="15.01.2026",
+    uhrzeit_colloquium="10:00",
     llm_client=client
 )
 ```
 
-### Command Line with Options
+## Requirements
 
-```bash
-# Use specific API
-colloquium-protocol-creator thesis.pdf --api gemini --model gemini-2.0-flash-exp
+- **Python**: 3.9 or higher
+- **LaTeX**: LuaLaTeX recommended (for Unicode support)
+- **LLM API**: At least one of:
+  - [OpenAI API](https://platform.openai.com/api-keys) (paid)
+  - [Groq API](https://console.groq.com/keys) (free tier)
+  - [Google Gemini API](https://aistudio.google.com/apikey) (free tier)
+  - [Ollama](https://ollama.com/) (local, free)
 
-# Without PDF compilation
-colloquium-protocol-creator thesis.pdf --no-compile
+## Supported APIs
 
-# With custom output folder
-colloquium-protocol-creator thesis.pdf --out ./output
+| API | Default Model | API Key Required | Notes |
+|-----|---------------|------------------|-------|
+| OpenAI | `gpt-4o-mini` | Yes | Reliable, ~$0.01-0.05/thesis |
+| Groq | `moonshotai/kimi-k2-instruct-0905` | Yes | Very fast, free tier (30 req/min) |
+| Google Gemini | `gemini-2.0-flash-exp` | Yes | Fast, free tier (60 req/min) |
+| Ollama | `llama3.2:1b` | No | Runs locally, completely free |
 
-# With rate limiting (free tier)
-colloquium-protocol-creator thesis.pdf --groq-free
-```
+The tool automatically selects the best available API based on your configuration.
+
+## Documentation
+
+### Use Cases
+- [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.md)
+- [🎓 Project Work Grading Letters](docs/PROJECT.md)
+- [📄 Peer Review Comments](docs/REVIEW.md)
+
+### Guides
+- [💿 Installation Guide](docs/INSTALL.md)
+- [🧪 Testing Guide](docs/TESTING.md)
 
 ## Project Structure
 
 ```
 colloquium-protocol-creator/
-├── colloquium_creator/          # Core functionality
-│   ├── pdf_processing.py        # PDF text & annotation extraction
-│   ├── llm_interface.py         # LLM interaction (via llm_client)
-│   ├── latex_generation.py      # LaTeX generation & compilation
-│   └── utils.py                 # Helper functions
-├── colloquium_pipeline/         # Orchestration
-│   ├── orchestrator.py          # Main pipeline
-│   └── cli.py                   # Command-line interface
-├── project_creator/             # Project work grading letters
-│   ├── llm_interface.py         # Metadata extraction & gender detection
-│   └── latex_generation.py      # Project letter generation
-├── project_pipeline/            # Project work orchestration
-│   ├── orchestrator.py
-│   └── cli.py
-├── review_creator/              # Peer review support
-│   └── md_generator.py          # Markdown review generation
-├── review_pipeline/             # Review orchestration
-│   └── orchestrator.py
+├── src/
+│   ├── colloquium_creator/      # Core: PDF processing, LLM, LaTeX
+│   ├── colloquium_pipeline/     # Orchestration: Colloquium protocols
+│   ├── project_creator/         # Project work grading letters
+│   ├── project_pipeline/        # Orchestration: Project letters
+│   ├── review_creator/          # Peer review comments
+│   └── review_pipeline/         # Orchestration: Reviews
+├── docs/                        # Documentation
+├── tests/                       # Test suite
 ├── main.py                      # Example: Thesis colloquium
 ├── main_project.py              # Example: Project work
 ├── main_review.py               # Example: Peer review
-├── pyproject.toml              # Package configuration
-├── requirements.txt            # Dependencies
-└── README.md                   # This file
+└── pyproject.toml              # Package configuration
 ```
 
 ## How It Works
 
-### Colloquium Protocol Generation
+### Colloquium Protocols
+1. Extract PDF annotations with context (Docling + PyPDF)
+2. Categorize comments (LLM, Quelle, Language, Ignore)
+3. Rewrite annotations into clear questions (LLM)
+4. Extract metadata and summarize thesis
+5. Generate LaTeX letter with TH Köln formatting
+6. Pre-fill official grading form
+7. Optionally compile to PDF
 
-1. **Extract PDF Annotations**: Uses Docling to parse PDF structure and PyPDF to extract annotations with positions
-2. **Context Mapping**: Matches annotations to exact highlighted text and surrounding paragraphs
-3. **LLM Rewriting**: Rewrites rough annotations into clear, polite questions using configured LLM
-4. **Metadata Extraction**: Extracts student name, matriculation number, thesis title, and examiner names
-5. **Thesis Summary**: Generates a concise summary from the first 10 pages
-6. **LaTeX Generation**: Creates a formal letter with TH Köln formatting
-7. **PDF Compilation**: Optionally compiles the LaTeX file to PDF
+### Project Grading Letters
+1. Extract metadata from project title page
+2. Determine formal address (Herr/Frau) from first name
+3. Auto-calculate current semester
+4. Generate LaTeX grading letter
+5. Optionally compile to PDF
 
-### Project Work Grading
+### Peer Review Comments
+1. Extract annotations with line numbers
+2. Rewrite informal notes into professional feedback
+3. Generate Markdown review document
+4. Include page/line references
 
-1. **Metadata Extraction**: Reads student info from project title page
-2. **Gender Detection**: Automatically determines formal address (Herr/Frau) from first name
-3. **Semester Calculation**: Auto-detects current semester (WS/SoSe) based on date
-4. **Letter Generation**: Creates LaTeX grading letter with placeholders for grade
+## Example Outputs
 
-### Peer Review Generation
+### Thesis Colloquium Letter
+```latex
+\documentclass[11pt,ngerman,parskip=full]{scrlttr2}
+% TH Köln letterhead
+\setkomavar{subject}{Bewertung Bachelor Arbeit von Max Mustermann}
 
-1. **Annotation Extraction**: Extracts review comments with line numbers
-2. **Comment Refinement**: Rewrites informal notes into professional reviewer feedback
-3. **Markdown Output**: Generates formatted review document with page/line references
+% Summary
+\textbf{Zusammenfassung der Thesis:}
+Die Arbeit behandelt...
 
-## Advanced Configuration
-
-### Custom LLM Parameters
-
-```python
-from llm_client import LLMClient
-
-client = LLMClient(
-    api_choice="openai",
-    llm="gpt-4o",
-    temperature=0.5,      # Lower = more deterministic
-    max_tokens=2048       # Longer responses
-)
+% Questions
+\textbf{Fragen Prof. Dr. Müller:}
+Seite 5: Könnten Sie die Wahl dieser Methodik näher begründen?
+Seite 12: Wie verhält sich der Algorithmus bei größeren Datenmengen?
 ```
 
-### Rate Limiting for Free Tiers
+### Project Grading Letter
+```latex
+\setkomavar{subject}{Praxisprojekt Herr Max Mustermann}
 
-```python
-# Enable throttling for Groq free tier
-tex, pdf = orchestrator.run_pipeline(
-    pdf_path="thesis.pdf",
-    llm_client=client,
-    groq_free=True  # Adds delays between API calls
-)
+Herr Max Mustermann, Matrikelnr. 123456,
+hat im SoSe25 sein Praxisprojekt bei mir gemacht. 
+Er hat die Note _______ erhalten.
+
+Das Thema war:
+Entwicklung einer Mobile App für...
 ```
 
-### Ollama Local Usage
+### Peer Review Comments
+```markdown
+# Peer Review
 
-```bash
-# Install Ollama
-curl -fsSL https://ollama.ai/install.sh | sh
-
-# Pull a model
-ollama pull llama3.2:1b
-
-# Use without any API keys
-colloquium-protocol-creator thesis.pdf
+- Page 1, Line 15: This point requires clarification...
+- Page 2, Line 42: The explanation could be clearer by...
+- Page 3, Line 78: The authors should consider recent work by...
 ```
 
-## License
-This project is released under the MIT License (see LICENSE).
+## Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass: `pytest`
+5. Format code: `black .` and `ruff check .`
+6. Submit a pull request
 
 ## Related Projects
 
 - [llm_client](https://github.com/dgaida/llm_client) - Universal Python LLM client (OpenAI, Groq, Gemini, Ollama)
 
+## License
+
+This project is released under the MIT License (see [LICENSE](LICENSE)).
+
 ## Disclaimer
-This tool aids in producing a protocol template for the colloquium — it does not grade or make evaluative decisions automatically.
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+This tool aids in producing document templates — it does not grade or make evaluative decisions automatically. All academic assessments remain the responsibility of the examiner.
 
 ## Support
 
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/dgaida/colloquium-protocol-creator/issues) page
-2. Open a new issue with details about your problem
-3. Include your Python version, OS, and API choice
+If you encounter issues:
+1. Check the [documentation](docs/)
+2. Search [existing issues](https://github.com/dgaida/colloquium-protocol-creator/issues)
+3. Open a new issue with:
+   - Python version and OS
+   - API choice and model
+   - Full error message
+   - Steps to reproduce
 
 ## Acknowledgments
 
 - Uses [Docling](https://github.com/DS4SD/docling) for PDF processing
 - LaTeX template based on KOMA-Script's `scrlttr2` class
+- LLM interface via [llm_client](https://github.com/dgaida/llm_client)

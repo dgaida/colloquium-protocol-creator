@@ -7,7 +7,7 @@ Dieses Script bietet Funktionen zum:
 - Automatischen Ausfüllen von PDF-Formularen
 """
 
-import fitz  # PyMuPDF
+import pymupdf  # PyMuPDF
 from typing import Dict, List, Optional
 from pathlib import Path
 import os
@@ -25,7 +25,7 @@ class PDFFormHandler:
             pdf_path: Pfad zur PDF-Datei
         """
         self.pdf_path = pdf_path
-        self.doc = fitz.open(pdf_path)
+        self.doc = pymupdf.open(pdf_path)
 
     def __del__(self):
         """Schließt das PDF-Dokument beim Löschen des Objekts."""
@@ -57,13 +57,13 @@ class PDFFormHandler:
         for page_num, page in enumerate(self.doc, start=1):
             for widget in page.widgets():
                 field_type_map = {
-                    fitz.PDF_WIDGET_TYPE_TEXT: "Text",
-                    fitz.PDF_WIDGET_TYPE_CHECKBOX: "Checkbox",
-                    fitz.PDF_WIDGET_TYPE_RADIOBUTTON: "Radio Button",
-                    fitz.PDF_WIDGET_TYPE_LISTBOX: "Listbox",
-                    fitz.PDF_WIDGET_TYPE_COMBOBOX: "Combobox",
-                    fitz.PDF_WIDGET_TYPE_SIGNATURE: "Signature",
-                    fitz.PDF_WIDGET_TYPE_BUTTON: "Button"
+                    pymupdf.PDF_WIDGET_TYPE_TEXT: "Text",
+                    pymupdf.PDF_WIDGET_TYPE_CHECKBOX: "Checkbox",
+                    pymupdf.PDF_WIDGET_TYPE_RADIOBUTTON: "Radio Button",
+                    pymupdf.PDF_WIDGET_TYPE_LISTBOX: "Listbox",
+                    pymupdf.PDF_WIDGET_TYPE_COMBOBOX: "Combobox",
+                    pymupdf.PDF_WIDGET_TYPE_SIGNATURE: "Signature",
+                    pymupdf.PDF_WIDGET_TYPE_BUTTON: "Button"
                 }
 
                 field_data = {
@@ -159,12 +159,12 @@ class PDFFormHandler:
 
                         try:
                             # Behandle verschiedene Feldtypen
-                            if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
+                            if widget.field_type == pymupdf.PDF_WIDGET_TYPE_TEXT:
                                 widget.field_value = str(value)
                                 widget.update()
                                 filled_count += 1
 
-                            elif widget.field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                            elif widget.field_type == pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
                                 # Checkbox: True/False oder 1/0
                                 if isinstance(value, bool):
                                     widget.field_value = value

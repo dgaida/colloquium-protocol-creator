@@ -50,7 +50,7 @@ jobs:
 
       - name: Type check with mypy
         run: |
-          mypy colloquium-protocol-creator --ignore-missing-imports --no-strict-optional
+          mypy src --ignore-missing-imports --no-strict-optional
         continue-on-error: true
 
   security:

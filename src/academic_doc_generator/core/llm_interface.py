@@ -5,7 +5,7 @@ from typing import Dict
 import json
 import time
 from llm_client import LLMClient
-from colloquium_creator import pdf_processing, latex_generation
+from . import pdf_processing, latex_generation
 
 
 def rewrite_comments(

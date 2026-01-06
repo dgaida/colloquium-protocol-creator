@@ -1,0 +1,19 @@
+{
+  "task": "project",
+  "description": "Praxisprojekt-Bewertungsbrief",
+  
+  "pdf": {
+    "filename": "Praxisprojekt_Weber.pdf"
+  },
+  
+  "llm": {
+    "api_choice": null,
+    "model": null
+  },
+  
+  "output": {
+    "folder": null,
+    "compile_pdf": true,
+    "signature_file": "signature.png"
+  }
+}

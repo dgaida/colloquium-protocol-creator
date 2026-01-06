@@ -4,7 +4,7 @@
 import json
 from typing import Dict
 from llm_client import LLMClient
-from colloquium_creator.pdf_processing import extract_text_per_page
+from ..core.pdf_processing import extract_text_per_page
 
 
 def determine_gender_from_name(first_name: str, llm_client: LLMClient) -> str:

@@ -5,7 +5,7 @@ Additional unit tests to increase coverage for llm_interface and pdf_processing.
 import pytest
 import json
 from unittest.mock import MagicMock, patch
-from colloquium_creator import llm_interface, pdf_processing
+from academic_doc_generator.core import llm_interface, pdf_processing
 
 
 # ============================================================================

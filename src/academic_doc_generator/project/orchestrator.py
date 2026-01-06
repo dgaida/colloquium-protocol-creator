@@ -4,12 +4,12 @@
 import os
 from typing import Tuple
 from llm_client import LLMClient
-from project_creator.llm_interface import (
+from .llm_interface import (
     extract_project_metadata,
     determine_gender_from_name,
 )
-from project_creator.latex_generation import create_project_grading_letter_tex
-from colloquium_creator.latex_generation import compile_latex_to_pdf
+from .latex_generation import create_project_grading_letter_tex
+from ..core.latex_generation import compile_latex_to_pdf
 
 
 def run_project_pipeline(

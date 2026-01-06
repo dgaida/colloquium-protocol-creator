@@ -2,11 +2,11 @@
 
 import os
 from llm_client import LLMClient
-from colloquium_creator.pdf_processing import (
+from ..core.pdf_processing import (
     extract_text_with_positions,
     extract_annotations_with_positions,
 )
-from review_creator.md_generator import (
+from .md_generator import (
     find_annotation_context_with_lines,
     rewrite_comments_markdown,
     create_review_markdown,

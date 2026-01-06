@@ -3,7 +3,7 @@
 
 from typing import Dict, Optional
 from pathlib import Path
-from src.project_creator.llm_interface import determine_gender_from_name
+from ..project.llm_interface import determine_gender_from_name
 from datetime import datetime
 
 
@@ -47,6 +47,12 @@ class EmailGenerator:
             zoom_link: Optional[str] = None,
             zoom_passcode: Optional[str] = None
     ):
+        print("START WRITING MAIL")
+
+        if author is None:
+            print("Error: author ", author)
+            return
+
         # Extrahiere Vornamen und Nachnamen aus name_student
         # Format: "Nachname, Vorname" oder "Vorname Nachname"
         if ',' in author:

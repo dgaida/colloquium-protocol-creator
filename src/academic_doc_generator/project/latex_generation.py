@@ -2,7 +2,7 @@
 """LaTeX generation for project work grading letters."""
 
 from datetime import datetime
-from colloquium_creator.latex_generation import escape_for_latex
+from ..core.latex_generation import escape_for_latex
 
 
 def get_current_semester() -> str:

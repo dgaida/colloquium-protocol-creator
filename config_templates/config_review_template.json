@@ -1,0 +1,18 @@
+{
+  "task": "review",
+  "description": "Peer Review-Kommentare",
+  
+  "pdf": {
+    "filename": "paper_submission_42.pdf"
+  },
+  
+  "llm": {
+    "api_choice": null,
+    "model": null,
+    "groq_free": false
+  },
+  
+  "output": {
+    "folder": null
+  }
+}

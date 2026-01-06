@@ -6,7 +6,7 @@ import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
-from review_creator import md_generator
+from academic_doc_generator.review import md_generator
 
 
 # ============================================================================

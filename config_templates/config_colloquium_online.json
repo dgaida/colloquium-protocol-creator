@@ -1,0 +1,28 @@
+{
+  "task": "colloquium",
+  "description": "Online-Kolloquium via Zoom",
+  
+  "pdf": {
+    "filename": "Bachelorarbeit_Schmidt.pdf"
+  },
+  
+  "colloquium": {
+    "date": "30.01.2026",
+    "time": "15:30",
+    "location_type": "online",
+    "zoom_link": "https://zoom.us/j/1234567890",
+    "zoom_passcode": "ColloquiumXY"
+  },
+  
+  "llm": {
+    "api_choice": null,
+    "model": null,
+    "groq_free": true
+  },
+  
+  "output": {
+    "folder": null,
+    "compile_pdf": true,
+    "fill_form_only": false
+  }
+}

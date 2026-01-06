@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "colloquium-protocol-creator"
 version = "0.2.0"
-description = "Create colloquium protocol letters from thesis PDFs (annotation extraction, comment rewriting, LaTeX generation)."
+description = "Create colloquium protocol letters from thesis PDFs (annotation extraction, comment rewriting, LaTeX generation) as well as paper reviews."
 authors = [{name = "Daniel Gaida", email = "daniel.gaida@th-koeln.de"}]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,8 +19,9 @@ dependencies = [
 ]
 
 [project.scripts]
-colloquium-protocol-creator = "colloquium_pipeline.cli:main"
-project-grading-letter = "project_pipeline.cli:main"
+academic_doc_generator = "academic_doc_generator.cli:main"
+colloquium-protocol-creator = "academic_doc_generator.colloquium.cli:main"
+project-grading-letter = "academic_doc_generator.project.cli:main"
 
 [project.optional-dependencies]
 dev = [

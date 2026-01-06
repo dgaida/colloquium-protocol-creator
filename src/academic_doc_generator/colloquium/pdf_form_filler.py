@@ -246,6 +246,8 @@ def fill_form(
     Returns:
         Tuple aus (pdf_path, email_path) mit Pfaden zu den generierten Dateien.
     """
+    print("START FILL Form")
+
     if degree == "Master":
         pdf_path = os.path.join("data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf")
     elif degree == "Bachelor":

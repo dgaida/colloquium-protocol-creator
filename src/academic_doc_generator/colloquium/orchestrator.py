@@ -4,7 +4,7 @@
 from typing import Tuple, Optional
 import os
 from llm_client import LLMClient
-from colloquium_creator import llm_interface, latex_generation
+from ..core import llm_interface, latex_generation
 from . import pdf_form_filler
 from . import email_generator
 
@@ -127,6 +127,8 @@ def run_pipeline(
         if stats["language"] > 5:
             summary = summary + "\\\\Viele sprachliche Fehler."
             print("Viele sprachliche Fehler")
+
+    print(metadata)
 
     author = metadata.get("author", "Unknown")
     matriculation = metadata.get("matriculation_number", "unknown")

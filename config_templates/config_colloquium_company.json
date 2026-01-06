@@ -1,0 +1,28 @@
+{
+  "task": "colloquium",
+  "description": "Kolloquium in einer Firma",
+  
+  "pdf": {
+    "filename": "Bachelorarbeit_Mueller.pdf"
+  },
+  
+  "colloquium": {
+    "date": "25.01.2026",
+    "time": "10:00",
+    "location_type": "company",
+    "company_name": "Beispiel GmbH",
+    "company_address": "Musterstraße 42, 51643 Gummersbach"
+  },
+  
+  "llm": {
+    "api_choice": null,
+    "model": null,
+    "groq_free": true
+  },
+  
+  "output": {
+    "folder": null,
+    "compile_pdf": true,
+    "fill_form_only": false
+  }
+}

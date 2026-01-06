@@ -1,5 +1,5 @@
 pypdf>=4.0.0
-PyMuPDF>=1.10.0
+PyMuPDF>=1.24.0
 docling-parse>=0.2.0
 docling-core>=0.2.0
 git+https://github.com/dgaida/llm_client.git

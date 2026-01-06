@@ -25,11 +25,12 @@ Generate formal protocol letters for Bachelor/Master thesis colloquiums:
 - Generate thesis summary from first pages
 - Create LaTeX letter with TH Köln formatting
 - Pre-fill official grading forms with dates and checkboxes
+- Generate registration emails for the Prüfungsservice
 
 [**→ Full Documentation**](docs/COLLOQUIUM.md)
 
 ```bash
-colloquium-protocol-creator /path/to/Bachelorarbeit.pdf
+colloquium-protocol-creator --config config_templates/config_colloquium_campus.json
 ```
 
 ### 2. 🎓 Project Work Grading Letters
@@ -58,7 +59,7 @@ Generate professional peer review feedback for papers:
 
 ```python
 from llm_client import LLMClient
-from review_pipeline import orchestrator
+from academic_doc_generator.review import orchestrator
 
 client = LLMClient()
 md_file = orchestrator.run_review_pipeline("paper.pdf", client)
@@ -73,6 +74,7 @@ md_file = orchestrator.run_review_pipeline("paper.pdf", client)
 - ✍️ **Intelligent Comment Refinement** - Rewrites terse notes (e.g., "Why?") into full questions
 - 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer
 - 📋 **PDF Form Pre-filling** - Auto-fills official grading forms
+- 📧 **Email Generation** - Creates registration emails for colloquium scheduling
 - 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)
 - 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output
 
@@ -105,19 +107,33 @@ GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 
 ### Usage Example
 
+#### Using JSON Configuration (Recommended)
+
+```bash
+# List available templates
+colloquium-protocol-creator --list-templates
+
+# Use a configuration template
+colloquium-protocol-creator --config config_templates/config_colloquium_campus.json
+```
+
+#### Python API
+
 ```python
 from llm_client import LLMClient
-from colloquium_pipeline import orchestrator
+from academic_doc_generator.colloquium import orchestrator
 
 # Auto-detects available API
 client = LLMClient()
 
-# Generate protocol letter
-tex, pdf = orchestrator.run_pipeline(
+# Generate protocol letter, form, and email
+tex, pdf, email = orchestrator.run_pipeline(
     pdf_path="thesis.pdf",
     date_colloquium="15.01.2026",
     uhrzeit_colloquium="10:00",
-    llm_client=client
+    llm_client=client,
+    location_type="campus",
+    room="3.217"
 )
 ```
 
@@ -142,6 +158,47 @@ tex, pdf = orchestrator.run_pipeline(
 
 The tool automatically selects the best available API based on your configuration.
 
+## Configuration Templates
+
+The tool now supports JSON configuration files for easier workflow management:
+
+### Available Templates
+
+- **`config_colloquium_campus.json`** - Colloquium on campus (requires room number)
+- **`config_colloquium_company.json`** - Colloquium at company location
+- **`config_colloquium_online.json`** - Online colloquium via Zoom
+- **`config_project_template.json`** - Project work grading letter
+- **`config_review_template.json`** - Peer review comments
+
+### Configuration Structure
+
+```json
+{
+  "task": "colloquium",
+  "pdf": {
+    "filename": "Bachelorarbeit_Mustermann.pdf"
+  },
+  "colloquium": {
+    "date": "20.01.2026",
+    "time": "14:00",
+    "location_type": "campus",
+    "room": "3.217"
+  },
+  "llm": {
+    "api_choice": null,
+    "model": null,
+    "groq_free": true
+  },
+  "output": {
+    "folder": null,
+    "compile_pdf": true,
+    "fill_form_only": false
+  }
+}
+```
+
+[**→ Full Configuration Documentation**](config_templates/README.md)
+
 ## Documentation
 
 ### Use Cases
@@ -152,24 +209,40 @@ The tool automatically selects the best available API based on your configuratio
 ### Guides
 - [💿 Installation Guide](docs/INSTALL.md)
 - [🧪 Testing Guide](docs/TESTING.md)
+- [⚙️ Configuration Templates](config_templates/README.md)
 
 ## Project Structure
 
 ```
 colloquium-protocol-creator/
 ├── src/
-│   ├── colloquium_creator/      # Core: PDF processing, LLM, LaTeX
-│   ├── colloquium_pipeline/     # Orchestration: Colloquium protocols
-│   ├── project_creator/         # Project work grading letters
-│   ├── project_pipeline/        # Orchestration: Project letters
-│   ├── review_creator/          # Peer review comments
-│   └── review_pipeline/         # Orchestration: Reviews
-├── docs/                        # Documentation
-├── tests/                       # Test suite
-├── main.py                      # Example: Thesis colloquium
-├── main_project.py              # Example: Project work
-├── main_review.py               # Example: Peer review
-└── pyproject.toml              # Package configuration
+│   └── academic_doc_generator/
+│       ├── core/                    # Core: PDF processing, LLM, LaTeX
+│       │   ├── pdf_processing.py
+│       │   ├── llm_interface.py
+│       │   ├── latex_generation.py
+│       │   └── utils.py
+│       ├── colloquium/             # Colloquium protocols
+│       │   ├── orchestrator.py
+│       │   ├── email_generator.py
+│       │   ├── pdf_form_filler.py
+│       │   └── cli.py
+│       ├── project/                # Project work grading letters
+│       │   ├── orchestrator.py
+│       │   ├── latex_generation.py
+│       │   ├── llm_interface.py
+│       │   └── cli.py
+│       ├── review/                 # Peer review comments
+│       │   ├── orchestrator.py
+│       │   ├── md_generator.py
+│       │   └── __init__.py
+│       ├── config_loader.py        # JSON configuration loader
+│       └── cli.py                  # Unified CLI entry point
+├── config_templates/               # JSON configuration templates
+├── docs/                          # Documentation
+├── tests/                         # Test suite
+├── main.py                        # Example: Thesis colloquium
+└── pyproject.toml                 # Package configuration
 ```
 
 ## How It Works
@@ -180,8 +253,9 @@ colloquium-protocol-creator/
 3. Rewrite annotations into clear questions (LLM)
 4. Extract metadata and summarize thesis
 5. Generate LaTeX letter with TH Köln formatting
-6. Pre-fill official grading form
-7. Optionally compile to PDF
+6. Generate registration email for Prüfungsservice
+7. Pre-fill official grading form
+8. Optionally compile to PDF
 
 ### Project Grading Letters
 1. Extract metadata from project title page
@@ -212,6 +286,21 @@ Die Arbeit behandelt...
 \textbf{Fragen Prof. Dr. Müller:}
 Seite 5: Könnten Sie die Wahl dieser Methodik näher begründen?
 Seite 12: Wie verhält sich der Algorithmus bei größeren Datenmengen?
+```
+
+### Colloquium Registration Email
+```markdown
+Lieber Prüfungsservice,
+hiermit möchte ich Herr Max Mustermann (123456) zum Kolloquium anmelden. 
+Dieses findet statt am:
+Montag, 20.01.2026, um 14:00,
+in Raum 3.217 am Campus GM.
+
+Herr Mustermann: Bitte bereiten Sie eine max. 15-minütige Präsentation zu 
+Ihrer Arbeit vor (wenn möglich inkl. Demo).
+
+Viele Grüße,
+Prof. Dr. Müller
 ```
 
 ### Project Grading Letter

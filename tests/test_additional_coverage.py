@@ -34,7 +34,7 @@ class TestLLMInterfaceAdditional:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten"
 
-        with patch("colloquium_creator.llm_interface.time.sleep") as mock_sleep:
+        with patch("academic_doc_generator.core.llm_interface.time.sleep") as mock_sleep:
             llm_interface.rewrite_comments(
                 context_dict, mock_client, groq_free=True, verbose=False
             )
@@ -68,7 +68,7 @@ class TestLLMInterfaceAdditional:
 
         assert 1 in result
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_extract_document_metadata_german(self, mock_extract):
         """Test metadata extraction for German thesis."""
         mock_extract.return_value = {
@@ -97,7 +97,7 @@ class TestLLMInterfaceAdditional:
         assert result["author"] == "Max Mustermann"
         assert result["bachelor_master"] == "Bachelor"
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_extract_document_metadata_english(self, mock_extract):
         """Test metadata extraction for English thesis."""
         mock_extract.return_value = {0: "Master Thesis by John Doe"}
@@ -122,7 +122,7 @@ class TestLLMInterfaceAdditional:
 
         assert result["bachelor_master"] == "Master"
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_summarize_thesis_german(self, mock_extract):
         """Test thesis summarization in German."""
         mock_extract.return_value = {
@@ -142,7 +142,7 @@ class TestLLMInterfaceAdditional:
         assert "untersucht" in result
         assert "\\\\" in result  # LaTeX line breaks
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_summarize_thesis_english(self, mock_extract):
         """Test thesis summarization in English."""
         mock_extract.return_value = {0: "This thesis addresses topic X"}
@@ -173,7 +173,7 @@ class TestLLMInterfaceAdditional:
         prompt_text = call_args[0]["content"]
         assert prompt_text.count("Warum?") <= 5
 
-    @patch("colloquium_creator.llm_interface.time.sleep")
+    @patch("academic_doc_generator.core.llm_interface.time.sleep")
     def test_detect_language_groq_free(self, mock_sleep):
         """Test language detection with groq_free throttling."""
         results = {1: [{"rewritten": "Test"}]}
@@ -185,7 +185,7 @@ class TestLLMInterfaceAdditional:
 
         mock_sleep.assert_called_once_with(2)
 
-    @patch("colloquium_creator.llm_interface.LLMClient")
+    @patch("academic_doc_generator.core.llm_interface.LLMClient")
     def test_rewrite_comments_in_pdf_auto_client(self, mock_client_class):
         """Test rewrite_comments_in_pdf with automatic client creation."""
         mock_client = MagicMock()
@@ -229,8 +229,8 @@ class TestLLMInterfaceAdditional:
         assert stats["quelle"] == 1
         assert stats["language"] == 2
 
-    @patch("colloquium_creator.llm_interface.LLMClient")
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.LLMClient")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_get_summary_and_metadata_auto_client(
         self, mock_extract, mock_client_class
     ):
@@ -252,8 +252,8 @@ class TestLLMInterfaceAdditional:
 
         mock_client_class.assert_called_once()
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
-    @patch("colloquium_creator.llm_interface.time.sleep")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.time.sleep")
     def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract):
         """Test get_summary_and_metadata with groq_free throttling."""
         mock_extract.return_value = {0: "Test"}
@@ -274,7 +274,7 @@ class TestLLMInterfaceAdditional:
         assert 20 in sleep_calls
         assert 2 in sleep_calls
 
-    @patch("colloquium_creator.llm_interface.pdf_processing.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
     def test_get_summary_and_metadata_verbose(self, mock_extract):
         """Test get_summary_and_metadata with verbose output."""
         mock_extract.return_value = {0: "Test"}

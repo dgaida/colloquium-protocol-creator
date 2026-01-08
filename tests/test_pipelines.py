@@ -307,7 +307,7 @@ class TestColloquiumCLI:
         """Test CLI with API choice."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_run.return_value = ("/test.tex", "")
+        mock_run.return_value = ("/test.tex", "/test.pdf", "/test/email.md")
 
         colloquium_cli.main(["test.pdf", "--api", "groq"])
 
@@ -319,7 +319,7 @@ class TestColloquiumCLI:
         """Test CLI with model specification."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_run.return_value = ("/test.tex", "")
+        mock_run.return_value = ("/test.tex", "/test.pdf", "/test/email.md")
 
         colloquium_cli.main(["test.pdf", "--model", "gpt-4o"])
 
@@ -331,7 +331,7 @@ class TestColloquiumCLI:
         """Test CLI with groq-free flag."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_run.return_value = ("/test.tex", "")
+        mock_run.return_value = ("/test.tex", "/test.pdf", "/test/email.md")
 
         colloquium_cli.main(["test.pdf", "--groq-free"])
 
@@ -344,7 +344,7 @@ class TestColloquiumCLI:
         """Test CLI with no-compile flag."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_run.return_value = ("/test.tex", "")
+        mock_run.return_value = ("/test.tex", "", "/test/email.md")
 
         colloquium_cli.main(["test.pdf", "--no-compile"])
 
@@ -357,7 +357,7 @@ class TestColloquiumCLI:
         """Test CLI with custom output folder."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_run.return_value = ("/custom/test.tex", "")
+        mock_run.return_value = ("/custom/test.tex", "/custom/test.pdf", "/custom/email.md")
 
         colloquium_cli.main(["test.pdf", "--out", "/custom"])
 

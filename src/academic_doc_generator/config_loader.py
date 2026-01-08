@@ -8,7 +8,6 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Any, Optional
-import glob
 
 
 class ConfigLoader:
@@ -17,30 +16,32 @@ class ConfigLoader:
     VALID_TASKS = ["colloquium", "project", "review"]
     VALID_LOCATION_TYPES = ["campus", "company", "online"]
 
-    def __init__(self, pdf_path: str):
+    def __init__(self, folder_path: str):
         """Initialisiert den ConfigLoader.
 
         Args:
-            pdf_path: Pfad zur JSON-Konfigurationsdatei.
+            folder_path: Pfad zum Ordner, der die JSON-Konfigurationsdatei enthält.
+                        Es wird nach config*.json gesucht und die erste gefundene Datei verwendet.
 
         Raises:
-            FileNotFoundError: Wenn die Config-Datei nicht existiert.
+            FileNotFoundError: Wenn keine Config-Datei gefunden wird.
             json.JSONDecodeError: Wenn die Config-Datei kein valides JSON ist.
         """
-        self.pdf_path = Path(pdf_path)
+        self.folder_path = Path(folder_path)
 
-        # TODO: muss im aktuellen Ordner nach json Dateien suchen und die erste nehmen und solange json Dateien nehmen
-        #  bis die validate_config grünes licht gibt
-        pat = os.path.join(pdf_path, "*.json")
-        matches = glob.glob(pat)
-        print(matches)
+        if not self.folder_path.exists():
+            raise FileNotFoundError(f"Ordner nicht gefunden: {folder_path}")
 
-        json_file = "config_colloq_voss.json"
+        # Suche nach config*.json Dateien im Ordner
+        config_files = sorted(self.folder_path.glob("config*.json"))
+        
+        if not config_files:
+            raise FileNotFoundError(
+                f"Keine config*.json Datei gefunden in: {folder_path}"
+            )
 
-        json_path = Path(os.path.join(self.pdf_path, json_file))
-
-        if not json_path.exists():
-            raise FileNotFoundError(f"Config-Datei nicht gefunden: {json_path}")
+        # Nehme die erste gefundene Datei
+        json_path = config_files[0]
 
         with open(json_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
@@ -122,9 +123,8 @@ class ConfigLoader:
             Vollständiger Pfad zur PDF-Datei.
         """
         pdf_config = self.config["pdf"]
-        folder = self.pdf_path
         filename = pdf_config["filename"]
-        return os.path.join(folder, filename)
+        return os.path.join(self.folder_path, filename)
 
     def get_task(self) -> str:
         """Gibt den Task-Typ zurück.
@@ -170,20 +170,20 @@ class ConfigLoader:
         )
 
 
-def load_config(pdf_path: str) -> ConfigLoader:
+def load_config(folder_path: str) -> ConfigLoader:
     """Factory-Funktion zum Laden einer Konfiguration.
 
     Args:
-        pdf_path: Pfad zur JSON-Konfigurationsdatei.
+        folder_path: Pfad zum Ordner, der die JSON-Konfigurationsdatei enthält.
 
     Returns:
         ConfigLoader-Instanz mit geladener und validierter Konfiguration.
 
     Example:
-        >>> config = load_config("config_templates/config_colloquium_campus.json")
+        >>> config = load_config("config_templates")
         >>> print(config.get_task())
         colloquium
         >>> print(config.get_pdf_path())
-        ../BachelorThesen/2025_26_WS/Mustermann/Bachelorarbeit_Mustermann.pdf
+        config_templates/Bachelorarbeit_Mustermann.pdf
     """
-    return ConfigLoader(pdf_path)
+    return ConfigLoader(folder_path)

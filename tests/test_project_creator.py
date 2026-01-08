@@ -22,7 +22,7 @@ class TestProjectLatexGeneration:
     def test_get_current_semester_summer(self):
         """Test semester detection for summer semester (March-September)."""
         # Mock summer months
-        with patch("project_creator.latex_generation.datetime") as mock_dt:
+        with patch("academic_doc_generator.project.latex_generation.datetime") as mock_dt:
             # Test June (summer semester)
             mock_dt.now.return_value = datetime(2025, 6, 15)
             semester = latex_generation.get_current_semester()
@@ -40,7 +40,7 @@ class TestProjectLatexGeneration:
 
     def test_get_current_semester_winter(self):
         """Test semester detection for winter semester (October-February)."""
-        with patch("project_creator.latex_generation.datetime") as mock_dt:
+        with patch("academic_doc_generator.project.latex_generation.datetime") as mock_dt:
             # Test November (winter semester)
             mock_dt.now.return_value = datetime(2025, 11, 15)
             semester = latex_generation.get_current_semester()
@@ -260,7 +260,7 @@ class TestProjectLLMInterface:
         # Should return fallback
         assert result == "Herr/Frau"
 
-    @patch("project_creator.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
     def test_extract_project_metadata_success(self, mock_extract):
         """Test successful metadata extraction."""
         mock_extract.return_value = {
@@ -293,7 +293,7 @@ class TestProjectLLMInterface:
         assert result["first_examiner_family"] == "Meyer"
         assert result["work_type"] == "Praxisprojekt"
 
-    @patch("project_creator.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
     def test_extract_project_metadata_missing_fields(self, mock_extract):
         """Test metadata extraction with missing fields."""
         mock_extract.return_value = {0: "Incomplete document"}
@@ -318,7 +318,7 @@ class TestProjectLLMInterface:
         assert result["student_first_name"] is None
         assert result["matriculation_number"] is None
 
-    @patch("project_creator.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
     def test_extract_project_metadata_json_error(self, mock_extract):
         """Test handling of JSON parsing errors."""
         mock_extract.return_value = {0: "Test content"}

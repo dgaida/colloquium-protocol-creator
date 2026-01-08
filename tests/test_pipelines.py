@@ -177,9 +177,11 @@ class TestColloquiumOrchestrator:
             create_call = mock_latex.create_formal_letter_tex.call_args
             assert "Häufig fehlen Quellenangaben" in create_call.kwargs["summary"]
 
-    @patch("colloquium_pipeline.orchestrator.llm_interface")
-    @patch("colloquium_pipeline.orchestrator.latex_generation")
-    def test_run_pipeline_many_language_comments(self, mock_latex, mock_llm):
+    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
+    @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
+    def test_run_pipeline_many_language_comments(self, mock_email, mock_form, mock_latex, mock_llm):
         """Test pipeline with many language comments."""
         mock_llm.rewrite_comments_in_pdf.return_value = (
             {1: [{"rewritten": "Test"}]},
@@ -200,15 +202,24 @@ class TestColloquiumOrchestrator:
             },
         )
         mock_latex.concatenate_comments.return_value = "Test"
+        mock_form.fill_form.return_value = "/test/form.pdf"
+
+        mock_email_gen = MagicMock()
+        mock_email_gen.email_path = "/test/email.md"
+        mock_email.EmailGenerator.return_value = mock_email_gen
 
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
             colloquium_orchestrator.run_pipeline(
                 "test.pdf",
+                date_colloquium="20.01.2026",
+                uhrzeit_colloquium="14:00",
                 llm_client=mock_client,
                 output_folder=tmpdir,
                 compile_pdf=False,
+                location_type="campus",
+                room="3.217",
             )
 
             # Check that summary was modified

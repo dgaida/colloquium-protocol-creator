@@ -307,7 +307,7 @@ class TestMdGenerator:
         assert result[2][0]["page"] == 2
         assert mock_client.chat_completion.call_count == 2
 
-    @patch("review_creator.md_generator.time.sleep")
+    @patch("academic_doc_generator.review.md_generator.time.sleep")
     def test_rewrite_comments_markdown_groq_free_throttle(self, mock_sleep):
         """Test that groq_free applies throttling."""
         context_dict = {

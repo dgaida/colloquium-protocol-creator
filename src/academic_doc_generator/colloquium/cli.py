@@ -44,7 +44,7 @@ def main(argv=None):
         )
         return
 
-    tex, pdf = run_pipeline(
+    tex, pdf, email = run_pipeline(
         args.pdf,
         llm_client=llm_client,
         groq_free=args.groq_free,

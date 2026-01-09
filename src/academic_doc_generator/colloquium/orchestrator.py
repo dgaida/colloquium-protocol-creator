@@ -122,10 +122,18 @@ def run_pipeline(
     if not fill_form_only:
         # Example for stats: {"quelle": 3, "language": 7}
         if stats["quelle"] > 4:
-            summary = summary + "\\\\Häufig fehlen Quellenangaben."
+            # wenn summary endet mit \end{itemize}, dann keinen Zeilenumbruch einfügen, führt zu Fehler "no line to end"
+            if summary.strip()[-1] == "}":
+                summary = summary + "Häufig fehlen Quellenangaben."
+            else:
+                summary = summary + "\\\\Häufig fehlen Quellenangaben."
             print("Häufig fehlen Quellenangaben")
         if stats["language"] > 5:
-            summary = summary + "\\\\Viele sprachliche Fehler."
+            # wenn summary endet mit \end{itemize}, dann keinen Zeilenumbruch einfügen, führt zu Fehler "no line to end"
+            if summary.strip()[-1] == "}":
+                summary = summary + "Viele sprachliche Fehler."
+            else:
+                summary = summary + "\\\\Viele sprachliche Fehler."
             print("Viele sprachliche Fehler")
 
     print(metadata)
@@ -146,12 +154,13 @@ def run_pipeline(
         latex_generation.create_formal_letter_tex(
             filename=tex_path,
             recipient="Prüfungsausschuss der TH Köln",
-            subject=f"Bewertung {metadata.get('bachelor_master', 'Arbeit')} von {author}",
+            subject=f"Bewertung {metadata.get('bachelor_master', 'Arbeit')} von {author.title()}",
             title=metadata.get("title", ""),
-            author=f"{author}, Matr.-Nr. {matriculation}",
+            author=f"{author.title()}, Matr.-Nr. {matriculation}",
             summary=summary,
-            first_examiner=first_examiner,
-            second_examiner=second_examiner,
+            # .title() sorgt dafür, dass nur erste BUchstabe groß ist und Rest klein. falls Nachname in thesis komplett groß geschrieben sein sollte
+            first_examiner=first_examiner.title(),
+            second_examiner=second_examiner.title(),
             first_examiner_mail=first_examiner_mail,
             questions=questions,
         )

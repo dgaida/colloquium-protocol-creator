@@ -53,21 +53,24 @@ def rewrite_comments(
             category = item.get("category", "llm")
 
             # Skip ignored comments
-            if category == "ignore":
+            # skippe hier auch kommentare, die sich auf fehlende quellen oder rechtschreibung beziehen.
+            # Kategorien: "quelle", "language", da diese bereits in extract_annotations_with_positions, was vorher
+            # aufgerufen wird (s. rewrite_comments_in_pdf), abgearbeitet wurden.
+            if category != "llm":
                 continue
 
-            if category != "llm":
-                # Keep comment but don't rewrite
-                rewritten_items.append(
-                    {
-                        "original": item["comment"],
-                        "rewritten": None,
-                        "highlighted": item["highlighted"],
-                        "paragraph": item["paragraph"],
-                        "category": category,
-                    }
-                )
-                continue
+            # if category != "llm":
+            #     # Keep comment but don't rewrite
+            #     rewritten_items.append(
+            #         {
+            #             "original": item["comment"],
+            #             "rewritten": None,
+            #             "highlighted": item["highlighted"],
+            #             "paragraph": item["paragraph"],
+            #             "category": category,
+            #         }
+            #     )
+            #     continue
 
             if (
                 groq_free

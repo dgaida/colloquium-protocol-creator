@@ -20,7 +20,7 @@ A tool that transforms annotated PDFs into professional LaTeX documents using AI
 ### 1. 📝 Thesis Colloquium Protocols
 
 Generate formal protocol letters for Bachelor/Master thesis colloquiums:
-- Extract and rewrite your rough annotations into clear, polite questions
+- Extract and rewrite your rough annotations in the thesis into clear, polite questions
 - Auto-detect student metadata (name, matriculation number, thesis title)
 - Generate thesis summary from first pages
 - Create LaTeX letter with TH Köln formatting
@@ -37,8 +37,6 @@ colloquium-protocol-creator --config config_templates/config_colloquium_campus.j
 
 Generate grading letters for project work (Praxisprojekt):
 - Auto-extract project metadata from title page
-- Detect appropriate formal address (Herr/Frau) from student's first name
-- Auto-calculate current semester (WS/SoSe)
 - Create LaTeX grading letter template
 
 [**→ Full Documentation**](docs/PROJECT.md)
@@ -109,15 +107,26 @@ GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 
 #### Using JSON Configuration (Recommended)
 
+1. Copy a json template file from `config_templates` into the folder in which the thesis/paper is located.
+
 ```bash
 # List available templates
 colloquium-protocol-creator --list-templates
-
-# Use a configuration template
-colloquium-protocol-creator --config config_templates/config_colloquium_campus.json
 ```
 
-#### Python API
+2. Edit the json file.
+3. Open `main.py` from the project folder and set `folder`, e.g.: `folder = os.path.join("..", "BachelorThesen", "2025_26_WS", "Musterfrau")`
+4. Run `main.py`.
+5. All files are being created in the specified folder.
+
+Alternative to steps 3 and 4 if you want to run from cli:
+
+```bash
+# Use a configuration template
+colloquium-protocol-creator --config path_to_thesis_folder/config_colloquium_campus.json
+```
+
+#### Python API (Not Recommended - is used internally)
 
 ```python
 from llm_client import LLMClient
@@ -242,31 +251,6 @@ colloquium-protocol-creator/
 ├── main.py                        # Example: Thesis colloquium
 └── pyproject.toml                 # Package configuration
 ```
-
-## How It Works
-
-### Colloquium Protocols
-1. Extract PDF annotations with context (Docling + PyPDF)
-2. Categorize comments (LLM, Quelle, Language, Ignore)
-3. Rewrite annotations into clear questions (LLM)
-4. Extract metadata and summarize thesis
-5. Generate LaTeX letter with TH Köln formatting
-6. Generate registration email for Prüfungsservice
-7. Pre-fill official grading form
-8. Optionally compile to PDF
-
-### Project Grading Letters
-1. Extract metadata from project title page
-2. Determine formal address (Herr/Frau) from first name
-3. Auto-calculate current semester
-4. Generate LaTeX grading letter
-5. Optionally compile to PDF
-
-### Peer Review Comments
-1. Extract annotations with line numbers
-2. Rewrite informal notes into professional feedback
-3. Generate Markdown review document
-4. Include page/line references
 
 ## Example Outputs
 

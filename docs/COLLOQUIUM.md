@@ -17,8 +17,9 @@ This tool generates a formal LaTeX protocol letter for thesis colloquiums (Bache
 5. **Metadata Extraction**: Automatically extracts student name, matriculation number, thesis title, and examiner names
 6. **Thesis Summary**: Generates a concise summary from the first 10 pages
 7. **LaTeX Letter Generation**: Creates a formal `scrlttr2` letter with TH Köln footer
-8. **PDF Form Pre-filling**: Automatically fills the official grading form with dates, names, and checkboxes
-9. **PDF Compilation**: Optionally compiles the LaTeX file to PDF using LuaLaTeX
+8. **Registration Email**: Generate colloquium registration email for Prüfungsservice
+9. **PDF Form Pre-filling**: Automatically fills the official grading form with dates, names, and checkboxes
+10. **PDF Compilation**: Optionally compiles the LaTeX file to PDF using LuaLaTeX
 
 ## Requirements
 

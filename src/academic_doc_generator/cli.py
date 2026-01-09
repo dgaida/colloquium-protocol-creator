@@ -1,26 +1,24 @@
-"""Unified CLI for colloquium-protocol-creator.
+"""Unified CLI for academic-doc-generator.
 
-This CLI supports both direct arguments and JSON configuration files
+This CLI supports both JSON configuration files and direct command-line arguments
 for running colloquium, project, and review tasks.
 """
 
 import argparse
-import os.path
 import sys
 from pathlib import Path
 from llm_client import LLMClient
 from .config_loader import load_config
 
 
-def run_from_config(pdf_path: str) -> None:
+def run_from_config(config_path: str) -> None:
     """Führt einen Task basierend auf einer Config-Datei aus.
 
     Args:
-        pdf_path: Pfad zur JSON-Konfigurationsdatei.
+        config_path: Pfad zur JSON-Konfigurationsdatei.
     """
-    # Lade und validiere Konfiguration
     try:
-        config = load_config(pdf_path)
+        config = load_config(config_path)
         print(f"✓ Konfiguration geladen: {config}")
     except (FileNotFoundError, ValueError, Exception) as e:
         print(f"❌ Fehler beim Laden der Konfiguration: {e}")
@@ -41,8 +39,7 @@ def run_from_config(pdf_path: str) -> None:
     # Führe Task aus
     task = config.get_task()
     output_config = config.get_output_config()
-
-    path2pdf = config.get_pdf_path()
+    pdf_path = config.get_pdf_path()
 
     if task == "colloquium":
         from .colloquium.orchestrator import run_pipeline
@@ -50,7 +47,7 @@ def run_from_config(pdf_path: str) -> None:
         coll_config = config.get_colloquium_config()
 
         tex, pdf, email = run_pipeline(
-            pdf_path=path2pdf,
+            pdf_path=pdf_path,
             date_colloquium=coll_config["date"],
             uhrzeit_colloquium=coll_config["time"],
             llm_client=llm_client,
@@ -78,7 +75,7 @@ def run_from_config(pdf_path: str) -> None:
         from .project.orchestrator import run_project_pipeline
 
         tex, pdf = run_project_pipeline(
-            pdf_path=path2pdf,
+            pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=output_config.get("folder"),
             compile_pdf=output_config.get("compile_pdf", True),
@@ -94,7 +91,7 @@ def run_from_config(pdf_path: str) -> None:
         from .review.orchestrator import run_review_pipeline
 
         md_path = run_review_pipeline(
-            pdf_path=path2pdf,
+            pdf_path=pdf_path,
             llm_client=llm_client,
             groq_free=llm_config.get("groq_free", False),
             output_folder=output_config.get("folder")
@@ -104,13 +101,117 @@ def run_from_config(pdf_path: str) -> None:
         print(f"  • Markdown: {md_path}")
 
 
-def main():
-    """Haupt-CLI-Einstiegspunkt."""
+def run_colloquium_direct(args) -> None:
+    """Führt Colloquium-Task mit direkten CLI-Argumenten aus.
+
+    Args:
+        args: Parsed command-line arguments.
+    """
+    from .colloquium.orchestrator import run_pipeline
+
+    try:
+        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
+    except Exception as e:
+        print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
+        print("Stelle sicher, dass die API-Keys in secrets.env oder als Umgebungsvariablen gesetzt sind.")
+        sys.exit(1)
+
+    tex, pdf, email = run_pipeline(
+        pdf_path=args.pdf,
+        date_colloquium=args.date,
+        uhrzeit_colloquium=args.time,
+        llm_client=llm_client,
+        groq_free=args.groq_free,
+        output_folder=args.out,
+        compile_pdf=not args.no_compile,
+        fill_form_only=False,
+        location_type=args.location_type,
+        room=args.room,
+        company_name=args.company_name,
+        company_address=args.company_address,
+        zoom_link=args.zoom_link,
+        zoom_passcode=args.zoom_passcode
+    )
+
+    print(f"\n✓ Kolloquium-Pipeline abgeschlossen:")
+    if tex:
+        print(f"  • LaTeX: {tex}")
+    if pdf:
+        print(f"  • PDF: {pdf}")
+    if email:
+        print(f"  • E-Mail: {email}")
+
+
+def run_project_direct(args) -> None:
+    """Führt Project-Task mit direkten CLI-Argumenten aus.
+
+    Args:
+        args: Parsed command-line arguments.
+    """
+    from .project.orchestrator import run_project_pipeline
+
+    try:
+        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
+    except Exception as e:
+        print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
+        print("Stelle sicher, dass die API-Keys in secrets.env oder als Umgebungsvariablen gesetzt sind.")
+        sys.exit(1)
+
+    tex, pdf = run_project_pipeline(
+        pdf_path=args.pdf,
+        llm_client=llm_client,
+        output_folder=args.out,
+        compile_pdf=not args.no_compile,
+        signature_file=args.signature
+    )
+
+    print(f"\n✓ Projektarbeits-Pipeline abgeschlossen:")
+    print(f"  • LaTeX: {tex}")
+    if pdf:
+        print(f"  • PDF: {pdf}")
+
+
+def run_review_direct(args) -> None:
+    """Führt Review-Task mit direkten CLI-Argumenten aus.
+
+    Args:
+        args: Parsed command-line arguments.
+    """
+    from .review.orchestrator import run_review_pipeline
+
+    try:
+        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
+    except Exception as e:
+        print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
+        print("Stelle sicher, dass die API-Keys in secrets.env oder als Umgebungsvariablen gesetzt sind.")
+        sys.exit(1)
+
+    md_path = run_review_pipeline(
+        pdf_path=args.pdf,
+        llm_client=llm_client,
+        groq_free=args.groq_free,
+        output_folder=args.out
+    )
+
+    print(f"\n✓ Review-Pipeline abgeschlossen:")
+    print(f"  • Markdown: {md_path}")
+
+
+def create_parser() -> argparse.ArgumentParser:
+    """Erstellt den ArgumentParser mit allen Subcommands.
+
+    Returns:
+        Konfigurierter ArgumentParser.
+    """
     parser = argparse.ArgumentParser(
-        prog="colloquium-protocol-creator",
+        prog="academic-doc-generator",
         description="Unified tool for thesis colloquiums, project grading, and peer reviews"
     )
 
+    # Global arguments
     parser.add_argument(
         "--config",
         help="Path to JSON configuration file",
@@ -123,6 +224,75 @@ def main():
         help="List available configuration templates"
     )
 
+    # Subcommands
+    subparsers = parser.add_subparsers(dest="command", help="Task to execute")
+
+    # --- Colloquium Subcommand ---
+    colloquium_parser = subparsers.add_parser(
+        "colloquium",
+        help="Generate colloquium protocol letter"
+    )
+    colloquium_parser.add_argument("pdf", help="Path to the thesis PDF")
+    colloquium_parser.add_argument("--date", required=True, help="Colloquium date (DD.MM.YYYY)")
+    colloquium_parser.add_argument("--time", required=True, help="Colloquium time (HH:MM)")
+    colloquium_parser.add_argument(
+        "--location-type",
+        choices=["campus", "company", "online"],
+        default="campus",
+        help="Location type (default: campus)"
+    )
+    colloquium_parser.add_argument("--room", help="Room number (for campus)")
+    colloquium_parser.add_argument("--company-name", help="Company name (for company)")
+    colloquium_parser.add_argument("--company-address", help="Company address (for company)")
+    colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
+    colloquium_parser.add_argument("--zoom-passcode", help="Zoom passcode (for online)")
+    colloquium_parser.add_argument(
+        "--api",
+        choices=["openai", "groq", "gemini", "ollama"],
+        help="LLM API to use (auto-detected if omitted)"
+    )
+    colloquium_parser.add_argument("--model", help="LLM model to use")
+    colloquium_parser.add_argument("--groq-free", action="store_true", help="Use free-tier pacing")
+    colloquium_parser.add_argument("--out", help="Output folder")
+    colloquium_parser.add_argument("--no-compile", action="store_true", help="Do not compile .tex to PDF")
+
+    # --- Project Subcommand ---
+    project_parser = subparsers.add_parser(
+        "project",
+        help="Generate project work grading letter"
+    )
+    project_parser.add_argument("pdf", help="Path to the project work PDF")
+    project_parser.add_argument(
+        "--api",
+        choices=["openai", "groq", "gemini", "ollama"],
+        help="LLM API to use (auto-detected if omitted)"
+    )
+    project_parser.add_argument("--model", help="LLM model to use")
+    project_parser.add_argument("--out", help="Output folder")
+    project_parser.add_argument("--no-compile", action="store_true", help="Do not compile .tex to PDF")
+    project_parser.add_argument("--signature", default="signature.png", help="Path to signature image")
+
+    # --- Review Subcommand ---
+    review_parser = subparsers.add_parser(
+        "review",
+        help="Generate peer review comments"
+    )
+    review_parser.add_argument("pdf", help="Path to the paper PDF")
+    review_parser.add_argument(
+        "--api",
+        choices=["openai", "groq", "gemini", "ollama"],
+        help="LLM API to use (auto-detected if omitted)"
+    )
+    review_parser.add_argument("--model", help="LLM model to use")
+    review_parser.add_argument("--groq-free", action="store_true", help="Use free-tier pacing")
+    review_parser.add_argument("--out", help="Output folder")
+
+    return parser
+
+
+def main():
+    """Haupt-CLI-Einstiegspunkt."""
+    parser = create_parser()
     args = parser.parse_args()
 
     # Liste verfügbare Templates
@@ -141,7 +311,7 @@ def main():
         for tmpl in templates:
             print(f"  • {tmpl.name}")
         print("\nVerwendung:")
-        print("  colloquium-protocol-creator --config config_templates/config_colloquium_campus.json")
+        print("  academic-doc-generator --config config_templates/config_colloquium_campus.json")
         return
 
     # Config-Modus
@@ -149,9 +319,44 @@ def main():
         run_from_config(args.config)
         return
 
-    # Kein Config-Argument → Hilfe anzeigen
-    parser.print_help()
-    print("\n💡 Tipp: Verwenden Sie --list-templates um verfügbare Config-Templates zu sehen")
+    # Subcommand-Modus
+    if args.command == "colloquium":
+        run_colloquium_direct(args)
+    elif args.command == "project":
+        run_project_direct(args)
+    elif args.command == "review":
+        run_review_direct(args)
+    else:
+        # Kein Subcommand → Hilfe anzeigen
+        parser.print_help()
+        print("\n💡 Tipp:")
+        print("  • Verwenden Sie --list-templates für verfügbare Config-Templates")
+        print("  • Verwenden Sie ein Subcommand (colloquium, project, review) für direkte Ausführung")
+        print("\nBeispiele:")
+        print("  academic-doc-generator --config config.json")
+        print("  academic-doc-generator colloquium thesis.pdf --date 20.01.2026 --time 14:00 --room 3.217")
+        print("  academic-doc-generator project project.pdf")
+        print("  academic-doc-generator review paper.pdf")
+
+
+def colloquium_main():
+    """Entry point für colloquium-protocol-creator command.
+
+    Dieser Entry Point ermöglicht die Verwendung des alten Command-Namens
+    mit der neuen konsolidierten CLI-Struktur.
+    """
+    sys.argv = ["academic-doc-generator", "colloquium"] + sys.argv[1:]
+    main()
+
+
+def project_main():
+    """Entry point für project-grading-letter command.
+
+    Dieser Entry Point ermöglicht die Verwendung des alten Command-Namens
+    mit der neuen konsolidierten CLI-Struktur.
+    """
+    sys.argv = ["academic-doc-generator", "project"] + sys.argv[1:]
+    main()
 
 
 if __name__ == "__main__":

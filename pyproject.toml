@@ -20,9 +20,9 @@ dependencies = [
 ]
 
 [project.scripts]
-academic_doc_generator = "academic_doc_generator.cli:main"
-colloquium-protocol-creator = "academic_doc_generator.colloquium.cli:main"
-project-grading-letter = "academic_doc_generator.project.cli:main"
+academic-doc-generator = "academic_doc_generator.cli:main"
+colloquium-protocol-creator = "academic_doc_generator.cli:colloquium_main"
+project-grading-letter = "academic_doc_generator.cli:project_main"
 
 [project.optional-dependencies]
 dev = [

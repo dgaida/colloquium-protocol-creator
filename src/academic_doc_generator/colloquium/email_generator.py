@@ -12,8 +12,24 @@ def weekday_from_string(date_str, lang="de"):
     weekday_idx = date.weekday()  # Montag = 0
 
     weekdays = {
-        "de": ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"],
-        "en": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "de": [
+            "Montag",
+            "Dienstag",
+            "Mittwoch",
+            "Donnerstag",
+            "Freitag",
+            "Samstag",
+            "Sonntag",
+        ],
+        "en": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ],
     }
 
     if lang not in weekdays:
@@ -25,27 +41,25 @@ def weekday_from_string(date_str, lang="de"):
 class EmailGenerator:
 
     def __init__(self):
-        """
-
-        """
+        """ """
         self.email_path = None
         self.email_text = None
 
     def generate_and_save_email(
-            self,
-            llm_client,
-            output_folder: str,
-            author: str,
-            matriculation: str,
-            date_colloquium: str,
-            uhrzeit_colloquium: str,
-            first_examiner: str,
-            location_type: str = "campus",
-            room: Optional[str] = None,
-            company_name: Optional[str] = None,
-            company_address: Optional[str] = None,
-            zoom_link: Optional[str] = None,
-            zoom_passcode: Optional[str] = None
+        self,
+        llm_client,
+        output_folder: str,
+        author: str,
+        matriculation: str,
+        date_colloquium: str,
+        uhrzeit_colloquium: str,
+        first_examiner: str,
+        location_type: str = "campus",
+        room: Optional[str] = None,
+        company_name: Optional[str] = None,
+        company_address: Optional[str] = None,
+        zoom_link: Optional[str] = None,
+        zoom_passcode: Optional[str] = None,
     ):
         print("START WRITING MAIL")
 
@@ -55,8 +69,8 @@ class EmailGenerator:
 
         # Extrahiere Vornamen und Nachnamen aus name_student
         # Format: "Nachname, Vorname" oder "Vorname Nachname"
-        if ',' in author:
-            student_last_name, student_first_name = author.split(',', 1)
+        if "," in author:
+            student_last_name, student_first_name = author.split(",", 1)
             student_last_name = student_last_name.strip()
             student_first_name = student_first_name.strip()
         else:
@@ -77,12 +91,13 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_passcode=zoom_passcode)
+            zoom_passcode=zoom_passcode,
+        )
 
         self.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
-            matriculation_number=matriculation
+            matriculation_number=matriculation,
         )
 
     def _generate_location_text(
@@ -92,7 +107,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None
+        zoom_passcode: Optional[str] = None,
     ) -> Optional[str]:
         """Generiert den Ortszusatz für die E-Mail und den Ort für das PDF-Formular.
 
@@ -152,7 +167,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None
+        zoom_passcode: Optional[str] = None,
     ) -> None:
         """Generiert den Text für die Kolloquiums-Anmelde-E-Mail.
 
@@ -182,7 +197,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_passcode=zoom_passcode
+            zoom_passcode=zoom_passcode,
         )
 
         self.email_text = f"""Lieber Prüfungsservice,
@@ -194,10 +209,7 @@ Viele Grüße,
 {first_examiner.title()}"""
 
     def save_email_to_markdown(
-        self,
-        output_folder: str,
-        student_last_name: str,
-        matriculation_number: str
+        self, output_folder: str, student_last_name: str, matriculation_number: str
     ) -> str:
         """Speichert den E-Mail-Text in einer Markdown-Datei.
 
@@ -216,7 +228,7 @@ Viele Grüße,
         filename = f"kolloquium_anmeldung_{student_last_name}_{matriculation_number}.md"
         self.email_path = output_path / filename
 
-        with open(self.email_path, 'w', encoding='utf-8') as f:
+        with open(self.email_path, "w", encoding="utf-8") as f:
             f.write(self.email_text)
 
         print(f"E-Mail-Text gespeichert: {self.email_path}")

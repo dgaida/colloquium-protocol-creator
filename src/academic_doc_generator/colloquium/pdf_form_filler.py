@@ -29,7 +29,7 @@ class PDFFormHandler:
 
     def __del__(self):
         """Schließt das PDF-Dokument beim Löschen des Objekts."""
-        if hasattr(self, 'doc'):
+        if hasattr(self, "doc"):
             self.doc.close()
 
     def has_form_fields(self) -> bool:
@@ -63,15 +63,15 @@ class PDFFormHandler:
                     pymupdf.PDF_WIDGET_TYPE_LISTBOX: "Listbox",
                     pymupdf.PDF_WIDGET_TYPE_COMBOBOX: "Combobox",
                     pymupdf.PDF_WIDGET_TYPE_SIGNATURE: "Signature",
-                    pymupdf.PDF_WIDGET_TYPE_BUTTON: "Button"
+                    pymupdf.PDF_WIDGET_TYPE_BUTTON: "Button",
                 }
 
                 field_data = {
-                    'name': widget.field_name,
-                    'type': field_type_map.get(widget.field_type, "Unknown"),
-                    'type_code': widget.field_type,
-                    'value': widget.field_value,
-                    'page': page_num,
+                    "name": widget.field_name,
+                    "type": field_type_map.get(widget.field_type, "Unknown"),
+                    "type_code": widget.field_type,
+                    "value": widget.field_value,
+                    "page": page_num,
                 }
                 field_list.append(field_data)
 
@@ -95,9 +95,9 @@ class PDFFormHandler:
         other_fields = []
 
         for field in fields:
-            if field['type'] == 'Text':
+            if field["type"] == "Text":
                 text_fields.append(field)
-            elif field['type'] == 'Checkbox':
+            elif field["type"] == "Checkbox":
                 checkbox_fields.append(field)
             else:
                 other_fields.append(field)
@@ -105,25 +105,28 @@ class PDFFormHandler:
         if text_fields:
             print("📝 Textfelder:")
             for field in text_fields:
-                value_str = f" (aktuell: '{field['value']}')" if field['value'] else ""
+                value_str = f" (aktuell: '{field['value']}')" if field["value"] else ""
                 print(f"   • '{field['name']}' [Seite {field['page']}]{value_str}")
             print()
 
         if checkbox_fields:
             print("☑️  Checkboxen:")
             for field in checkbox_fields:
-                checked = "✓" if field['value'] else "○"
+                checked = "✓" if field["value"] else "○"
                 print(f"   {checked} '{field['name']}' [Seite {field['page']}]")
             print()
 
         if other_fields:
             print("🔧 Andere Felder:")
             for field in other_fields:
-                print(f"   • '{field['name']}' ({field['type']}) [Seite {field['page']}]")
+                print(
+                    f"   • '{field['name']}' ({field['type']}) [Seite {field['page']}]"
+                )
             print()
 
-    def fill_form(self, field_data: Dict[str, any], output_path: str,
-                  flatten: bool = False) -> bool:
+    def fill_form(
+        self, field_data: Dict[str, any], output_path: str, flatten: bool = False
+    ) -> bool:
         """
         Füllt das PDF-Formular mit den angegebenen Daten aus.
 
@@ -180,11 +183,15 @@ class PDFFormHandler:
                                 filled_count += 1
 
                         except Exception as e:
-                            print(f"⚠️  Warnung: Feld '{field_name}' konnte nicht gesetzt werden: {e}")
+                            print(
+                                f"⚠️  Warnung: Feld '{field_name}' konnte nicht gesetzt werden: {e}"
+                            )
 
             # Prüfe, welche Felder nicht gefunden wurden
-            all_field_names = {field['name'] for field in self.list_form_fields()}
-            not_found = [name for name in field_data.keys() if name not in all_field_names]
+            all_field_names = {field["name"] for field in self.list_form_fields()}
+            not_found = [
+                name for name in field_data.keys() if name not in all_field_names
+            ]
 
             if not_found:
                 print(f"\n⚠️  {len(not_found)} Feld(er) nicht im PDF gefunden:")
@@ -196,7 +203,9 @@ class PDFFormHandler:
                 for page in self.doc:
                     page.annots()  # Erzwingt Rendering
                 self.doc.save(output_path, deflate=True, garbage=3)
-                print(f"\n✅ PDF gespeichert und geflattent (nicht mehr editierbar): {output_path}")
+                print(
+                    f"\n✅ PDF gespeichert und geflattent (nicht mehr editierbar): {output_path}"
+                )
             else:
                 self.doc.save(output_path, garbage=3, deflate=True)
                 print(f"\n✅ PDF erfolgreich ausgefüllt: {output_path}")
@@ -207,6 +216,7 @@ class PDFFormHandler:
         except Exception as e:
             print(f"❌ Fehler beim Ausfüllen: {e}")
             import traceback
+
             traceback.print_exc()
             return False
 
@@ -226,12 +236,12 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
 
 
 def fill_form(
-        data: Dict[str, any],
-        output_folder: str,
-        degree: str,
-        location_type: str = "campus",
-        room: str = None,
-        company_name: str = None,
+    data: Dict[str, any],
+    output_folder: str,
+    degree: str,
+    location_type: str = "campus",
+    room: str = None,
+    company_name: str = None,
 ) -> Optional[str]:
     """Füllt das PDF-Formular aus und generiert die Anmelde-E-Mail.
 
@@ -249,9 +259,13 @@ def fill_form(
     print("START FILL Form")
 
     if degree == "Master":
-        pdf_path = os.path.join("data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf")
+        pdf_path = os.path.join(
+            "data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf"
+        )
     elif degree == "Bachelor":
-        pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
+        pdf_path = os.path.join(
+            "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf"
+        )
     else:
         print(f"Error: Unknown degree: {degree}")
         return None
@@ -267,9 +281,7 @@ def fill_form(
     # Generiere Ort-Text für PDF und E-Mail
     try:
         pdf_location = generate_location_text(
-            location_type=location_type,
-            room=room,
-            company_name=company_name
+            location_type=location_type, room=room, company_name=company_name
         )
     except ValueError as e:
         print(f"❌ Fehler bei der Orts-Generierung: {e}")
@@ -281,8 +293,7 @@ def fill_form(
 
     # Speichere ausgefülltes PDF
     pdf_output_path = os.path.join(
-        output_folder,
-        f"Bewertung {degree}arbeit_Kolloq Inf_{data['name_student']}.pdf"
+        output_folder, f"Bewertung {degree}arbeit_Kolloq Inf_{data['name_student']}.pdf"
     )
     handler.fill_form(data, pdf_output_path, flatten=False)
 
@@ -296,9 +307,7 @@ def add_minutes(time_str: str, minutes: int) -> str:
 
 
 def generate_location_text(
-        location_type: str,
-        room: Optional[str] = None,
-        company_name: Optional[str] = None
+    location_type: str, room: Optional[str] = None, company_name: Optional[str] = None
 ) -> str:
     """Generiert den Ort für das PDF-Formular.
 
@@ -332,7 +341,9 @@ def generate_location_text(
 def main():
     """Beispiel-Verwendung des PDF Form Handlers."""
     # Pfad zur PDF-Datei
-    pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
+    pdf_path = os.path.join(
+        "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf"
+    )
 
     # Prüfe ob Datei existiert
     if not Path(pdf_path).exists():
@@ -364,7 +375,9 @@ def main():
 
         # Berechnungen
         gesamtnote_ba = berechne_gesamtnote(note_ba_erstpruefer, note_ba_zweitpruefer)
-        gesamtnote_kolloq = berechne_gesamtnote(note_kolloq_erstpruefer, note_kolloq_zweitpruefer)
+        gesamtnote_kolloq = berechne_gesamtnote(
+            note_kolloq_erstpruefer, note_kolloq_zweitpruefer
+        )
         gesamtnote_gesamt = berechne_gesamtnote(gesamtnote_ba, gesamtnote_kolloq)
 
         # Beispieldaten basierend auf den tatsächlichen Feldnamen
@@ -372,46 +385,38 @@ def main():
             # Studierenden-Daten
             "name_student": "Mustermann, Max",
             "MatrNr": "123456",
-
             # Bachelorarbeit - Erstprüfer
             "Note_schrift_Erstpruefer": str(note_ba_erstpruefer),
             "Datum_schrift_Erstpruefer": "15.12.2025",
             "Unterschrift 1 Prüferin": "Prof. Dr. Müller",
             "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
-
             # Bachelorarbeit - Zweitprüfer
             "Note_schrift_Zweitpruefer": str(note_ba_zweitpruefer),
             "Datum_schrift_Zweitpruefer": "16.12.2025",
             "Unterschrift 2 Prüferin": "Prof. Dr. Schmidt",
             "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
-
             # Gesamtnote Bachelorarbeit
             "Gesamtnote_schrift": str(gesamtnote_ba),
-
             # Kolloquium - Details
             "Datum der Prüfung": "05.01.2026",
             "Ort": "Raum A123 / Online",
             "Startzeit": "10:00",
             "Endzeit": "10:45",
             "Pruefungsfragen_Protokoll": True,  # Checkbox
-
             # Kolloquium - Erstprüfer
             "Note_kolloq_Erstpruefer": str(note_kolloq_erstpruefer),
             "Datum_kolloq_Erstpruefer": "05.01.2026",
             "Unterschrift 1 Prüferin_2": "Prof. Dr. Müller",
             "Kolloq_Begruendung": True,
-
             # Kolloquium - Zweitprüfer
             "Note_kolloq_Zweit": str(note_kolloq_zweitpruefer),
             "Datum_kolloq_Zweitpruefer": "05.01.2026",
             "Unterschrift 2 Prüferin_2": "Prof. Dr. Schmidt",
             "Kolloq_Anschluss_Begruendung": True,
-
             # Gesamtnote (Bachelorarbeit + Kolloquium)
             "Gesamtnote_alles": str(gesamtnote_gesamt),
-
             # Optional: Prüfungsfragen
-            "Prüfungsfragen": "1. Erläutern Sie die Hauptergebnisse Ihrer Arbeit.\n2. Diskutieren Sie die verwendete Methodik."
+            "Prüfungsfragen": "1. Erläutern Sie die Hauptergebnisse Ihrer Arbeit.\n2. Diskutieren Sie die verwendete Methodik.",
         }
 
         print(f"📊 Berechnete Noten:")
@@ -438,7 +443,9 @@ def main():
         print("Empfehlungen:")
         print("1. Bitte die Formularersteller, das PDF mit Adobe Acrobat")
         print("   oder einem ähnlichen Tool neu zu erstellen")
-        print("2. Alle ausfüllbaren Bereiche sollten als 'Text Fields' definiert werden")
+        print(
+            "2. Alle ausfüllbaren Bereiche sollten als 'Text Fields' definiert werden"
+        )
         print("3. Jedes Feld sollte einen eindeutigen Namen haben")
         print("4. Checkboxen für Ankreuzfelder verwenden")
 

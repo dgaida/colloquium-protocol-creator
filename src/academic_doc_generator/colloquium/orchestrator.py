@@ -23,7 +23,7 @@ def run_pipeline(
     company_name: Optional[str] = None,
     company_address: Optional[str] = None,
     zoom_link: Optional[str] = None,
-    zoom_passcode: Optional[str] = None
+    zoom_passcode: Optional[str] = None,
 ) -> Tuple[str, str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
@@ -179,32 +179,33 @@ def run_pipeline(
         # Studierenden-Daten
         "name_student": author,
         "MatrNr": matriculation,
-
         # Bachelorarbeit - Erstprüfer
         "Datum_schrift_Erstpruefer": date_colloquium,
         "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
-
         # Bachelorarbeit - Zweitprüfer
         "Datum_schrift_Zweitpruefer": date_colloquium,
         "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
-
         # Kolloquium - Details
         "Datum der Prüfung": date_colloquium,
         "Startzeit": uhrzeit_colloquium,
         "Pruefungsfragen_Protokoll": True,  # Checkbox
-
         # Kolloquium - Erstprüfer
         "Datum_kolloq_Erstpruefer": date_colloquium,
         "Kolloq_Begruendung": True,
-
         # Kolloquium - Zweitprüfer
         "Datum_kolloq_Zweitpruefer": date_colloquium,
         "Kolloq_Anschluss_Begruendung": True,
     }
 
     # fülle PDF Formular aus
-    pdf_form_filler.fill_form(daten, output_folder, metadata.get("bachelor_master", "Unknown"),
-                              location_type=location_type, room=room, company_name=company_name)
+    pdf_form_filler.fill_form(
+        daten,
+        output_folder,
+        metadata.get("bachelor_master", "Unknown"),
+        location_type=location_type,
+        room=room,
+        company_name=company_name,
+    )
 
     #
 
@@ -222,7 +223,7 @@ def run_pipeline(
         company_name=company_name,
         company_address=company_address,
         zoom_link=zoom_link,
-        zoom_passcode=zoom_passcode
+        zoom_passcode=zoom_passcode,
     )
     email_path = mymailgen.email_path
 

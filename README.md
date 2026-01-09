@@ -225,13 +225,11 @@ colloquium-protocol-creator/
 │       ├── colloquium/             # Colloquium protocols
 │       │   ├── orchestrator.py
 │       │   ├── email_generator.py
-│       │   ├── pdf_form_filler.py
-│       │   └── cli.py
+│       │   └── pdf_form_filler.py
 │       ├── project/                # Project work grading letters
 │       │   ├── orchestrator.py
 │       │   ├── latex_generation.py
-│       │   ├── llm_interface.py
-│       │   └── cli.py
+│       │   └── llm_interface.py
 │       ├── review/                 # Peer review comments
 │       │   ├── orchestrator.py
 │       │   ├── md_generator.py
@@ -326,13 +324,7 @@ Entwicklung einer Mobile App für...
 
 ## Contributing
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass: `pytest`
-5. Format code: `black .` and `ruff check .`
-6. Submit a pull request
+See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Related Projects
 

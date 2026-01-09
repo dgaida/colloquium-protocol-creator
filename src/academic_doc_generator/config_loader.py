@@ -34,7 +34,7 @@ class ConfigLoader:
 
         # Suche nach config*.json Dateien im Ordner
         config_files = sorted(self.folder_path.glob("config*.json"))
-        
+
         if not config_files:
             raise FileNotFoundError(
                 f"Keine config*.json Datei gefunden in: {folder_path}"
@@ -57,9 +57,7 @@ class ConfigLoader:
         # Task validieren
         task = self.config.get("task")
         if task not in self.VALID_TASKS:
-            raise ValueError(
-                f"Ungültiger Task: {task}. Erlaubt: {self.VALID_TASKS}"
-            )
+            raise ValueError(f"Ungültiger Task: {task}. Erlaubt: {self.VALID_TASKS}")
 
         # PDF-Pfad validieren
         if "pdf" not in self.config:
@@ -164,10 +162,7 @@ class ConfigLoader:
         Returns:
             Beschreibung der geladenen Konfiguration.
         """
-        return (
-            f"ConfigLoader(task={self.get_task()}, "
-            f"pdf={self.get_pdf_path()})"
-        )
+        return f"ConfigLoader(task={self.get_task()}, " f"pdf={self.get_pdf_path()})"
 
 
 def load_config(folder_path: str) -> ConfigLoader:

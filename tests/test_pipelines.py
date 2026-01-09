@@ -6,9 +6,7 @@ import pytest
 import tempfile
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.colloquium import orchestrator as colloquium_orchestrator
-from academic_doc_generator.colloquium import cli as colloquium_cli
 from academic_doc_generator.project import orchestrator as project_orchestrator
-from academic_doc_generator.project import cli as project_cli
 from academic_doc_generator.review import orchestrator as review_orchestrator
 
 

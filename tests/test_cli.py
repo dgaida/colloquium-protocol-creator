@@ -4,10 +4,8 @@ Unit tests for src/academic_doc_generator/cli.py
 
 import pytest
 import sys
-import json
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 from io import StringIO
 
 from academic_doc_generator import cli

@@ -63,7 +63,7 @@ def run_from_config(config_path: str) -> None:
             zoom_passcode=coll_config.get("zoom_passcode"),
         )
 
-        print(f"\n✓ Kolloquium-Pipeline abgeschlossen:")
+        print("\n✓ Kolloquium-Pipeline abgeschlossen:")
         if tex:
             print(f"  • LaTeX: {tex}")
         if pdf:
@@ -80,7 +80,7 @@ def run_from_config(config_path: str) -> None:
             signature_file=output_config.get("signature_file", "signature.png"),
         )
 
-        print(f"\n✓ Projektarbeits-Pipeline abgeschlossen:")
+        print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
         print(f"  • LaTeX: {tex}")
         if pdf:
             print(f"  • PDF: {pdf}")
@@ -93,7 +93,7 @@ def run_from_config(config_path: str) -> None:
             output_folder=output_config.get("folder"),
         )
 
-        print(f"\n✓ Review-Pipeline abgeschlossen:")
+        print("\n✓ Review-Pipeline abgeschlossen:")
         print(f"  • Markdown: {md_path}")
 
 
@@ -130,7 +130,7 @@ def run_colloquium_direct(args) -> None:
         zoom_passcode=args.zoom_passcode,
     )
 
-    print(f"\n✓ Kolloquium-Pipeline abgeschlossen:")
+    print("\n✓ Kolloquium-Pipeline abgeschlossen:")
     if tex:
         print(f"  • LaTeX: {tex}")
     if pdf:
@@ -163,7 +163,7 @@ def run_project_direct(args) -> None:
         signature_file=args.signature,
     )
 
-    print(f"\n✓ Projektarbeits-Pipeline abgeschlossen:")
+    print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
     print(f"  • LaTeX: {tex}")
     if pdf:
         print(f"  • PDF: {pdf}")
@@ -192,7 +192,7 @@ def run_review_direct(args) -> None:
         output_folder=args.out,
     )
 
-    print(f"\n✓ Review-Pipeline abgeschlossen:")
+    print("\n✓ Review-Pipeline abgeschlossen:")
     print(f"  • Markdown: {md_path}")
 
 

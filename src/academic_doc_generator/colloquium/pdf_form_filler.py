@@ -419,7 +419,7 @@ def main():
             "Prüfungsfragen": "1. Erläutern Sie die Hauptergebnisse Ihrer Arbeit.\n2. Diskutieren Sie die verwendete Methodik.",
         }
 
-        print(f"📊 Berechnete Noten:")
+        print("📊 Berechnete Noten:")
         print(f"   • Bachelorarbeit: {gesamtnote_ba}")
         print(f"   • Kolloquium: {gesamtnote_kolloq}")
         print(f"   • Gesamt: {gesamtnote_gesamt}\n")

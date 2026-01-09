@@ -9,6 +9,9 @@ import sys
 from pathlib import Path
 from llm_client import LLMClient
 from .config_loader import load_config
+from .colloquium.orchestrator import run_pipeline
+from .project.orchestrator import run_project_pipeline
+from .review.orchestrator import run_review_pipeline
 
 
 def run_from_config(config_path: str) -> None:
@@ -42,8 +45,6 @@ def run_from_config(config_path: str) -> None:
     pdf_path = config.get_pdf_path()
 
     if task == "colloquium":
-        from .colloquium.orchestrator import run_pipeline
-
         coll_config = config.get_colloquium_config()
 
         tex, pdf, email = run_pipeline(
@@ -72,8 +73,6 @@ def run_from_config(config_path: str) -> None:
             print(f"  • E-Mail: {email}")
 
     elif task == "project":
-        from .project.orchestrator import run_project_pipeline
-
         tex, pdf = run_project_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
@@ -88,8 +87,6 @@ def run_from_config(config_path: str) -> None:
             print(f"  • PDF: {pdf}")
 
     elif task == "review":
-        from .review.orchestrator import run_review_pipeline
-
         md_path = run_review_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
@@ -107,8 +104,6 @@ def run_colloquium_direct(args) -> None:
     Args:
         args: Parsed command-line arguments.
     """
-    from .colloquium.orchestrator import run_pipeline
-
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
@@ -149,8 +144,6 @@ def run_project_direct(args) -> None:
     Args:
         args: Parsed command-line arguments.
     """
-    from .project.orchestrator import run_project_pipeline
-
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
@@ -179,8 +172,6 @@ def run_review_direct(args) -> None:
     Args:
         args: Parsed command-line arguments.
     """
-    from .review.orchestrator import run_review_pipeline
-
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")

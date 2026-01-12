@@ -6,7 +6,12 @@ import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock
-from academic_doc_generator.core import pdf_processing, llm_interface, latex_generation, utils
+from academic_doc_generator.core import (
+    pdf_processing,
+    llm_interface,
+    latex_generation,
+    utils,
+)
 
 
 # ============================================================================

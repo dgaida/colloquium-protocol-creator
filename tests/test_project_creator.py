@@ -22,7 +22,9 @@ class TestProjectLatexGeneration:
     def test_get_current_semester_summer(self):
         """Test semester detection for summer semester (March-September)."""
         # Mock summer months
-        with patch("academic_doc_generator.project.latex_generation.datetime") as mock_dt:
+        with patch(
+            "academic_doc_generator.project.latex_generation.datetime"
+        ) as mock_dt:
             # Test June (summer semester)
             mock_dt.now.return_value = datetime(2025, 6, 15)
             semester = latex_generation.get_current_semester()
@@ -40,7 +42,9 @@ class TestProjectLatexGeneration:
 
     def test_get_current_semester_winter(self):
         """Test semester detection for winter semester (October-February)."""
-        with patch("academic_doc_generator.project.latex_generation.datetime") as mock_dt:
+        with patch(
+            "academic_doc_generator.project.latex_generation.datetime"
+        ) as mock_dt:
             # Test November (winter semester)
             mock_dt.now.return_value = datetime(2025, 11, 15)
             semester = latex_generation.get_current_semester()

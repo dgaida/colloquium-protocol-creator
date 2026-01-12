@@ -34,7 +34,9 @@ class TestLLMInterfaceAdditional:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten"
 
-        with patch("academic_doc_generator.core.llm_interface.time.sleep") as mock_sleep:
+        with patch(
+            "academic_doc_generator.core.llm_interface.time.sleep"
+        ) as mock_sleep:
             llm_interface.rewrite_comments(
                 context_dict, mock_client, groq_free=True, verbose=False
             )
@@ -68,7 +70,9 @@ class TestLLMInterfaceAdditional:
 
         assert 1 in result
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_extract_document_metadata_german(self, mock_extract):
         """Test metadata extraction for German thesis."""
         mock_extract.return_value = {
@@ -97,7 +101,9 @@ class TestLLMInterfaceAdditional:
         assert result["author"] == "Max Mustermann"
         assert result["bachelor_master"] == "Bachelor"
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_extract_document_metadata_english(self, mock_extract):
         """Test metadata extraction for English thesis."""
         mock_extract.return_value = {0: "Master Thesis by John Doe"}
@@ -122,7 +128,9 @@ class TestLLMInterfaceAdditional:
 
         assert result["bachelor_master"] == "Master"
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_summarize_thesis_german(self, mock_extract):
         """Test thesis summarization in German."""
         mock_extract.return_value = {
@@ -142,7 +150,9 @@ class TestLLMInterfaceAdditional:
         assert "untersucht" in result
         assert "\\\\" in result  # LaTeX line breaks
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_summarize_thesis_english(self, mock_extract):
         """Test thesis summarization in English."""
         mock_extract.return_value = {0: "This thesis addresses topic X"}
@@ -230,7 +240,9 @@ class TestLLMInterfaceAdditional:
         assert stats["language"] == 2
 
     @patch("academic_doc_generator.core.llm_interface.LLMClient")
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_get_summary_and_metadata_auto_client(
         self, mock_extract, mock_client_class
     ):
@@ -252,7 +264,9 @@ class TestLLMInterfaceAdditional:
 
         mock_client_class.assert_called_once()
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     @patch("academic_doc_generator.core.llm_interface.time.sleep")
     def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract):
         """Test get_summary_and_metadata with groq_free throttling."""
@@ -274,7 +288,9 @@ class TestLLMInterfaceAdditional:
         assert 20 in sleep_calls
         assert 2 in sleep_calls
 
-    @patch("academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page")
+    @patch(
+        "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
+    )
     def test_get_summary_and_metadata_verbose(self, mock_extract):
         """Test get_summary_and_metadata with verbose output."""
         mock_extract.return_value = {0: "Test"}

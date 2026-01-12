@@ -1,4 +1,4 @@
-# Colloquium Protocol Creator
+# Academic Document Generator
 
 **Create LaTeX protocol letters and grading documents for academic work at TH Köln**
 

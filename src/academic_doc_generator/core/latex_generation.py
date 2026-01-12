@@ -128,7 +128,7 @@ def create_formal_letter_tex(
 \\setkomavar{{fromemail}}{{{first_examiner_mail}}}
 \\setkomavar{{place}}{{{place}}}
 \\setkomavar{{date}}{{{date}}}
-\\setkomavar{{signature}}{{{first_examiner}a}}
+\\setkomavar{{signature}}{{{first_examiner}}}
 \\setkomavar{{subject}}{{{escape_for_latex(subject, preserve_latex=False)}}}
 
 % Footer

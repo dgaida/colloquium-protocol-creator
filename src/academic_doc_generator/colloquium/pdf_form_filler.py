@@ -260,11 +260,11 @@ def fill_form(
 
     if degree == "Master":
         pdf_path = os.path.join(
-            "data", "Bewertung Masterarbeit_Kolloquium DSS_DSC_form.pdf"
+            "data", "Bewertung Masterarbeit_Kolloquium DSS_Formular.pdf"
         )
     elif degree == "Bachelor":
         pdf_path = os.path.join(
-            "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf"
+            "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_Formular.pdf"
         )
     else:
         print(f"Error: Unknown degree: {degree}")

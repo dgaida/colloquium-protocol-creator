@@ -1,7 +1,7 @@
 # colloquium_creator/latex_generation.py
 """LaTeX generation and helper functions."""
 
-from typing import Dict
+from typing import Dict, Optional
 import os
 import subprocess
 import unicodedata
@@ -92,6 +92,7 @@ def create_formal_letter_tex(
     questions: str,
     place: str = "Gummersbach",
     date: str = r"\today",
+    gemini_evaluation: Optional[str] = None,
 ):
     """Create a LaTeX file for a formal letter with TH Köln footer.
 
@@ -108,10 +109,13 @@ def create_formal_letter_tex(
         questions (str): questions from first examiner.
         place (str, optional): Place of issue. Defaults to "Gummersbach".
         date (str, optional): Date string. Defaults to LaTeX \\today.
+        gemini_evaluation (str, optional): Automatische Bewertung von Gemini.
     """
-    # TODO: phone number is still mine, but is not used anyway
-    # \\usepackage[utf8]{{inputenc}}
-    # \\usepackage[T1]{{fontenc}}
+    # Füge Gemini-Bewertung hinzu, falls vorhanden
+    gemini_section = ""
+    if gemini_evaluation:
+        gemini_section = f"\n\n{gemini_evaluation}\n"
+    
     tex_template = f"""
 \\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}
@@ -271,7 +275,7 @@ Fragen konnten beantwortet werden:
 .\\\\[2ex]
 
 Dauer des Kolloquiums: 45 Minuten
-\n
+{gemini_section}
 
 \\closing{{Mit freundlichen Grü{{\\ss}}en}}
 

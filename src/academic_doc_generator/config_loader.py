@@ -156,6 +156,20 @@ class ConfigLoader:
         """
         return self.config.get("colloquium")
 
+    def get_gemini_evaluation_config(self) -> Dict[str, Any]:
+        """Gibt die Gemini-Evaluations-Konfiguration zurück.
+
+        Returns:
+            Dictionary mit Gemini-Evaluations-Einstellungen:
+            - enabled: bool (default False)
+            - model: str (default "gemini-2.0-flash-exp")
+        """
+        default_config = {
+            "enabled": False,
+            "model": "gemini-2.0-flash-exp"
+        }
+        return self.config.get("gemini_evaluation", default_config)
+
     def __repr__(self) -> str:
         """String-Repräsentation des ConfigLoaders.
 

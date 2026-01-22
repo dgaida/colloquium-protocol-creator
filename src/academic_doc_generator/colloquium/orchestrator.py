@@ -7,23 +7,26 @@ from llm_client import LLMClient
 from ..core import llm_interface, latex_generation
 from . import pdf_form_filler
 from . import email_generator
+from .gemini_thesis_evaluator import GeminiThesisEvaluator
 
 
 def run_pipeline(
-    pdf_path: str,
-    date_colloquium: str,
-    uhrzeit_colloquium: str,
-    llm_client: LLMClient = None,
-    groq_free: bool = False,
-    output_folder: str = None,
-    compile_pdf: bool = True,
-    fill_form_only: bool = False,
-    location_type: str = "campus",
-    room: Optional[str] = None,
-    company_name: Optional[str] = None,
-    company_address: Optional[str] = None,
-    zoom_link: Optional[str] = None,
-    zoom_passcode: Optional[str] = None,
+        pdf_path: str,
+        date_colloquium: str,
+        uhrzeit_colloquium: str,
+        llm_client: LLMClient = None,
+        groq_free: bool = False,
+        output_folder: str = None,
+        compile_pdf: bool = True,
+        fill_form_only: bool = False,
+        location_type: str = "campus",
+        room: Optional[str] = None,
+        company_name: Optional[str] = None,
+        company_address: Optional[str] = None,
+        zoom_link: Optional[str] = None,
+        zoom_passcode: Optional[str] = None,
+        gemini_evaluation_enabled: bool = False,
+        gemini_model: Optional[str] = None,
 ) -> Tuple[str, str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
@@ -38,12 +41,15 @@ def run_pipeline(
         3. Detect the language (German/English) of the comments.
         4. Summarize the thesis and extract metadata such as author, matriculation number,
            title, and examiner names.
-        5. Concatenate and LaTeX-format the rewritten comments.
-        6. Create a formal letter as a `.tex` file using the collected data.
-        7. Optionally compile the `.tex` file into a PDF.
+        5. Optionally: Send thesis to Google Gemini for automatic evaluation.
+        6. Concatenate and LaTeX-format the rewritten comments.
+        7. Create a formal letter as a `.tex` file using the collected data.
+        8. Optionally compile the `.tex` file into a PDF.
 
     Args:
         pdf_path: Path to the thesis PDF file.
+        date_colloquium: Kolloquiumsdatum im Format "DD.MM.YYYY".
+        uhrzeit_colloquium: Kolloquiumszeit im Format "HH:MM".
         llm_client: LLMClient instance for API access. If None, creates a new one
             with automatic API selection.
         groq_free: Whether to apply request throttling to comply with
@@ -52,18 +58,22 @@ def run_pipeline(
             will be written. If None, defaults to the folder containing `pdf_path`.
         compile_pdf: If True, the generated `.tex` file is compiled into a PDF
             using `lualatex`. Defaults to True.
+        fill_form_only: Wenn True, wird nur das PDF-Formular ausgefüllt.
         location_type: Art des Kolloquiums ("campus", "company", "online").
         room: Raumnummer (nur für "campus").
         company_name: Name der Firma (nur für "company").
         company_address: Adresse der Firma (nur für "company").
         zoom_link: Zoom-Meeting-Link (nur für "online").
         zoom_passcode: Zoom-Zugangscode (nur für "online").
+        gemini_evaluation_enabled: Wenn True, wird automatische Gemini-Bewertung durchgeführt.
+        gemini_model: Gemini-Modell für Bewertung (z.B. "gemini-2.0-flash-exp").
 
     Returns:
-        tuple[str, str]: A tuple `(tex_path, pdf_path_or_empty)` where:
+        tuple[str, str, str]: A tuple `(tex_path, pdf_path_or_empty, email_path)` where:
             - `tex_path`: Path to the generated `.tex` file.
             - `pdf_path_or_empty`: Path to the generated `.pdf` if `compile_pdf=True`,
               otherwise an empty string.
+            - `email_path`: Path to the generated email markdown file.
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
@@ -142,10 +152,41 @@ def run_pipeline(
     matriculation = metadata.get("matriculation_number", "unknown")
     first_examiner = metadata.get("first_examiner", "Unbekannt")
     second_examiner = metadata.get("second_examiner", "Unbekannt")
-    first_examiner_mail = f"{metadata.get('first_examiner_christian','')}.{metadata.get('first_examiner_family','')}@th-koeln.de"
+    first_examiner_mail = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
+    degree = metadata.get("bachelor_master", "Bachelor")
+    thesis_title = metadata.get("title", "")
+
+    # 4) Optional: Gemini-Bewertung
+    gemini_evaluation_text = None
+    if gemini_evaluation_enabled:  # and not fill_form_only:
+        try:
+            # Erstelle separaten Gemini-Client
+            gemini_client = LLMClient(
+                api_choice="gemini",
+                llm=gemini_model or "gemini-2.0-flash-exp",
+                max_tokens=4096
+            )
+
+            evaluator = GeminiThesisEvaluator(gemini_client)
+            evaluation = evaluator.evaluate_thesis(
+                pdf_path=pdf_path,
+                thesis_title=thesis_title,
+                degree=degree,
+                verbose=False
+            )
+
+            if evaluation:
+                gemini_evaluation_text = evaluator.format_evaluation_for_latex(evaluation)
+                print("   ✅ Gemini-Bewertung erfolgreich zur LaTeX-Datei hinzugefügt")
+            else:
+                print("   ⚠️  Gemini-Bewertung fehlgeschlagen, fahre ohne fort")
+
+        except Exception as e:
+            print(f"   ⚠️  Fehler bei Gemini-Bewertung: {e}")
+            print("   → Fahre ohne automatische Bewertung fort")
 
     if not fill_form_only:
-        # 4) concatenate comments and escape/format as needed
+        # 5) concatenate comments and escape/format as needed
         questions = latex_generation.concatenate_comments(rewritten, language)
 
         tex_name = f"bewertung_brief_{matriculation}.tex"
@@ -154,15 +195,16 @@ def run_pipeline(
         latex_generation.create_formal_letter_tex(
             filename=tex_path,
             recipient="Prüfungsausschuss der TH Köln",
-            subject=f"Bewertung {metadata.get('bachelor_master', 'Arbeit')} von {author.title()}",
-            title=metadata.get("title", ""),
+            subject=f"Bewertung {degree} von {author.title()}",
+            title=thesis_title,
             author=f"{author.title()}, Matr.-Nr. {matriculation}",
             summary=summary,
-            # .title() sorgt dafür, dass nur erste BUchstabe groß ist und Rest klein. falls Nachname in thesis komplett groß geschrieben sein sollte
+            # .title() sorgt dafür, dass nur erste Buchstabe groß ist und Rest klein. falls Nachname in thesis komplett groß geschrieben sein sollte
             first_examiner=first_examiner.title(),
             second_examiner=second_examiner.title(),
             first_examiner_mail=first_examiner_mail,
             questions=questions,
+            gemini_evaluation=gemini_evaluation_text,  # Neue Parameter
         )
 
         pdf_path = ""
@@ -173,7 +215,7 @@ def run_pipeline(
     else:
         tex_path = pdf_path = ""
 
-    # fill form
+    # 6) fill form
     # Beispieldaten basierend auf den tatsächlichen Feldnamen
     daten = {
         # Studierenden-Daten
@@ -201,14 +243,13 @@ def run_pipeline(
     pdf_form_filler.fill_form(
         daten,
         output_folder,
-        metadata.get("bachelor_master", "Unknown"),
+        degree,
         location_type=location_type,
         room=room,
         company_name=company_name,
     )
 
-    #
-
+    # 7) Generate email
     mymailgen = email_generator.EmailGenerator()
     mymailgen.generate_and_save_email(
         llm_client=llm_client,

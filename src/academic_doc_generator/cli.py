@@ -45,6 +45,7 @@ def run_from_config(config_path: str) -> None:
 
     if task == "colloquium":
         coll_config = config.get_colloquium_config()
+        gemini_config = config.get_gemini_evaluation_config()
 
         tex, pdf, email = run_pipeline(
             pdf_path=pdf_path,
@@ -61,6 +62,8 @@ def run_from_config(config_path: str) -> None:
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
             zoom_passcode=coll_config.get("zoom_passcode"),
+            gemini_evaluation_enabled=gemini_config.get("enabled", False),
+            gemini_model=gemini_config.get("model"),
         )
 
         print("\n✓ Kolloquium-Pipeline abgeschlossen:")
@@ -128,6 +131,8 @@ def run_colloquium_direct(args) -> None:
         company_address=args.company_address,
         zoom_link=args.zoom_link,
         zoom_passcode=args.zoom_passcode,
+        gemini_evaluation_enabled=args.gemini_eval,
+        gemini_model=args.gemini_model,
     )
 
     print("\n✓ Kolloquium-Pipeline abgeschlossen:")
@@ -253,6 +258,12 @@ def create_parser() -> argparse.ArgumentParser:
     colloquium_parser.add_argument("--model", help="LLM model to use")
     colloquium_parser.add_argument(
         "--groq-free", action="store_true", help="Use free-tier pacing"
+    )
+    colloquium_parser.add_argument(
+        "--gemini-eval", action="store_true", help="Enable automatic Gemini evaluation"
+    )
+    colloquium_parser.add_argument(
+        "--gemini-model", default="gemini-2.0-flash-exp", help="Gemini model for evaluation"
     )
     colloquium_parser.add_argument("--out", help="Output folder")
     colloquium_parser.add_argument(

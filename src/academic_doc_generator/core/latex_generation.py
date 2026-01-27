@@ -115,7 +115,7 @@ def create_formal_letter_tex(
     gemini_section = ""
     if gemini_evaluation:
         gemini_section = f"\n\n{gemini_evaluation}\n"
-    
+
     tex_template = f"""
 \\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}

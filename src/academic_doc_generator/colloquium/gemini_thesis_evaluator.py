@@ -42,17 +42,13 @@ class GeminiThesisEvaluator:
             writer.add_page(reader.pages[page_num])
 
         # Speichere in temporärer Datei
-        temp_file = tempfile.NamedTemporaryFile(
-            delete=False, suffix=".pdf", mode="wb"
-        )
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", mode="wb")
         writer.write(temp_file)
         temp_file.close()
 
         return temp_file.name
 
-    def _create_evaluation_prompt(
-            self, thesis_title: str, degree: str
-    ) -> str:
+    def _create_evaluation_prompt(self, thesis_title: str, degree: str) -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
 
         Args:
@@ -121,11 +117,11 @@ class GeminiThesisEvaluator:
         return prompt
 
     def evaluate_thesis(
-            self,
-            pdf_path: str,
-            thesis_title: str,
-            degree: str,
-            verbose: bool = False,
+        self,
+        pdf_path: str,
+        thesis_title: str,
+        degree: str,
+        verbose: bool = False,
     ) -> Optional[str]:
         """Bewertet eine Thesis mit Google Gemini.
 
@@ -151,7 +147,9 @@ class GeminiThesisEvaluator:
             prompt = self._create_evaluation_prompt(thesis_title, degree)
 
             # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
-            print("   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)...")
+            print(
+                "   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)..."
+            )
 
             messages = [
                 {
@@ -178,15 +176,14 @@ class GeminiThesisEvaluator:
         except Exception as e:
             print(f"   ❌ Fehler bei der Gemini-Bewertung: {e}")
             import traceback
+
             traceback.print_exc()
             # Stelle sicher, dass temporäre Datei gelöscht wird
-            if 'temp_pdf' in locals() and os.path.exists(temp_pdf):
+            if "temp_pdf" in locals() and os.path.exists(temp_pdf):
                 os.unlink(temp_pdf)
             return None
 
-    def format_evaluation_for_latex(
-            self, evaluation: str
-    ) -> str:
+    def format_evaluation_for_latex(self, evaluation: str) -> str:
         """Formatiert die Gemini-Bewertung für LaTeX-Einfügung.
 
         Args:

@@ -263,7 +263,9 @@ def create_parser() -> argparse.ArgumentParser:
         "--gemini-eval", action="store_true", help="Enable automatic Gemini evaluation"
     )
     colloquium_parser.add_argument(
-        "--gemini-model", default="gemini-2.0-flash-exp", help="Gemini model for evaluation"
+        "--gemini-model",
+        default="gemini-2.0-flash-exp",
+        help="Gemini model for evaluation",
     )
     colloquium_parser.add_argument("--out", help="Output folder")
     colloquium_parser.add_argument(

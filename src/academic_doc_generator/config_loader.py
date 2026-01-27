@@ -164,10 +164,7 @@ class ConfigLoader:
             - enabled: bool (default False)
             - model: str (default "gemini-2.0-flash-exp")
         """
-        default_config = {
-            "enabled": False,
-            "model": "gemini-2.0-flash-exp"
-        }
+        default_config = {"enabled": False, "model": "gemini-2.0-flash-exp"}
         return self.config.get("gemini_evaluation", default_config)
 
     def __repr__(self) -> str:

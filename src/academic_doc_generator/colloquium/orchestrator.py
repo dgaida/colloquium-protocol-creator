@@ -11,22 +11,22 @@ from .gemini_thesis_evaluator import GeminiThesisEvaluator
 
 
 def run_pipeline(
-        pdf_path: str,
-        date_colloquium: str,
-        uhrzeit_colloquium: str,
-        llm_client: LLMClient = None,
-        groq_free: bool = False,
-        output_folder: str = None,
-        compile_pdf: bool = True,
-        fill_form_only: bool = False,
-        location_type: str = "campus",
-        room: Optional[str] = None,
-        company_name: Optional[str] = None,
-        company_address: Optional[str] = None,
-        zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None,
-        gemini_evaluation_enabled: bool = False,
-        gemini_model: Optional[str] = None,
+    pdf_path: str,
+    date_colloquium: str,
+    uhrzeit_colloquium: str,
+    llm_client: LLMClient = None,
+    groq_free: bool = False,
+    output_folder: str = None,
+    compile_pdf: bool = True,
+    fill_form_only: bool = False,
+    location_type: str = "campus",
+    room: Optional[str] = None,
+    company_name: Optional[str] = None,
+    company_address: Optional[str] = None,
+    zoom_link: Optional[str] = None,
+    zoom_passcode: Optional[str] = None,
+    gemini_evaluation_enabled: bool = False,
+    gemini_model: Optional[str] = None,
 ) -> Tuple[str, str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
@@ -164,7 +164,7 @@ def run_pipeline(
             gemini_client = LLMClient(
                 api_choice="gemini",
                 llm=gemini_model or "gemini-2.0-flash-exp",
-                max_tokens=4096
+                max_tokens=4096,
             )
 
             evaluator = GeminiThesisEvaluator(gemini_client)
@@ -172,11 +172,13 @@ def run_pipeline(
                 pdf_path=pdf_path,
                 thesis_title=thesis_title,
                 degree=degree,
-                verbose=False
+                verbose=False,
             )
 
             if evaluation:
-                gemini_evaluation_text = evaluator.format_evaluation_for_latex(evaluation)
+                gemini_evaluation_text = evaluator.format_evaluation_for_latex(
+                    evaluation
+                )
                 print("   ✅ Gemini-Bewertung erfolgreich zur LaTeX-Datei hinzugefügt")
             else:
                 print("   ⚠️  Gemini-Bewertung fehlgeschlagen, fahre ohne fort")

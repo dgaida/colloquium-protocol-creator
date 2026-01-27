@@ -134,7 +134,7 @@ class GeminiThesisEvaluator:
         Returns:
             LaTeX-formatierte Bewertung oder None bei Fehler.
         """
-        print(f"\n🤖 Starte automatische Bewertung mit Google Gemini...")
+        print("\n🤖 Starte automatische Bewertung mit Google Gemini...")
         print(f"   Niveau: {degree}arbeit")
         print(f"   Titel: {thesis_title}")
 

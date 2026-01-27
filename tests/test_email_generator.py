@@ -5,9 +5,7 @@ Unit tests for src/academic_doc_generator/colloquium/email_generator.py
 import pytest
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch, call
-from datetime import datetime
+from unittest.mock import MagicMock, patch
 
 from academic_doc_generator.colloquium import email_generator
 

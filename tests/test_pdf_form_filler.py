@@ -3,11 +3,8 @@ Unit tests for src/academic_doc_generator/colloquium/pdf_form_filler.py
 """
 
 import pytest
-import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
-from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 from academic_doc_generator.colloquium import pdf_form_filler
 

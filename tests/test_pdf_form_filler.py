@@ -91,19 +91,19 @@ class TestPDFFormHandler:
         """Test list_form_fields mit verschiedenen Feldtypen."""
         mock_doc = MagicMock()
         mock_page = MagicMock()
-        
+
         # Text widget
         mock_text_widget = MagicMock()
         mock_text_widget.field_name = "text_field"
         mock_text_widget.field_type = 1  # PDF_WIDGET_TYPE_TEXT
         mock_text_widget.field_value = "text"
-        
+
         # Checkbox widget
         mock_checkbox_widget = MagicMock()
         mock_checkbox_widget.field_name = "checkbox_field"
         mock_checkbox_widget.field_type = 2  # PDF_WIDGET_TYPE_CHECKBOX
         mock_checkbox_widget.field_value = True
-        
+
         mock_page.widgets.return_value = [mock_text_widget, mock_checkbox_widget]
         mock_doc.__iter__.return_value = [mock_page]
         mock_pymupdf.open.return_value = mock_doc
@@ -133,7 +133,10 @@ class TestPDFFormHandler:
         handler.print_form_fields()
 
         # Prüfe dass Fehlermeldung gedruckt wurde
-        assert any("Keine Formularfelder gefunden" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Keine Formularfelder gefunden" in str(call)
+            for call in mock_print.call_args_list
+        )
 
     @patch("academic_doc_generator.colloquium.pdf_form_filler.pymupdf")
     def test_fill_form_text_field(self, mock_pymupdf):
@@ -149,7 +152,7 @@ class TestPDFFormHandler:
         mock_pymupdf.PDF_WIDGET_TYPE_TEXT = 1
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {"test_field": "new_value"}
         result = handler.fill_form(field_data, "/tmp/output.pdf", flatten=False)
 
@@ -172,7 +175,7 @@ class TestPDFFormHandler:
         mock_pymupdf.PDF_WIDGET_TYPE_CHECKBOX = 2
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {"checkbox_field": True}
         result = handler.fill_form(field_data, "/tmp/output.pdf")
 
@@ -193,7 +196,7 @@ class TestPDFFormHandler:
         mock_pymupdf.PDF_WIDGET_TYPE_CHECKBOX = 2
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {"checkbox_field": "1"}
         result = handler.fill_form(field_data, "/tmp/output.pdf")
 
@@ -211,7 +214,7 @@ class TestPDFFormHandler:
         mock_pymupdf.open.return_value = mock_doc
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {}
         result = handler.fill_form(field_data, "/tmp/output.pdf", flatten=True)
 
@@ -233,13 +236,15 @@ class TestPDFFormHandler:
         mock_pymupdf.PDF_WIDGET_TYPE_TEXT = 1
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {"nonexistent_field": "value"}
         result = handler.fill_form(field_data, "/tmp/output.pdf")
 
         assert result is True
         # Prüfe dass Warnung gedruckt wurde
-        assert any("nicht im PDF gefunden" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "nicht im PDF gefunden" in str(call) for call in mock_print.call_args_list
+        )
 
     @patch("academic_doc_generator.colloquium.pdf_form_filler.pymupdf")
     def test_fill_form_exception(self, mock_pymupdf):
@@ -252,7 +257,7 @@ class TestPDFFormHandler:
         mock_pymupdf.open.return_value = mock_doc
 
         handler = pdf_form_filler.PDFFormHandler("test.pdf")
-        
+
         field_data = {}
         result = handler.fill_form(field_data, "/tmp/output.pdf")
 
@@ -270,17 +275,25 @@ class TestHelperFunctions:
 
     def test_berechne_gesamtnote_rounding(self):
         """Test berechne_gesamtnote Rundung.
-        
+
         Python's round() verwendet "banker's rounding" (round half to even):
         - 1.65 wird zu 1.6 gerundet (gerade Zahl)
         - 1.75 wird zu 1.8 gerundet (gerade Zahl)
         - 1.35 wird zu 1.4 gerundet (gerade Zahl)
         - 1.45 wird zu 1.4 gerundet (gerade Zahl)
         """
-        assert pdf_form_filler.berechne_gesamtnote(1.0, 2.3) == 1.6  # (1.0 + 2.3) / 2 = 1.65 -> 1.6
-        assert pdf_form_filler.berechne_gesamtnote(1.3, 1.4) == 1.4  # (1.3 + 1.4) / 2 = 1.35 -> 1.4 (bereits 1.4)
-        assert pdf_form_filler.berechne_gesamtnote(1.0, 1.9) == 1.4  # (1.0 + 1.9) / 2 = 1.45 -> 1.4
-        assert pdf_form_filler.berechne_gesamtnote(2.0, 2.1) == 2.0  # (2.0 + 2.1) / 2 = 2.05 -> 2.1 (wird zu 2.0 gerundet, aber dann auf 1 Stelle)
+        assert (
+            pdf_form_filler.berechne_gesamtnote(1.0, 2.3) == 1.6
+        )  # (1.0 + 2.3) / 2 = 1.65 -> 1.6
+        assert (
+            pdf_form_filler.berechne_gesamtnote(1.3, 1.4) == 1.4
+        )  # (1.3 + 1.4) / 2 = 1.35 -> 1.4 (bereits 1.4)
+        assert (
+            pdf_form_filler.berechne_gesamtnote(1.0, 1.9) == 1.4
+        )  # (1.0 + 1.9) / 2 = 1.45 -> 1.4
+        assert (
+            pdf_form_filler.berechne_gesamtnote(2.0, 2.1) == 2.0
+        )  # (2.0 + 2.1) / 2 = 2.05 -> 2.1 (wird zu 2.0 gerundet, aber dann auf 1 Stelle)
 
     def test_add_minutes(self):
         """Test add_minutes."""
@@ -333,7 +346,9 @@ class TestFillForm:
     @patch("academic_doc_generator.colloquium.pdf_form_filler.PDFFormHandler")
     @patch("academic_doc_generator.colloquium.pdf_form_filler.generate_location_text")
     @patch("builtins.print")
-    def test_fill_form_bachelor_campus(self, mock_print, mock_gen_loc, mock_handler_class):
+    def test_fill_form_bachelor_campus(
+        self, mock_print, mock_gen_loc, mock_handler_class
+    ):
         """Test fill_form für Bachelor-Arbeit auf Campus."""
         mock_gen_loc.return_value = "Raum 3.217, Campus Gummersbach"
         mock_handler = MagicMock()
@@ -372,7 +387,11 @@ class TestFillForm:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             result = pdf_form_filler.fill_form(
-                data, tmpdir, "Master", location_type="company", company_name="Beispiel GmbH"
+                data,
+                tmpdir,
+                "Master",
+                location_type="company",
+                company_name="Beispiel GmbH",
             )
 
             assert result is not None
@@ -411,7 +430,9 @@ class TestFillForm:
     @patch("academic_doc_generator.colloquium.pdf_form_filler.PDFFormHandler")
     @patch("academic_doc_generator.colloquium.pdf_form_filler.generate_location_text")
     @patch("builtins.print")
-    def test_fill_form_location_error(self, mock_print, mock_gen_loc, mock_handler_class):
+    def test_fill_form_location_error(
+        self, mock_print, mock_gen_loc, mock_handler_class
+    ):
         """Test fill_form mit Fehler bei Location-Generierung."""
         mock_gen_loc.side_effect = ValueError("Location error")
 
@@ -438,12 +459,16 @@ class TestMain:
 
         pdf_form_filler.main()
 
-        assert any("Datei nicht gefunden" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Datei nicht gefunden" in str(call) for call in mock_print.call_args_list
+        )
 
     @patch("academic_doc_generator.colloquium.pdf_form_filler.Path")
     @patch("academic_doc_generator.colloquium.pdf_form_filler.PDFFormHandler")
     @patch("builtins.print")
-    def test_main_with_form_fields(self, mock_print, mock_handler_class, mock_path_class):
+    def test_main_with_form_fields(
+        self, mock_print, mock_handler_class, mock_path_class
+    ):
         """Test main mit Formularfeldern."""
         mock_path = MagicMock()
         mock_path.exists.return_value = True
@@ -463,7 +488,9 @@ class TestMain:
     @patch("academic_doc_generator.colloquium.pdf_form_filler.Path")
     @patch("academic_doc_generator.colloquium.pdf_form_filler.PDFFormHandler")
     @patch("builtins.print")
-    def test_main_without_form_fields(self, mock_print, mock_handler_class, mock_path_class):
+    def test_main_without_form_fields(
+        self, mock_print, mock_handler_class, mock_path_class
+    ):
         """Test main ohne Formularfelder."""
         mock_path = MagicMock()
         mock_path.exists.return_value = True
@@ -476,7 +503,9 @@ class TestMain:
         pdf_form_filler.main()
 
         mock_handler.has_form_fields.assert_called_once()
-        assert any("KEINE ausfüllbaren" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "KEINE ausfüllbaren" in str(call) for call in mock_print.call_args_list
+        )
 
 
 if __name__ == "__main__":

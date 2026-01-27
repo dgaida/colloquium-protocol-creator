@@ -1,13 +1,11 @@
 # src/academic_doc_generator/colloquium/gemini_thesis_evaluator.py
 """Modul zur automatischen Bewertung von Abschlussarbeiten mit Google Gemini."""
 
-import base64
-from pathlib import Path
-from typing import Dict, Tuple, Optional
+import os
+import tempfile
+from typing import Optional
 from llm_client import LLMClient
 from pypdf import PdfReader, PdfWriter
-import tempfile
-import os
 
 
 class GeminiThesisEvaluator:
@@ -20,7 +18,7 @@ class GeminiThesisEvaluator:
             llm_client: LLMClient-Instanz (muss auf Gemini konfiguriert sein).
         """
         self.llm_client = llm_client
-        
+
         # Stelle sicher, dass Gemini verwendet wird
         if self.llm_client.api_choice != "gemini":
             raise ValueError(
@@ -52,20 +50,8 @@ class GeminiThesisEvaluator:
 
         return temp_file.name
 
-    def _pdf_to_base64(self, pdf_path: str) -> str:
-        """Konvertiert PDF zu Base64.
-
-        Args:
-            pdf_path: Pfad zur PDF-Datei.
-
-        Returns:
-            Base64-kodierter String.
-        """
-        with open(pdf_path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-
     def _create_evaluation_prompt(
-        self, thesis_title: str, degree: str
+            self, thesis_title: str, degree: str
     ) -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
 
@@ -77,7 +63,7 @@ class GeminiThesisEvaluator:
             Formatierter Prompt-String.
         """
         niveau = "Bachelor" if degree == "Bachelor" else "Master"
-        
+
         prompt = f"""Du bist ein erfahrener Professor für Informatik an der TH Köln und bewertest eine {niveau}arbeit.
 
 **Titel der Arbeit:** {thesis_title}
@@ -135,11 +121,11 @@ class GeminiThesisEvaluator:
         return prompt
 
     def evaluate_thesis(
-        self,
-        pdf_path: str,
-        thesis_title: str,
-        degree: str,
-        verbose: bool = False,
+            self,
+            pdf_path: str,
+            thesis_title: str,
+            degree: str,
+            verbose: bool = False,
     ) -> Optional[str]:
         """Bewertet eine Thesis mit Google Gemini.
 
@@ -158,42 +144,29 @@ class GeminiThesisEvaluator:
 
         try:
             # Schritt 1: Erste Seite entfernen (Datenschutz)
-            print("   📄 Entferne erste und letzte Seite (Datenschutz)...")
+            print("   📄 Entferne erste Seite (Datenschutz)...")
             temp_pdf = self._remove_first_page(pdf_path)
 
-            # Schritt 2: PDF zu Base64 konvertieren
-            print("   🔄 Konvertiere PDF zu Base64...")
-            pdf_base64 = self._pdf_to_base64(temp_pdf)
-
-            # Schritt 3: Prompt erstellen
+            # Schritt 2: Prompt erstellen
             prompt = self._create_evaluation_prompt(thesis_title, degree)
 
-            # Schritt 4: API-Aufruf mit PDF-Dokument
+            # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
             print("   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)...")
-            
+
             messages = [
                 {
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "document",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "application/pdf",
-                                "data": pdf_base64,
-                            },
-                        },
-                        {"type": "text", "text": prompt},
-                    ],
+                    "content": prompt,
                 }
             ]
 
-            # Verwende LLMClient mit höherer max_tokens für längere Antwort
-            response = self.llm_client.chat_completion(
-                messages
+            # Nutze das neue chat_completion_with_files Feature
+            response = self.llm_client.chat_completion_with_files(
+                messages=messages,
+                files=[temp_pdf],
             )
 
-            # Schritt 5: Temporäre Datei löschen
+            # Schritt 4: Temporäre Datei löschen
             os.unlink(temp_pdf)
 
             if verbose:
@@ -204,13 +177,15 @@ class GeminiThesisEvaluator:
 
         except Exception as e:
             print(f"   ❌ Fehler bei der Gemini-Bewertung: {e}")
+            import traceback
+            traceback.print_exc()
             # Stelle sicher, dass temporäre Datei gelöscht wird
             if 'temp_pdf' in locals() and os.path.exists(temp_pdf):
                 os.unlink(temp_pdf)
             return None
 
     def format_evaluation_for_latex(
-        self, evaluation: str
+            self, evaluation: str
     ) -> str:
         """Formatiert die Gemini-Bewertung für LaTeX-Einfügung.
 
@@ -222,13 +197,13 @@ class GeminiThesisEvaluator:
         """
         # Die Antwort sollte bereits LaTeX-formatiert sein
         # Hier können noch zusätzliche Bereinigungen erfolgen
-        
+
         # Entferne eventuell vorhandene Markdown-Codeblöcke
         evaluation = evaluation.replace("```latex", "").replace("```", "")
-        
+
         # Stelle sicher, dass Zeilenumbrüche korrekt sind
         evaluation = evaluation.strip()
-        
+
         # Füge Abschnittstrennungen hinzu
         formatted = f"""
 \\vspace{{1cm}}

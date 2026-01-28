@@ -18,6 +18,7 @@ class OutlookMailGenerator:
         self,
         student_name: str,
         email_text: str,
+        ics_file_path: Optional[str] = None,
         verbose: bool = False,
     ) -> bool:
         """Erstellt eine neue Outlook-Mail mit vorausgefülltem Inhalt.
@@ -25,6 +26,7 @@ class OutlookMailGenerator:
         Args:
             student_name: Name des Studierenden (für Betreff).
             email_text: Kompletter E-Mail-Text.
+            ics_file_path: Pfad zur ICS-Datei, die als Anhang hinzugefügt werden soll.
             verbose: Debug-Ausgaben aktivieren.
 
         Returns:
@@ -36,11 +38,17 @@ class OutlookMailGenerator:
             system = platform.system()
 
             if system == "Windows":
-                return self._create_outlook_mail_windows(subject, email_text, verbose)
+                return self._create_outlook_mail_windows(
+                    subject, email_text, ics_file_path, verbose
+                )
             elif system == "Darwin":  # macOS
-                return self._create_outlook_mail_macos(subject, email_text, verbose)
+                return self._create_outlook_mail_macos(
+                    subject, email_text, ics_file_path, verbose
+                )
             elif system == "Linux":
-                return self._create_outlook_mail_linux(subject, email_text, verbose)
+                return self._create_outlook_mail_linux(
+                    subject, email_text, ics_file_path, verbose
+                )
             else:
                 print(f"⚠️  Plattform '{system}' wird nicht unterstützt")
                 return False
@@ -49,17 +57,58 @@ class OutlookMailGenerator:
             if verbose:
                 print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
                 import traceback
+
+                traceback.print_exc()
+            return False
+
+    def open_ics_in_outlook(self, ics_file_path: str, verbose: bool = False) -> bool:
+        """Öffnet eine ICS-Datei direkt in Outlook (nur Windows).
+
+        Args:
+            ics_file_path: Pfad zur ICS-Datei.
+            verbose: Debug-Ausgaben aktivieren.
+
+        Returns:
+            True wenn erfolgreich, False bei Fehler.
+        """
+        try:
+            system = platform.system()
+
+            if system == "Windows":
+                import os
+
+                # Öffne ICS-Datei mit Standard-Anwendung (Outlook)
+                os.startfile(ics_file_path)
+                print("✅ ICS-Datei in Outlook geöffnet")
+                return True
+            else:
+                if verbose:
+                    print(
+                        f"ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
+                    )
+                return False
+
+        except Exception as e:
+            if verbose:
+                print(f"⚠️  Fehler beim Öffnen der ICS-Datei: {e}")
+                import traceback
+
                 traceback.print_exc()
             return False
 
     def _create_outlook_mail_windows(
-        self, subject: str, body: str, verbose: bool = False
+        self,
+        subject: str,
+        body: str,
+        ics_file_path: Optional[str] = None,
+        verbose: bool = False,
     ) -> bool:
         """Erstellt Outlook-Mail unter Windows mit COM-Automation.
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
+            ics_file_path: Pfad zur ICS-Datei als Anhang.
             verbose: Debug-Ausgaben aktivieren.
 
         Returns:
@@ -75,6 +124,17 @@ class OutlookMailGenerator:
             mail.Subject = subject
             mail.Body = body
 
+            # Füge ICS-Datei als Anhang hinzu
+            if ics_file_path:
+                import os
+
+                if os.path.exists(ics_file_path):
+                    mail.Attachments.Add(os.path.abspath(ics_file_path))
+                    if verbose:
+                        print(f"✅ ICS-Datei als Anhang hinzugefügt: {ics_file_path}")
+                else:
+                    print(f"⚠️  ICS-Datei nicht gefunden: {ics_file_path}")
+
             # Mail anzeigen (nicht senden!)
             mail.Display(False)
 
@@ -82,23 +142,31 @@ class OutlookMailGenerator:
             return True
 
         except ImportError:
-            print("⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32")
+            print(
+                "⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32"
+            )
             return False
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler bei Windows Outlook: {e}")
                 import traceback
+
                 traceback.print_exc()
             return False
 
     def _create_outlook_mail_macos(
-        self, subject: str, body: str, verbose: bool = False
+        self,
+        subject: str,
+        body: str,
+        ics_file_path: Optional[str] = None,
+        verbose: bool = False,
     ) -> bool:
         """Erstellt Outlook-Mail unter macOS mit AppleScript.
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
+            ics_file_path: Pfad zur ICS-Datei als Anhang.
             verbose: Debug-Ausgaben aktivieren.
 
         Returns:
@@ -110,10 +178,28 @@ class OutlookMailGenerator:
             escaped_body = body.replace('"', '\\"').replace("\\", "\\\\")
             escaped_recipient = self.RECIPIENT_EMAIL.replace('"', '\\"')
 
+            # Basis-AppleScript
             applescript = f"""
             tell application "Microsoft Outlook"
                 set newMessage to make new outgoing message with properties {{subject:"{escaped_subject}", content:"{escaped_body}"}}
                 make new recipient at newMessage with properties {{email address:{{address:"{escaped_recipient}"}}}}
+            """
+
+            # Füge Anhang hinzu, falls vorhanden
+            if ics_file_path:
+                import os
+
+                if os.path.exists(ics_file_path):
+                    escaped_path = (
+                        ics_file_path.replace('"', '\\"').replace("\\", "\\\\")
+                    )
+                    applescript += f"""
+                make new attachment at newMessage with properties {{file:POSIX file "{escaped_path}"}}
+                """
+                    if verbose:
+                        print(f"✅ ICS-Datei als Anhang hinzugefügt: {ics_file_path}")
+
+            applescript += """
                 open newMessage
                 activate
             end tell
@@ -131,17 +217,23 @@ class OutlookMailGenerator:
             if verbose:
                 print(f"⚠️  Fehler bei macOS Outlook: {e}")
                 import traceback
+
                 traceback.print_exc()
             return False
 
     def _create_outlook_mail_linux(
-        self, subject: str, body: str, verbose: bool = False
+        self,
+        subject: str,
+        body: str,
+        ics_file_path: Optional[str] = None,
+        verbose: bool = False,
     ) -> bool:
         """Erstellt Mail-Link unter Linux (Outlook Web/xdg-open).
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
+            ics_file_path: Pfad zur ICS-Datei (wird unter Linux ignoriert).
             verbose: Debug-Ausgaben aktivieren.
 
         Returns:
@@ -157,6 +249,11 @@ class OutlookMailGenerator:
             # Öffne mit Standard-Mail-Client
             subprocess.run(["xdg-open", mailto_link], check=True)
 
+            if ics_file_path and verbose:
+                print(
+                    "ℹ️  Anhänge werden unter Linux nicht automatisch hinzugefügt. Bitte manuell anhängen."
+                )
+
             print("✅ Standard-Mail-Client geöffnet (bitte manuell absenden)")
             return True
 
@@ -168,5 +265,6 @@ class OutlookMailGenerator:
             if verbose:
                 print(f"⚠️  Fehler bei Linux Mail: {e}")
                 import traceback
+
                 traceback.print_exc()
             return False

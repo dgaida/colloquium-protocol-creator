@@ -300,11 +300,19 @@ def run_pipeline(
         outlook_success = outlook_gen.create_outlook_mail(
             student_name=author,
             email_text=mymailgen.email_text,
+            ics_file_path=ics_path,  # ICS-Datei als Anhang
             verbose=False,
         )
         if not outlook_success:
             print("ℹ️  Outlook-Mail konnte nicht automatisch erstellt werden")
             print(f"   Bitte öffne die Datei manuell: {email_path}")
+
+        # Öffne ICS-Datei direkt in Outlook (nur Windows)
+        if ics_path and outlook_success:
+            import platform
+            if platform.system() == "Windows":
+                print("\n📅 Öffne Kalender-Eintrag in Outlook...")
+                outlook_gen.open_ics_in_outlook(ics_path, verbose=False)
     except Exception as e:
         print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
         print(f"   Bitte öffne die Datei manuell: {email_path}")

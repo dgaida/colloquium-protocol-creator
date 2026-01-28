@@ -78,9 +78,14 @@ DESCRIPTION:Kolloquium für {student_name}
 STATUS:CONFIRMED
 SEQUENCE:0
 BEGIN:VALARM
-TRIGGER:-PT15M
+TRIGGER:-PT30M
 ACTION:DISPLAY
-DESCRIPTION:Erinnerung: Kolloquium {student_name} in 15 Minuten
+DESCRIPTION:Erinnerung: Kolloquium {student_name} in 30 Minuten
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Erinnerung: Kolloquium {student_name} morgen
 END:VALARM
 END:VEVENT
 END:VCALENDAR"""

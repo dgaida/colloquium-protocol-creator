@@ -132,8 +132,51 @@ Rewritten Comment (same language as original):
     return rewritten
 
 
+def detect_degree_from_filename(pdf_path: str, llm_client: LLMClient) -> str:
+    """Detect if thesis is Bachelor or Master from PDF filename.
+
+    Args:
+        pdf_path: Path to the PDF file.
+        llm_client: LLMClient instance for API access.
+
+    Returns:
+        str: "Bachelor" or "Master", or None if unable to determine.
+    """
+    import os
+
+    filename = os.path.basename(pdf_path)
+
+    prompt = f"""
+You are given the filename of a thesis PDF. 
+Determine if this is a Bachelor thesis or a Master thesis based on the filename.
+
+Filename: {filename}
+
+Common indicators:
+- "Bachelor", "BA", "Bachelorarbeit" → Bachelor thesis
+- "Master", "MA", "Masterarbeit" → Master thesis
+
+Return ONLY one word: "Bachelor" or "Master"
+If you cannot determine it, return "Unknown"
+"""
+
+    messages = [{"role": "user", "content": prompt}]
+    response = llm_client.chat_completion(messages).strip()
+
+    # Normalize response
+    if "bachelor" in response.lower():
+        return "Bachelor"
+    elif "master" in response.lower():
+        return "Master"
+    else:
+        return None
+
+
 def extract_document_metadata(
-    pages_text: Dict[int, str], language: str, llm_client: LLMClient
+        pages_text: Dict[int, str],
+        language: str,
+        llm_client: LLMClient,
+        pdf_path: str = None
 ) -> dict:
     """Extract author, matriculation number, title, and examiners from the first two pages.
 
@@ -141,10 +184,11 @@ def extract_document_metadata(
         pages_text (dict): Dictionary mapping page indices to text.
         language (str): Language the thesis is written in. Either German or English.
         llm_client: LLMClient instance for API access.
+        pdf_path (str, optional): Path to PDF file for fallback degree detection from filename.
 
     Returns:
         dict: Dictionary with keys "author", "matriculation_number", "title",
-        "first_examiner", "second_examiner".
+        "first_examiner", "second_examiner", "bachelor_master".
     """
     # Collect first two pages of text (if available)
     sample_text = "\n\n".join(
@@ -184,11 +228,22 @@ Document text:
     except json.JSONDecodeError:
         metadata = {"error": "Could not parse JSON", "raw": content}
 
+    # Fallback: Wenn bachelor_master nicht bestimmt werden konnte, versuche es über Dateinamen
+    if pdf_path and (not metadata.get("bachelor_master") or metadata.get("bachelor_master") is None):
+        print("   ⚠️  Bachelor/Master konnte nicht aus Dokument bestimmt werden")
+        print("   🔄 Versuche Bestimmung über Dateinamen...")
+        degree_from_filename = detect_degree_from_filename(pdf_path, llm_client)
+        if degree_from_filename:
+            metadata["bachelor_master"] = degree_from_filename
+            print(f"   ✅ Aus Dateinamen bestimmt: {degree_from_filename}")
+        else:
+            print("   ❌ Konnte Bachelor/Master auch nicht aus Dateinamen bestimmen")
+
     return metadata
 
 
 def summarize_thesis(
-    pages_text: Dict[int, str], language: str, llm_client: LLMClient
+        pages_text: Dict[int, str], language: str, llm_client: LLMClient
 ) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
@@ -285,7 +340,7 @@ def rewrite_comments_in_pdf(
     llm_client: LLMClient = None,
     groq_free: bool = False,
     verbose: bool = False,
-    pdf_processor=None,
+    pdf_processor = None,
 ):
     """Extract and rewrite PDF comments into clear, polite questions.
 
@@ -375,7 +430,7 @@ def get_summary_and_metadata_of_pdf(
             - summary (str): LaTeX-formatted summary of the thesis.
             - metadata (dict): Extracted metadata with keys:
                 "author", "matriculation_number", "title",
-                "first_examiner", "second_examiner".
+                "first_examiner", "second_examiner", "bachelor_master".
     """
     if llm_client is None:
         llm_client = LLMClient()
@@ -386,8 +441,8 @@ def get_summary_and_metadata_of_pdf(
     # get plain text (for metadata detection)
     pages_text = pdf_processing.extract_text_per_page(pdf_path)
 
-    # Extract metadata
-    metadata = extract_document_metadata(pages_text, language, llm_client)
+    # Extract metadata (mit pdf_path für Fallback)
+    metadata = extract_document_metadata(pages_text, language, llm_client, pdf_path=pdf_path)
 
     if groq_free:
         print("Waiting for 20 seconds to avoid error: Too Many Requests")

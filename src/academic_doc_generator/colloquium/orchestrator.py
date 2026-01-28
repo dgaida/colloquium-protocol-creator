@@ -8,6 +8,8 @@ from ..core import llm_interface, latex_generation
 from . import pdf_form_filler
 from . import email_generator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator
+from .calendar_generator import CalendarGenerator
+from .outlook_mail_generator import OutlookMailGenerator
 
 
 def run_pipeline(
@@ -45,6 +47,8 @@ def run_pipeline(
         6. Concatenate and LaTeX-format the rewritten comments.
         7. Create a formal letter as a `.tex` file using the collected data.
         8. Optionally compile the `.tex` file into a PDF.
+        9. Generate calendar ICS file for the colloquium.
+        10. Create Outlook mail draft for registration.
 
     Args:
         pdf_path: Path to the thesis PDF file.
@@ -269,5 +273,40 @@ def run_pipeline(
         zoom_passcode=zoom_passcode,
     )
     email_path = mymailgen.email_path
+
+    # 8) Generate ICS calendar file
+    print("\n📅 Erstelle Kalender-Datei...")
+    calendar_gen = CalendarGenerator()
+    try:
+        ics_path = calendar_gen.generate_ics(
+            output_folder=output_folder,
+            student_name=author,
+            date_colloquium=date_colloquium,
+            time_colloquium=uhrzeit_colloquium,
+            duration_minutes=45,
+            location_type=location_type,
+            room=room,
+            company_name=company_name,
+            company_address=company_address,
+        )
+    except Exception as e:
+        print(f"⚠️  Fehler beim Erstellen der Kalender-Datei: {e}")
+        ics_path = None
+
+    # 9) Create Outlook mail draft
+    print("\n📧 Erstelle Outlook-Mail...")
+    outlook_gen = OutlookMailGenerator()
+    try:
+        outlook_success = outlook_gen.create_outlook_mail(
+            student_name=author,
+            email_text=mymailgen.email_text,
+            verbose=False,
+        )
+        if not outlook_success:
+            print("ℹ️  Outlook-Mail konnte nicht automatisch erstellt werden")
+            print(f"   Bitte öffne die Datei manuell: {email_path}")
+    except Exception as e:
+        print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
+        print(f"   Bitte öffne die Datei manuell: {email_path}")
 
     return tex_path, pdf_path, email_path

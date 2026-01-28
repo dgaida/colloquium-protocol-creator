@@ -1,5 +1,7 @@
 """
 Additional unit tests to increase coverage for llm_interface and pdf_processing.
+
+FIXED VERSION - Korrigiert die StopIteration-Fehler bei Mock-Aufrufen
 """
 
 import pytest
@@ -253,16 +255,27 @@ class TestLLMInterfaceAdditional:
         mock_client_class.return_value = mock_client
 
         mock_extract.return_value = {0: "Test content"}
-        mock_client.chat_completion.side_effect = [
-            json.dumps({"author": "Test"}),
-            "Summary text",
-        ]
+        
+        # FIXED: Mock muss zwei Aufrufe behandeln korrekt
+        call_count = [0]
+        def mock_completion(messages):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                # Erster Aufruf: extract_document_metadata
+                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
+            else:
+                # Zweiter Aufruf: summarize_thesis
+                return "Summary text"
+        
+        mock_client.chat_completion.side_effect = mock_completion
 
         summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
             "test.pdf", "German", llm_client=None
         )
 
         mock_client_class.assert_called_once()
+        assert summary == "Summary text"
+        assert metadata["author"] == "Test"
 
     @patch(
         "academic_doc_generator.core.llm_interface.pdf_processing.extract_text_per_page"
@@ -273,10 +286,17 @@ class TestLLMInterfaceAdditional:
         mock_extract.return_value = {0: "Test"}
 
         mock_client = MagicMock()
-        mock_client.chat_completion.side_effect = [
-            json.dumps({"author": "Test"}),
-            "Summary",
-        ]
+        
+        # FIXED: Verwende Funktion statt Liste
+        call_count = [0]
+        def mock_completion(messages):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
+            else:
+                return "Summary"
+        
+        mock_client.chat_completion.side_effect = mock_completion
 
         llm_interface.get_summary_and_metadata_of_pdf(
             "test.pdf", "German", llm_client=mock_client, groq_free=True
@@ -296,10 +316,17 @@ class TestLLMInterfaceAdditional:
         mock_extract.return_value = {0: "Test"}
 
         mock_client = MagicMock()
-        mock_client.chat_completion.side_effect = [
-            json.dumps({"author": "Test"}),
-            "Test summary",
-        ]
+        
+        # FIXED: Verwende Funktion statt Liste
+        call_count = [0]
+        def mock_completion(messages):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
+            else:
+                return "Test summary"
+        
+        mock_client.chat_completion.side_effect = mock_completion
 
         summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
             "test.pdf", "German", llm_client=mock_client, verbose=True

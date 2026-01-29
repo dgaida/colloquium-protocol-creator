@@ -1,8 +1,11 @@
 """Modul zur automatischen Erstellung von Outlook-Mails für Kolloquiums-Anmeldungen."""
 
+import os
 import platform
 import subprocess
 from typing import Optional
+import traceback
+import urllib.parse
 
 
 class OutlookMailGenerator:
@@ -56,8 +59,6 @@ class OutlookMailGenerator:
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
-                import traceback
-
                 traceback.print_exc()
             return False
 
@@ -75,8 +76,6 @@ class OutlookMailGenerator:
             system = platform.system()
 
             if system == "Windows":
-                import os
-
                 # Öffne ICS-Datei mit Standard-Anwendung (Outlook)
                 os.startfile(ics_file_path)
                 print("✅ ICS-Datei in Outlook geöffnet")
@@ -91,8 +90,6 @@ class OutlookMailGenerator:
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler beim Öffnen der ICS-Datei: {e}")
-                import traceback
-
                 traceback.print_exc()
             return False
 
@@ -126,8 +123,6 @@ class OutlookMailGenerator:
 
             # Füge ICS-Datei als Anhang hinzu
             if ics_file_path:
-                import os
-
                 if os.path.exists(ics_file_path):
                     mail.Attachments.Add(os.path.abspath(ics_file_path))
                     if verbose:
@@ -149,8 +144,6 @@ class OutlookMailGenerator:
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler bei Windows Outlook: {e}")
-                import traceback
-
                 traceback.print_exc()
             return False
 
@@ -187,8 +180,6 @@ class OutlookMailGenerator:
 
             # Füge Anhang hinzu, falls vorhanden
             if ics_file_path:
-                import os
-
                 if os.path.exists(ics_file_path):
                     escaped_path = (
                         ics_file_path.replace('"', '\\"').replace("\\", "\\\\")
@@ -216,8 +207,6 @@ class OutlookMailGenerator:
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler bei macOS Outlook: {e}")
-                import traceback
-
                 traceback.print_exc()
             return False
 
@@ -240,8 +229,6 @@ class OutlookMailGenerator:
             True wenn erfolgreich, False bei Fehler.
         """
         try:
-            import urllib.parse
-
             # Erstelle mailto-Link
             params = {"subject": subject, "body": body}
             mailto_link = f"mailto:{self.RECIPIENT_EMAIL}?{urllib.parse.urlencode(params)}"
@@ -264,7 +251,6 @@ class OutlookMailGenerator:
         except Exception as e:
             if verbose:
                 print(f"⚠️  Fehler bei Linux Mail: {e}")
-                import traceback
 
                 traceback.print_exc()
             return False

@@ -1,8 +1,8 @@
-# colloquium_pipeline/orchestrator.py
-"""High-level pipeline glue: parse PDF -> LLM -> tex -> pdf."""
+# src/academic_doc_generator/colloquium/orchestrator.py
+"""High-level pipeline with comprehensive type annotations for colloquium protocol generation."""
 
-from typing import Tuple, Optional
-import os
+from typing import Tuple, Optional, Literal
+from pathlib import Path
 from llm_client import LLMClient
 from ..core import llm_interface, latex_generation
 from . import pdf_form_filler
@@ -10,18 +10,23 @@ from . import email_generator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator
 from .calendar_generator import CalendarGenerator
 from .outlook_mail_generator import OutlookMailGenerator
+from ..core.types import LocationType, LLMClientProtocol
 
+
+# ============================================================================
+# Public Functions
+# ============================================================================
 
 def run_pipeline(
-    pdf_path: str,
-    date_colloquium: str,
-    uhrzeit_colloquium: str,
-    llm_client: LLMClient = None,
+    pdf_path: str | Path,
+    date_colloquium: str,  # Format: DD.MM.YYYY
+    uhrzeit_colloquium: str,  # Format: HH:MM
+    llm_client: Optional[LLMClientProtocol] = None,
     groq_free: bool = False,
-    output_folder: str = None,
+    output_folder: Optional[str | Path] = None,
     compile_pdf: bool = True,
     fill_form_only: bool = False,
-    location_type: str = "campus",
+    location_type: LocationType = "campus",
     room: Optional[str] = None,
     company_name: Optional[str] = None,
     company_address: Optional[str] = None,
@@ -47,68 +52,90 @@ def run_pipeline(
         6. Concatenate and LaTeX-format the rewritten comments.
         7. Create a formal letter as a `.tex` file using the collected data.
         8. Optionally compile the `.tex` file into a PDF.
-        9. Generate calendar ICS file for the colloquium.
-        10. Create Outlook mail draft for registration.
+        9. Fill the official grading form PDF with metadata.
+        10. Generate colloquium registration email.
 
     Args:
         pdf_path: Path to the thesis PDF file.
-        date_colloquium: Kolloquiumsdatum im Format "DD.MM.YYYY".
-        uhrzeit_colloquium: Kolloquiumszeit im Format "HH:MM".
-        llm_client: LLMClient instance for API access. If None, creates a new one
-            with automatic API selection.
+        date_colloquium: Colloquium date in format "DD.MM.YYYY".
+        uhrzeit_colloquium: Colloquium time in format "HH:MM".
+        llm_client: LLM client instance implementing LLMClientProtocol. If None, 
+            creates a new one with automatic API selection. Defaults to None.
         groq_free: Whether to apply request throttling to comply with
-            free-tier rate limits. Defaults to False.
-        output_folder: Directory where the output `.tex` (and `.pdf` if compiled)
-            will be written. If None, defaults to the folder containing `pdf_path`.
-        compile_pdf: If True, the generated `.tex` file is compiled into a PDF
+            free-tier rate limits. Adds delays between API calls. Defaults to False.
+        output_folder: Directory where outputs will be written. If None, defaults 
+            to the folder containing `pdf_path`. Defaults to None.
+        compile_pdf: If True, compile the generated `.tex` file into a PDF
             using `lualatex`. Defaults to True.
-        fill_form_only: Wenn True, wird nur das PDF-Formular ausgefüllt.
-        location_type: Art des Kolloquiums ("campus", "company", "online").
-        room: Raumnummer (nur für "campus").
-        company_name: Name der Firma (nur für "company").
-        company_address: Adresse der Firma (nur für "company").
-        zoom_link: Zoom-Meeting-Link (nur für "online").
-        zoom_passcode: Zoom-Zugangscode (nur für "online").
-        gemini_evaluation_enabled: Wenn True, wird automatische Gemini-Bewertung durchgeführt.
-        gemini_model: Gemini-Modell für Bewertung (z.B. "gemini-2.0-flash-exp").
+        fill_form_only: If True, only fill the PDF form without generating the
+            protocol letter. Useful for quick form generation. Defaults to False.
+        location_type: Type of colloquium venue. Must be one of:
+            - "campus": On-campus colloquium (requires `room`)
+            - "company": At company location (requires `company_name`)
+            - "online": Virtual colloquium (requires `zoom_link`)
+            Defaults to "campus".
+        room: Room number for campus colloquium (e.g., "3.217"). 
+            Required if location_type="campus". Defaults to None.
+        company_name: Company name for company colloquium (e.g., "Beispiel GmbH").
+            Required if location_type="company". Defaults to None.
+        company_address: Full company address (optional for company colloquium).
+            Defaults to None.
+        zoom_link: Zoom meeting URL for online colloquium.
+            Required if location_type="online". Defaults to None.
+        zoom_passcode: Zoom meeting passcode (optional for online colloquium).
+            Defaults to None.
+        gemini_evaluation_enabled: If True, automatically evaluate the thesis
+            using Google Gemini and include the evaluation in the protocol.
+            Defaults to False.
+        gemini_model: Specific Gemini model to use for evaluation
+            (e.g., "gemini-2.0-flash-exp"). Defaults to None (uses default model).
 
     Returns:
-        tuple[str, str, str]: A tuple `(tex_path, pdf_path_or_empty, email_path)` where:
-            - `tex_path`: Path to the generated `.tex` file.
-            - `pdf_path_or_empty`: Path to the generated `.pdf` if `compile_pdf=True`,
-              otherwise an empty string.
-            - `email_path`: Path to the generated email markdown file.
+        Tuple of (tex_path, pdf_path, email_path):
+        - tex_path: Path to the generated `.tex` file
+        - pdf_path: Path to the generated `.pdf` if `compile_pdf=True`, 
+          otherwise empty string
+        - email_path: Path to the generated email markdown file
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
+        ValueError: If required location parameters are missing (e.g., room for campus).
         subprocess.CalledProcessError: If LaTeX compilation fails when `compile_pdf=True`.
         Exception: Any errors raised by the LLM API (e.g., authentication issues).
 
     Example:
         >>> from llm_client import LLMClient
         >>> client = LLMClient()  # Automatic API selection
-        >>> tex_file, pdf_file = run_pipeline(
+        >>> tex_file, pdf_file, email_file = run_pipeline(
         ...     pdf_path="Bachelorarbeit_Mueller.pdf",
+        ...     date_colloquium="15.01.2026",
+        ...     uhrzeit_colloquium="10:00",
         ...     llm_client=client,
         ...     groq_free=True,
         ...     output_folder="./out",
-        ...     compile_pdf=True
+        ...     compile_pdf=True,
+        ...     location_type="campus",
+        ...     room="3.217"
         ... )
         >>> print(tex_file)
         ./out/bewertung_brief_123456.tex
         >>> print(pdf_file)
         ./out/bewertung_brief_123456.pdf
+        >>> print(email_file)
+        ./out/kolloquium_anmeldung_Mueller_123456.md
 
     Notes:
-        - The generated `.tex` file is always created, regardless of the value of
-          `compile_pdf`.
+        - The generated `.tex` file is always created, regardless of `compile_pdf`.
         - If the matriculation number cannot be detected, the output file name
           defaults to `bewertung_brief_unknown.tex`.
         - The pipeline **does not grade a thesis**; it only generates a template
           for documenting the colloquium protocol.
+        - Gemini evaluation requires a valid Google Gemini API key.
     """
     if output_folder is None:
-        output_folder = os.path.dirname(pdf_path)
+        output_folder = str(Path(pdf_path).parent)
+    else:
+        output_folder = str(output_folder)
 
     # Create LLMClient if not provided
     if llm_client is None:
@@ -118,32 +145,35 @@ def run_pipeline(
     if not fill_form_only:
         # 1) rewrite comments
         rewritten, stats = llm_interface.rewrite_comments_in_pdf(
-            pdf_path, llm_client, groq_free=groq_free
+            str(pdf_path), llm_client, groq_free=groq_free
         )
 
         # 2) detect language
         language = llm_interface.detect_language(rewritten, llm_client, groq_free)
     else:
-        # TODO: das könnte man noch dynamisch bestimmen lassen, bspw. aus den ersten 1-2 Seiten des Dokuments
-        #  erstmal manuell gesetzt, da Bestimmung aus rewritten text overkill ist
+        # TODO: Could determine this dynamically from first pages
+        # For now, manually set as determining from rewritten text is overkill
         language = "German"
 
     # 3) summary & metadata
     summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
-        pdf_path, language, llm_client, groq_free
+        str(pdf_path), language, llm_client, groq_free
     )
 
     if not fill_form_only:
-        # Example for stats: {"quelle": 3, "language": 7}
+        # Apply stats-based modifications to summary
+        # If many source comments, add note about missing citations
         if stats["quelle"] > 4:
-            # wenn summary endet mit \end{itemize}, dann keinen Zeilenumbruch einfügen, führt zu Fehler "no line to end"
+            # Check if summary ends with \end{itemize}, don't add line break (causes error)
             if summary.strip()[-1] == "}":
                 summary = summary + "Häufig fehlen Quellenangaben."
             else:
                 summary = summary + "\\\\Häufig fehlen Quellenangaben."
             print("Häufig fehlen Quellenangaben")
+            
+        # If many language comments, add note about language errors
         if stats["language"] > 5:
-            # wenn summary endet mit \end{itemize}, dann keinen Zeilenumbruch einfügen, führt zu Fehler "no line to end"
+            # Check if summary ends with \end{itemize}, don't add line break (causes error)
             if summary.strip()[-1] == "}":
                 summary = summary + "Viele sprachliche Fehler."
             else:
@@ -160,11 +190,11 @@ def run_pipeline(
     degree = metadata.get("bachelor_master", "Bachelor")
     thesis_title = metadata.get("title", "")
 
-    # 4) Optional: Gemini-Bewertung
-    gemini_evaluation_text = None
-    if gemini_evaluation_enabled:  # and not fill_form_only:
+    # 4) Optional: Gemini evaluation
+    gemini_evaluation_text: Optional[str] = None
+    if gemini_evaluation_enabled:
         try:
-            # Erstelle separaten Gemini-Client
+            # Create separate Gemini client
             gemini_client = LLMClient(
                 api_choice="gemini",
                 llm=gemini_model or "gemini-2.0-flash-exp",
@@ -173,7 +203,7 @@ def run_pipeline(
 
             evaluator = GeminiThesisEvaluator(gemini_client)
             evaluation = evaluator.evaluate_thesis(
-                pdf_path=pdf_path,
+                pdf_path=str(pdf_path),
                 thesis_title=thesis_title,
                 degree=degree,
                 verbose=False,
@@ -196,7 +226,7 @@ def run_pipeline(
         questions = latex_generation.concatenate_comments(rewritten, language)
 
         tex_name = f"bewertung_brief_{matriculation}.tex"
-        tex_path = os.path.join(output_folder, tex_name)
+        tex_path = str(Path(output_folder) / tex_name)
 
         latex_generation.create_formal_letter_tex(
             filename=tex_path,
@@ -210,42 +240,41 @@ def run_pipeline(
             second_examiner=second_examiner.title(),
             first_examiner_mail=first_examiner_mail,
             questions=questions,
-            gemini_evaluation=gemini_evaluation_text,  # Neue Parameter
+            gemini_evaluation=gemini_evaluation_text,
         )
 
-        pdf_path = ""
+        pdf_path_str = ""
         if compile_pdf:
-            pdf_path = latex_generation.compile_latex_to_pdf(
+            pdf_path_str = latex_generation.compile_latex_to_pdf(
                 tex_path, output_dir=output_folder
             )
     else:
-        tex_path = pdf_path = ""
+        tex_path = ""
+        pdf_path_str = ""
 
-    # 6) fill form
-    # Beispieldaten basierend auf den tatsächlichen Feldnamen
+    # 6) Fill PDF form
     daten = {
-        # Studierenden-Daten
+        # Student data
         "name_student": author,
         "MatrNr": matriculation,
-        # Bachelorarbeit - Erstprüfer
+        # Thesis - First examiner
         "Datum_schrift_Erstpruefer": date_colloquium,
         "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
-        # Bachelorarbeit - Zweitprüfer
+        # Thesis - Second examiner
         "Datum_schrift_Zweitpruefer": date_colloquium,
         "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
-        # Kolloquium - Details
+        # Colloquium - Details
         "Datum der Prüfung": date_colloquium,
         "Startzeit": uhrzeit_colloquium,
         "Pruefungsfragen_Protokoll": True,  # Checkbox
-        # Kolloquium - Erstprüfer
+        # Colloquium - First examiner
         "Datum_kolloq_Erstpruefer": date_colloquium,
         "Kolloq_Begruendung": True,
-        # Kolloquium - Zweitprüfer
+        # Colloquium - Second examiner
         "Datum_kolloq_Zweitpruefer": date_colloquium,
         "Kolloq_Anschluss_Begruendung": True,
     }
 
-    # fülle PDF Formular aus
     pdf_form_filler.fill_form(
         daten,
         output_folder,
@@ -317,4 +346,4 @@ def run_pipeline(
         print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
         print(f"   Bitte öffne die Datei manuell: {email_path}")
 
-    return tex_path, pdf_path, email_path
+    return tex_path, pdf_path_str, email_path

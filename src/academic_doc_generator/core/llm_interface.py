@@ -1,19 +1,70 @@
-# colloquium_creator/llm_interface.py
-"""LLM (LLMClient) wrapper: rewriting, summarization, metadata extraction."""
+# src/academic_doc_generator/core/llm_interface.py
+"""LLM interface with comprehensive type annotations for API interactions."""
 
-from typing import Dict
+from typing import Dict, List, Optional, Any
 import json
 import time
 from llm_client import LLMClient
 from . import pdf_processing, latex_generation
+from .types import (
+    RewrittenComment, ThesisMetadata, LLMClientProtocol
+)
 
+
+# ============================================================================
+# Type Definitions and Protocols
+# ============================================================================
+
+class RewrittenComment(pdf_processing.TypedDict):
+    """A comment that has been processed by the LLM.
+    
+    Attributes:
+        original: The original annotation text.
+        rewritten: The LLM-rewritten text, or None if skipped (quelle/language).
+        highlighted: The highlighted text from the PDF.
+        paragraph: The surrounding paragraph context.
+        category: Comment category (llm, quelle, language, ignore).
+    """
+    original: str
+    rewritten: Optional[str]  # None if category != "llm"
+    highlighted: str
+    paragraph: str
+    category: pdf_processing.CommentCategory
+
+
+class ThesisMetadata(pdf_processing.TypedDict):
+    """Metadata extracted from a thesis PDF.
+    
+    Attributes:
+        author: Full name of the thesis author.
+        matriculation_number: Student matriculation number.
+        title: Title of the thesis.
+        first_examiner: Name of the first examiner.
+        second_examiner: Name of the second examiner.
+        first_examiner_christian: First examiner's first name.
+        first_examiner_family: First examiner's last name.
+        bachelor_master: Degree type, either "Bachelor" or "Master".
+    """
+    author: str
+    matriculation_number: str
+    title: str
+    first_examiner: str
+    second_examiner: str
+    first_examiner_christian: str
+    first_examiner_family: str
+    bachelor_master: str
+
+
+# ============================================================================
+# Public Functions
+# ============================================================================
 
 def rewrite_comments(
-    context_dict: Dict[int, list],
-    llm_client: LLMClient,
+    context_dict: Dict[int, List[pdf_processing.AnnotationContext]],
+    llm_client: LLMClientProtocol,
     groq_free: bool = False,
     verbose: bool = False,
-) -> Dict[int, list]:
+) -> Dict[int, List[RewrittenComment]]:
     """Rewrite rough comments into clear, polite questions using LLMClient.
 
     Only comments categorized as "llm" are rewritten. Comments with category
@@ -21,29 +72,30 @@ def rewrite_comments(
     analysis. Comments with category "ignore" are excluded entirely.
 
     Args:
-        context_dict (dict): Mapping page numbers to annotation contexts,
-            where each annotation dict contains:
-              - "comment": str
-              - "highlighted": str
-              - "paragraph": str
-              - "category": str ("llm", "quelle", "language", "ignore")
-        llm_client: LLMClient instance for API access.
-        groq_free (bool): Whether to apply request throttling to stay under
-            Groq's free-tier rate limits.
-        verbose (bool, optional): If True, prints debug information. Defaults to False.
+        context_dict: Mapping of page numbers to annotation contexts, where each
+            annotation dict contains comment, highlighted text, paragraph, and category.
+        llm_client: LLM client instance implementing the LLMClientProtocol.
+        groq_free: Whether to apply request throttling to stay under Groq's
+            free-tier rate limits (4s per request, 10s every 5 requests). 
+            Defaults to False.
+        verbose: If True, prints debug information about responses. Defaults to False.
 
     Returns:
-        dict: Dictionary mapping page numbers to rewritten comments with keys:
-              - "original" (str): Original comment
-              - "rewritten" (str|None): Rewritten comment (or None if skipped)
-              - "highlighted" (str): Highlighted text
-              - "paragraph" (str): Context paragraph
-              - "category" (str): Category of the comment
+        Dictionary mapping page numbers to rewritten comments. Skipped comments
+        (quelle/language) are excluded from the output.
+        
+    Example:
+        >>> context = {1: [{'comment': 'Why?', 'highlighted': 'text', 
+        ...                 'paragraph': 'context', 'category': 'llm'}]}
+        >>> client = LLMClient()
+        >>> result = rewrite_comments(context, client)
+        >>> result[1][0]['rewritten']
+        'Could you explain the reasoning behind this approach?'
     """
-    rewritten = {}
+    rewritten: Dict[int, List[RewrittenComment]] = {}
 
     for page_num, items in context_dict.items():
-        rewritten_items = []
+        rewritten_items: List[RewrittenComment] = []
 
         if groq_free and (len(rewritten) + 1) % 5 == 0:
             print("Waiting for 10 seconds to avoid error from API: Too Many Requests")
@@ -52,29 +104,11 @@ def rewrite_comments(
         for item in items:
             category = item.get("category", "llm")
 
-            # Skip ignored comments
-            # skippe hier auch kommentare, die sich auf fehlende quellen oder rechtschreibung beziehen.
-            # Kategorien: "quelle", "language", da diese bereits in extract_annotations_with_positions, was vorher
-            # aufgerufen wird (s. rewrite_comments_in_pdf), abgearbeitet wurden.
+            # Skip ignored comments and non-LLM categories
             if category != "llm":
                 continue
 
-            # if category != "llm":
-            #     # Keep comment but don't rewrite
-            #     rewritten_items.append(
-            #         {
-            #             "original": item["comment"],
-            #             "rewritten": None,
-            #             "highlighted": item["highlighted"],
-            #             "paragraph": item["paragraph"],
-            #             "category": category,
-            #         }
-            #     )
-            #     continue
-
-            if (
-                groq_free
-            ):  # always wait 2 seconds, because rate limit of 30 requests per minute
+            if groq_free:  # always wait 4 seconds for rate limit of 30 requests per minute
                 time.sleep(4)
 
             comment = item["comment"]
@@ -173,22 +207,31 @@ If you cannot determine it, return "Unknown"
 
 
 def extract_document_metadata(
-        pages_text: Dict[int, str],
-        language: str,
-        llm_client: LLMClient,
-        pdf_path: str = None
-) -> dict:
+    pages_text: Dict[int, str], 
+    language: str, 
+    llm_client: LLMClientProtocol,
+    pdf_path: str = None
+) -> ThesisMetadata:
     """Extract author, matriculation number, title, and examiners from the first two pages.
 
     Args:
-        pages_text (dict): Dictionary mapping page indices to text.
-        language (str): Language the thesis is written in. Either German or English.
-        llm_client: LLMClient instance for API access.
+        pages_text: Dictionary mapping page indices to text content.
+        language: Language the thesis is written in ("German" or "English").
+        llm_client: LLM client instance for API access.
         pdf_path (str, optional): Path to PDF file for fallback degree detection from filename.
 
     Returns:
-        dict: Dictionary with keys "author", "matriculation_number", "title",
-        "first_examiner", "second_examiner", "bachelor_master".
+        Dictionary with extracted metadata. If any field cannot be extracted,
+        it will contain None as the value.
+        
+    Example:
+        >>> text = {0: "Bachelor Thesis by Max Mustermann (123456)"}
+        >>> client = LLMClient()
+        >>> metadata = extract_document_metadata(text, "German", client)
+        >>> metadata['author']
+        'Max Mustermann'
+        >>> metadata['matriculation_number']
+        '123456'
     """
     # Collect first two pages of text (if available)
     sample_text = "\n\n".join(
@@ -224,7 +267,7 @@ Document text:
     content = llm_client.chat_completion(messages)
 
     try:
-        metadata = json.loads(content)
+        metadata: ThesisMetadata = json.loads(content)
     except json.JSONDecodeError:
         metadata = {"error": "Could not parse JSON", "raw": content}
 
@@ -243,17 +286,28 @@ Document text:
 
 
 def summarize_thesis(
-        pages_text: Dict[int, str], language: str, llm_client: LLMClient
+    pages_text: Dict[int, str], 
+    language: str, 
+    llm_client: LLMClientProtocol
 ) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
     Args:
-        pages_text (dict): Dictionary mapping page indices to text.
-        language (str): Language the thesis is written in. Either German or English.
-        llm_client: LLMClient instance for API access.
+        pages_text: Dictionary mapping page indices to text content.
+        language: Language the thesis is written in ("German" or "English").
+        llm_client: LLM client instance for API access.
 
     Returns:
-        str: A LaTeX-formatted summary.
+        A LaTeX-formatted summary string with escaped special characters.
+        
+    Example:
+        >>> text = {0: "This thesis examines...", 1: "The methodology..."}
+        >>> client = LLMClient()
+        >>> summary = summarize_thesis(text, "German", client)
+        >>> "untersucht" in summary
+        True
+        >>> "\\\\\\" in summary  # LaTeX line breaks
+        True
     """
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
@@ -289,25 +343,32 @@ Now provide the LaTeX-formatted summary:
 
 
 def detect_language(
-    results: Dict[int, list],
-    llm_client: LLMClient,
+    results: Dict[int, List[RewrittenComment]],
+    llm_client: LLMClientProtocol,
     groq_free: bool,
     sample_size: int = 3,
 ) -> str:
     """Detect the language (German or English) of the comments.
 
     Args:
-        results (dict): Dictionary containing rewritten comments per page.
-        llm_client: LLMClient instance for API access.
-        groq_free (bool): Whether to apply request throttling to stay under
-            free-tier rate limits.
-        sample_size (int, optional): Number of sample comments to analyze. Defaults to 3.
+        results: Dictionary containing rewritten comments per page.
+        llm_client: LLM client instance for API access.
+        groq_free: Whether to apply request throttling (2 second delay).
+        sample_size: Number of sample comments to analyze for language detection.
+            Defaults to 3.
 
     Returns:
-        str: "German" if German, "English" if English.
+        "German" if German language detected, "English" if English.
+        
+    Example:
+        >>> comments = {1: [{'rewritten': 'Warum wurde das gewählt?'}]}
+        >>> client = LLMClient()
+        >>> lang = detect_language(comments, client, groq_free=False)
+        >>> lang
+        'German'
     """
     # Collect a few rewritten comments for language detection
-    texts = []
+    texts: List[str] = []
     for page, items in results.items():
         for item in items:
             texts.append(item["rewritten"])
@@ -337,11 +398,11 @@ Text:
 
 def rewrite_comments_in_pdf(
     pdf_path: str,
-    llm_client: LLMClient = None,
+    llm_client: Optional[LLMClientProtocol] = None,
     groq_free: bool = False,
     verbose: bool = False,
-    pdf_processor = None,
-):
+    pdf_processor: Any = None,  # For dependency injection in tests
+) -> Tuple[Dict[int, List[RewrittenComment]], pdf_processing.CommentStats]:
     """Extract and rewrite PDF comments into clear, polite questions.
 
     This function parses the given PDF, extracts annotations, finds their
@@ -349,32 +410,40 @@ def rewrite_comments_in_pdf(
     more understandable, well-phrased questions or feedback.
 
     Args:
-        pdf_path (str): Path to the PDF file containing comments/annotations.
-        llm_client: LLMClient instance for API access. If None, creates a new one.
-        groq_free (bool): Whether to apply request throttling to stay under
-            free-tier rate limits.
-        verbose (bool, optional): If True, prints detailed information about
-            original and rewritten comments. Defaults to False.
-        pdf_processor: Optional PDF processor module (for testing).
+        pdf_path: Path to the PDF file containing comments/annotations.
+        llm_client: LLM client instance. If None, creates a new one with
+            automatic API selection.
+        groq_free: Whether to apply request throttling to stay under
+            free-tier rate limits. Defaults to False.
+        verbose: If True, prints detailed information about original and
+            rewritten comments. Defaults to False.
+        pdf_processor: Optional PDF processor module for dependency injection
+            in tests. Defaults to None (uses the standard module).
 
     Returns:
-        dict: A dictionary mapping page numbers (int) to lists of dictionaries
-        with the following keys:
-            - "original" (str): The raw comment text.
-            - "rewritten" (str): The improved, LLM-rewritten comment.
-            - "highlighted" (str): The exact highlighted text the comment refers to.
-            - "paragraph" (str): The paragraph providing context for the comment.
+        Tuple of (rewritten_comments, stats):
+        - rewritten_comments: Dictionary mapping page numbers (1-based) to lists 
+          of rewritten comment dicts
+        - stats: Statistics about comment categories (quelle, language, ignore counts)
+        
+    Example:
+        >>> from llm_client import LLMClient
+        >>> client = LLMClient()
+        >>> rewritten, stats = rewrite_comments_in_pdf("thesis.pdf", client)
+        >>> stats
+        {'quelle': 3, 'language': 2, 'ignore': 0}
+        >>> rewritten[1][0]['category']
+        'llm'
     """
     if llm_client is None:
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     if pdf_processor is None:
-        from .pdf_processing import (
-            extract_text_with_positions,
-            extract_annotations_with_positions,
-            find_annotation_context,
-        )
+        from . import pdf_processing as pdf_proc
+        extract_text_with_positions = pdf_proc.extract_text_with_positions
+        extract_annotations_with_positions = pdf_proc.extract_annotations_with_positions
+        find_annotation_context = pdf_proc.find_annotation_context
     else:
         extract_text_with_positions = pdf_processor.extract_text_with_positions
         extract_annotations_with_positions = (
@@ -406,10 +475,10 @@ def rewrite_comments_in_pdf(
 def get_summary_and_metadata_of_pdf(
     pdf_path: str,
     language: str,
-    llm_client: LLMClient = None,
+    llm_client: Optional[LLMClientProtocol] = None,
     groq_free: bool = False,
     verbose: bool = False,
-):
+) -> Tuple[str, ThesisMetadata]:
     """Extract thesis metadata and generate a summary from the PDF.
 
     This function uses the first pages of the PDF to detect metadata such as
@@ -417,20 +486,30 @@ def get_summary_and_metadata_of_pdf(
     a LaTeX-formatted summary of the thesis content using an LLM.
 
     Args:
-        pdf_path (str): Path to the thesis PDF.
-        language (str): Language the thesis is written in. Either German or English.
-        llm_client: LLMClient instance for API access. If None, creates a new one.
-        groq_free (bool): Whether to apply request throttling to stay under
-            free-tier rate limits.
-        verbose (bool, optional): If True, prints the generated summary.
-            Defaults to False.
+        pdf_path: Path to the thesis PDF.
+        language: Language the thesis is written in ("German" or "English").
+        llm_client: LLM client instance. If None, creates a new one with
+            automatic API selection.
+        groq_free: Whether to apply request throttling to stay under
+            free-tier rate limits. Adds 20s delay after metadata extraction
+            and 2s delay after summarization. Defaults to False.
+        verbose: If True, prints the generated summary. Defaults to False.
 
     Returns:
-        tuple: A tuple (summary, metadata) where:
-            - summary (str): LaTeX-formatted summary of the thesis.
-            - metadata (dict): Extracted metadata with keys:
-                "author", "matriculation_number", "title",
-                "first_examiner", "second_examiner", "bachelor_master".
+        Tuple of (summary, metadata):
+        - summary: LaTeX-formatted summary of the thesis
+        - metadata: Extracted thesis metadata including author, title, examiners
+        
+    Example:
+        >>> from llm_client import LLMClient
+        >>> client = LLMClient()
+        >>> summary, metadata = get_summary_and_metadata_of_pdf(
+        ...     "thesis.pdf", "German", client
+        ... )
+        >>> metadata['bachelor_master']
+        'Bachelor'
+        >>> "untersucht" in summary
+        True
     """
     if llm_client is None:
         llm_client = LLMClient()

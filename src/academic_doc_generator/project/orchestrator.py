@@ -2,7 +2,8 @@
 """High-level pipeline for project work grading letter generation."""
 
 import os
-from typing import Tuple
+from typing import Optional
+from pathlib import Path
 from llm_client import LLMClient
 from .llm_interface import (
     extract_project_metadata,
@@ -10,15 +11,16 @@ from .llm_interface import (
 )
 from .latex_generation import create_project_grading_letter_tex
 from ..core.latex_generation import compile_latex_to_pdf
+from ..core.types import ProjectResult, ProjectMetadata, LLMClientProtocol
 
 
 def run_project_pipeline(
-    pdf_path: str,
-    llm_client: LLMClient = None,
-    output_folder: str = None,
+    pdf_path: str | Path,
+    llm_client: Optional[LLMClientProtocol] = None,
+    output_folder: Optional[str | Path] = None,
     compile_pdf: bool = True,
     signature_file: str = "signature.png",
-) -> Tuple[str, str]:
+) -> ProjectResult:
     """Execute the full project work grading letter generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX

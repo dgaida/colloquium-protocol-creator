@@ -1,33 +1,37 @@
-"""Unified CLI for academic-doc-generator.
-
-This CLI supports both JSON configuration files and direct command-line arguments
-for running colloquium, project, and review tasks.
-"""
+# src/academic_doc_generator/cli.py
+"""Unified CLI with comprehensive type annotations."""
 
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional, List, NoReturn
 from llm_client import LLMClient
-from .config_loader import load_config
-from .colloquium.orchestrator import run_pipeline
+from .config_loader import ConfigLoader, load_config
+from .colloquium.orchestrator import run_pipeline, LocationType
 from .project.orchestrator import run_project_pipeline
 from .review.orchestrator import run_review_pipeline
 
 
-def run_from_config(config_path: str) -> None:
-    """Führt einen Task basierend auf einer Config-Datei aus.
+def run_from_config(config_path: str | Path) -> None:
+    """Execute a task based on a configuration file.
 
     Args:
-        config_path: Pfad zur JSON-Konfigurationsdatei.
+        config_path: Path to JSON configuration file.
+        
+    Raises:
+        SystemExit: If configuration loading or task execution fails.
+        
+    Example:
+        >>> run_from_config("config_templates/config_colloquium_campus.json")
     """
     try:
-        config = load_config(config_path)
+        config: ConfigLoader = load_config(str(config_path))
         print(f"✓ Konfiguration geladen: {config}")
     except (FileNotFoundError, ValueError, Exception) as e:
         print(f"❌ Fehler beim Laden der Konfiguration: {e}")
         sys.exit(1)
 
-    # Erstelle LLM-Client
+    # Create LLM client
     llm_config = config.get_llm_config()
     try:
         llm_client = LLMClient(
@@ -38,7 +42,7 @@ def run_from_config(config_path: str) -> None:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
         sys.exit(1)
 
-    # Führe Task aus
+    # Execute task based on configuration
     task = config.get_task()
     output_config = config.get_output_config()
     pdf_path = config.get_pdf_path()
@@ -46,6 +50,10 @@ def run_from_config(config_path: str) -> None:
     if task == "colloquium":
         coll_config = config.get_colloquium_config()
         gemini_config = config.get_gemini_evaluation_config()
+        
+        if coll_config is None:
+            print("❌ Fehler: Kolloquium-Konfiguration fehlt")
+            sys.exit(1)
 
         tex, pdf, email = run_pipeline(
             pdf_path=pdf_path,
@@ -56,7 +64,7 @@ def run_from_config(config_path: str) -> None:
             output_folder=output_config.get("folder"),
             compile_pdf=output_config.get("compile_pdf", True),
             fill_form_only=output_config.get("fill_form_only", False),
-            location_type=coll_config["location_type"],
+            location_type=coll_config["location_type"],  # type: ignore
             room=coll_config.get("room"),
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
@@ -100,11 +108,14 @@ def run_from_config(config_path: str) -> None:
         print(f"  • Markdown: {md_path}")
 
 
-def run_colloquium_direct(args) -> None:
-    """Führt Colloquium-Task mit direkten CLI-Argumenten aus.
+def run_colloquium_direct(args: argparse.Namespace) -> None:
+    """Execute colloquium task with direct CLI arguments.
 
     Args:
-        args: Parsed command-line arguments.
+        args: Parsed command-line arguments from argparse.
+        
+    Raises:
+        SystemExit: If LLM client initialization fails.
     """
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
@@ -125,7 +136,7 @@ def run_colloquium_direct(args) -> None:
         output_folder=args.out,
         compile_pdf=not args.no_compile,
         fill_form_only=False,
-        location_type=args.location_type,
+        location_type=args.location_type,  # type: ignore
         room=args.room,
         company_name=args.company_name,
         company_address=args.company_address,
@@ -144,11 +155,14 @@ def run_colloquium_direct(args) -> None:
         print(f"  • E-Mail: {email}")
 
 
-def run_project_direct(args) -> None:
-    """Führt Project-Task mit direkten CLI-Argumenten aus.
+def run_project_direct(args: argparse.Namespace) -> None:
+    """Execute project task with direct CLI arguments.
 
     Args:
-        args: Parsed command-line arguments.
+        args: Parsed command-line arguments from argparse.
+        
+    Raises:
+        SystemExit: If LLM client initialization fails.
     """
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
@@ -174,11 +188,14 @@ def run_project_direct(args) -> None:
         print(f"  • PDF: {pdf}")
 
 
-def run_review_direct(args) -> None:
-    """Führt Review-Task mit direkten CLI-Argumenten aus.
+def run_review_direct(args: argparse.Namespace) -> None:
+    """Execute review task with direct CLI arguments.
 
     Args:
-        args: Parsed command-line arguments.
+        args: Parsed command-line arguments from argparse.
+        
+    Raises:
+        SystemExit: If LLM client initialization fails.
     """
     try:
         llm_client = LLMClient(api_choice=args.api, llm=args.model)
@@ -202,10 +219,10 @@ def run_review_direct(args) -> None:
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Erstellt den ArgumentParser mit allen Subcommands.
+    """Create ArgumentParser with all subcommands.
 
     Returns:
-        Konfigurierter ArgumentParser.
+        Configured ArgumentParser with colloquium, project, and review subcommands.
     """
     parser = argparse.ArgumentParser(
         prog="academic-doc-generator",
@@ -310,19 +327,25 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
-    """Haupt-CLI-Einstiegspunkt."""
+def main() -> None:
+    """Main CLI entry point.
+    
+    Handles all command-line arguments and routes to appropriate functions.
+    
+    Raises:
+        SystemExit: On configuration errors or when listing templates.
+    """
     parser = create_parser()
     args = parser.parse_args()
 
-    # Liste verfügbare Templates
+    # List available templates
     if args.list_templates:
         templates_dir = Path("config_templates")
         if not templates_dir.exists():
             print("❌ config_templates-Ordner nicht gefunden")
             sys.exit(1)
 
-        templates = sorted(templates_dir.glob("*.json"))
+        templates: List[Path] = sorted(templates_dir.glob("*.json"))
         if not templates:
             print("❌ Keine Config-Templates gefunden")
             sys.exit(1)
@@ -336,12 +359,12 @@ def main():
         )
         return
 
-    # Config-Modus
+    # Config mode
     if args.config:
         run_from_config(args.config)
         return
 
-    # Subcommand-Modus
+    # Subcommand mode
     if args.command == "colloquium":
         run_colloquium_direct(args)
     elif args.command == "project":
@@ -349,7 +372,7 @@ def main():
     elif args.command == "review":
         run_review_direct(args)
     else:
-        # Kein Subcommand → Hilfe anzeigen
+        # No subcommand → show help
         parser.print_help()
         print("\n💡 Tipp:")
         print("  • Verwenden Sie --list-templates für verfügbare Config-Templates")
@@ -365,21 +388,21 @@ def main():
         print("  academic-doc-generator review paper.pdf")
 
 
-def colloquium_main():
-    """Entry point für colloquium-protocol-creator command.
+def colloquium_main() -> None:
+    """Entry point for colloquium-protocol-creator command.
 
-    Dieser Entry Point ermöglicht die Verwendung des alten Command-Namens
-    mit der neuen konsolidierten CLI-Struktur.
+    This entry point enables the use of the legacy command name
+    with the new consolidated CLI structure.
     """
     sys.argv = ["academic-doc-generator", "colloquium"] + sys.argv[1:]
     main()
 
 
-def project_main():
-    """Entry point für project-grading-letter command.
+def project_main() -> None:
+    """Entry point for project-grading-letter command.
 
-    Dieser Entry Point ermöglicht die Verwendung des alten Command-Namens
-    mit der neuen konsolidierten CLI-Struktur.
+    This entry point enables the use of the legacy command name
+    with the new consolidated CLI structure.
     """
     sys.argv = ["academic-doc-generator", "project"] + sys.argv[1:]
     main()

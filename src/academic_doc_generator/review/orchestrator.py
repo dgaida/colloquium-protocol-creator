@@ -1,6 +1,8 @@
 # review_pipeline/orchestrator.py
 
 import os
+from typing import Optional
+from pathlib import Path
 from llm_client import LLMClient
 from ..core.pdf_processing import (
     extract_text_with_positions,
@@ -12,14 +14,15 @@ from .md_generator import (
     create_review_markdown,
 )
 from pypdf import PdfReader
+from ..core.types import ReviewResult, LLMClientProtocol
 
 
 def run_review_pipeline(
-    pdf_path: str,
-    llm_client: LLMClient = None,
+    pdf_path: str | Path,
+    llm_client: Optional[LLMClientProtocol] = None,
     groq_free: bool = False,
-    output_folder: str = None,
-) -> str:
+    output_folder: Optional[str | Path] = None,
+) -> ReviewResult:
     """Run the peer review pipeline and produce a Markdown review.
 
     Args:

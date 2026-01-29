@@ -1,7 +1,7 @@
 # src/academic_doc_generator/core/llm_interface.py
 """LLM interface with comprehensive type annotations for API interactions."""
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import json
 import time
 from llm_client import LLMClient

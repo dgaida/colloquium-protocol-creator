@@ -13,6 +13,7 @@ develop-eggs/
 alt/
 dist/
 downloads/
+data/signature.png
 eggs/
 .eggs/
 lib/

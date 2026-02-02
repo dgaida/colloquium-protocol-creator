@@ -3,10 +3,8 @@ Unit tests for src/academic_doc_generator/colloquium/outlook_mail_generator.py
 """
 
 import pytest
-import platform
 import subprocess
-from unittest.mock import MagicMock, patch, mock_open, call
-from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from academic_doc_generator.colloquium.outlook_mail_generator import (
     OutlookMailGenerator,
@@ -38,8 +36,9 @@ class TestCreateOutlookMail:
         result = generator.create_outlook_mail(
             student_name="Max Mustermann",
             email_text="Test email text",
-            ics_file_path="/path/to/calendar.ics",
+            attachment_path="/path/to/calendar.ics",
             verbose=False,
+            recipient="test@example.com",
         )
 
         assert result is True
@@ -48,6 +47,7 @@ class TestCreateOutlookMail:
             "Test email text",
             "/path/to/calendar.ics",
             False,
+            "test@example.com",
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
@@ -61,13 +61,17 @@ class TestCreateOutlookMail:
         result = generator.create_outlook_mail(
             student_name="Test Student",
             email_text="Test text",
-            ics_file_path=None,
+            attachment_path=None,
             verbose=True,
         )
 
         assert result is True
         mock_macos.assert_called_once_with(
-            "Anmeldung Kolloquium Test Student", "Test text", None, True
+            "Anmeldung Kolloquium Test Student",
+            "Test text",
+            None,
+            True,
+            "studium-gm@th-koeln.de",
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
@@ -128,14 +132,19 @@ class TestCreateOutlookMail:
 
         assert result is False
         # Prüfe dass Fehler gedruckt wurde
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Fehler" in str(mock_call) for mock_call in mock_print.call_args_list
+        )
 
 
 class TestOpenIcsInOutlook:
     """Tests für die open_ics_in_outlook Methode."""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch(
+        "academic_doc_generator.colloquium.outlook_mail_generator.os.startfile",
+        create=True,
+    )
     @patch("builtins.print")
     def test_open_ics_in_outlook_windows_success(
         self, mock_print, mock_startfile, mock_platform
@@ -170,11 +179,15 @@ class TestOpenIcsInOutlook:
 
         assert result is False
         assert any(
-            "nur unter Windows" in str(call) for call in mock_print.call_args_list
+            "nur unter Windows" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch(
+        "academic_doc_generator.colloquium.outlook_mail_generator.os.startfile",
+        create=True,
+    )
     def test_open_ics_in_outlook_exception(self, mock_startfile, mock_platform):
         """Test open_ics_in_outlook mit Exception."""
         mock_platform.return_value = "Windows"
@@ -186,7 +199,10 @@ class TestOpenIcsInOutlook:
         assert result is False
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch(
+        "academic_doc_generator.colloquium.outlook_mail_generator.os.startfile",
+        create=True,
+    )
     @patch("builtins.print")
     def test_open_ics_in_outlook_verbose_exception(
         self, mock_print, mock_startfile, mock_platform
@@ -199,25 +215,43 @@ class TestOpenIcsInOutlook:
         result = generator.open_ics_in_outlook("/path/to/calendar.ics", verbose=True)
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Fehler" in str(mock_call) for mock_call in mock_print.call_args_list
+        )
 
 
 class TestCreateOutlookMailWindows:
     """Tests für die Windows-spezifische Implementierung."""
 
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
+    @pytest.fixture(autouse=True)
+    def setup_mocks(self):
+        """Setzt Mocks für win32com auf, die plattformunabhängig funktionieren."""
+        self.mock_win32com = MagicMock()
+        self.mock_win32com_client = MagicMock()
+        self.mock_win32com.client = self.mock_win32com_client
+
+        # Patch sys.modules so 'import win32com.client' works everywhere
+        with patch.dict(
+            "sys.modules",
+            {
+                "win32com": self.mock_win32com,
+                "win32com.client": self.mock_win32com_client,
+            },
+        ):
+            yield
+
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.exists")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.abspath")
     @patch("builtins.print")
     def test_create_outlook_mail_windows_success(
-        self, mock_print, mock_abspath, mock_exists, mock_win32com
+        self, mock_print, mock_abspath, mock_exists
     ):
         """Test Windows-Mail-Erstellung erfolgreich."""
         # Mock Outlook COM objects
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
+        self.mock_win32com_client.Dispatch.return_value = mock_outlook
 
         mock_exists.return_value = True
         mock_abspath.return_value = "/absolute/path/to/calendar.ics"
@@ -226,12 +260,14 @@ class TestCreateOutlookMailWindows:
         result = generator._create_outlook_mail_windows(
             subject="Test Subject",
             body="Test Body",
-            ics_file_path="/path/to/calendar.ics",
+            attachment_path="/path/to/calendar.ics",
             verbose=False,
         )
 
         assert result is True
-        mock_win32com.client.Dispatch.assert_called_once_with("Outlook.Application")
+        self.mock_win32com_client.Dispatch.assert_called_once_with(
+            "Outlook.Application"
+        )
         mock_outlook.CreateItem.assert_called_once_with(0)
         assert mock_mail.To == "studium-gm@th-koeln.de"
         assert mock_mail.Subject == "Test Subject"
@@ -241,119 +277,103 @@ class TestCreateOutlookMailWindows:
         )
         mock_mail.Display.assert_called_once_with(False)
 
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
     @patch("builtins.print")
-    def test_create_outlook_mail_windows_no_attachment(self, mock_print, mock_win32com):
+    def test_create_outlook_mail_windows_no_attachment(self, mock_print):
         """Test Windows-Mail ohne Anhang."""
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
+        self.mock_win32com_client.Dispatch.return_value = mock_outlook
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_windows(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is True
         mock_mail.Attachments.Add.assert_not_called()
 
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.exists")
     @patch("builtins.print")
     def test_create_outlook_mail_windows_attachment_not_found(
-        self, mock_print, mock_exists, mock_win32com
+        self, mock_print, mock_exists
     ):
         """Test Windows-Mail mit nicht existierendem Anhang."""
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
+        self.mock_win32com_client.Dispatch.return_value = mock_outlook
 
         mock_exists.return_value = False
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_windows(
-            subject="Test", body="Body", ics_file_path="/nonexistent.ics", verbose=False
+            subject="Test",
+            body="Body",
+            attachment_path="/nonexistent.ics",
+            verbose=False,
         )
 
         assert result is True
         mock_mail.Attachments.Add.assert_not_called()
         assert any(
-            "nicht gefunden" in str(call) for call in mock_print.call_args_list
+            "nicht gefunden" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.exists")
     @patch("builtins.print")
     def test_create_outlook_mail_windows_verbose_attachment(
-        self, mock_print, mock_exists, mock_win32com
+        self, mock_print, mock_exists
     ):
         """Test Windows-Mail mit verbose und Anhang."""
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
+        self.mock_win32com_client.Dispatch.return_value = mock_outlook
 
         mock_exists.return_value = True
 
         generator = OutlookMailGenerator()
         generator._create_outlook_mail_windows(
-            subject="Test", body="Body", ics_file_path="/test.ics", verbose=True
+            subject="Test", body="Body", attachment_path="/test.ics", verbose=True
         )
 
         assert any(
-            "als Anhang hinzugefügt" in str(call) for call in mock_print.call_args_list
+            "als Anhang hinzugefügt" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     def test_create_outlook_mail_windows_import_error(self):
         """Test Windows-Mail mit fehlendem pywin32."""
         generator = OutlookMailGenerator()
 
-        with patch(
-            "academic_doc_generator.colloquium.outlook_mail_generator.win32com"
-        ) as mock_win32com:
-            # Simuliere ImportError
-            mock_win32com.client.Dispatch.side_effect = AttributeError(
-                "module has no attribute 'client'"
-            )
-
-            # Um ImportError zu simulieren, müssen wir anders vorgehen
+        # Wir müssen den globalen Patch für diesen Test umgehen oder überschreiben
+        with patch.dict("sys.modules", {"win32com": None, "win32com.client": None}):
             with patch("builtins.print") as mock_print:
-                # Simuliere dass win32com nicht importiert werden kann
-                original_import = __import__
+                result = generator._create_outlook_mail_windows(
+                    "Test", "Body", None, False
+                )
+                assert result is False
+                assert any(
+                    "pywin32 nicht installiert" in str(call)
+                    for call in mock_print.call_args_list
+                )
 
-                def custom_import(name, *args, **kwargs):
-                    if name == "win32com.client":
-                        raise ImportError("No module named win32com")
-                    return original_import(name, *args, **kwargs)
-
-                with patch("builtins.__import__", side_effect=custom_import):
-                    try:
-                        # Versuche die Methode aufzurufen
-                        result = generator._create_outlook_mail_windows(
-                            "Test", "Body", None, False
-                        )
-                        # Falls kein ImportError auftritt, sollte es trotzdem funktionieren
-                    except ImportError:
-                        # Das ist der erwartete Fall
-                        pass
-
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
     @patch("builtins.print")
-    def test_create_outlook_mail_windows_com_exception(
-        self, mock_print, mock_win32com
-    ):
+    def test_create_outlook_mail_windows_com_exception(self, mock_print):
         """Test Windows-Mail mit COM-Exception."""
-        mock_win32com.client.Dispatch.side_effect = Exception("COM Error")
+        self.mock_win32com_client.Dispatch.side_effect = Exception("COM Error")
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_windows(
-            subject="Test", body="Body", ics_file_path=None, verbose=True
+            subject="Test", body="Body", attachment_path=None, verbose=True
         )
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Fehler" in str(mock_call) for mock_call in mock_print.call_args_list
+        )
 
 
 class TestCreateOutlookMailMacOS:
@@ -372,7 +392,7 @@ class TestCreateOutlookMailMacOS:
         result = generator._create_outlook_mail_macos(
             subject="Test Subject",
             body="Test Body",
-            ics_file_path="/path/to/calendar.ics",
+            attachment_path="/path/to/calendar.ics",
             verbose=False,
         )
 
@@ -395,7 +415,7 @@ class TestCreateOutlookMailMacOS:
         """Test macOS-Mail ohne Anhang."""
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_macos(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is True
@@ -414,12 +434,13 @@ class TestCreateOutlookMailMacOS:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_macos(
-            subject="Test", body="Body", ics_file_path="/test.ics", verbose=True
+            subject="Test", body="Body", attachment_path="/test.ics", verbose=True
         )
 
         assert result is True
         assert any(
-            "als Anhang hinzugefügt" in str(call) for call in mock_print.call_args_list
+            "als Anhang hinzugefügt" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -429,26 +450,26 @@ class TestCreateOutlookMailMacOS:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_macos(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is False
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
     @patch("builtins.print")
-    def test_create_outlook_mail_macos_verbose_error(
-        self, mock_print, mock_subprocess
-    ):
+    def test_create_outlook_mail_macos_verbose_error(self, mock_print, mock_subprocess):
         """Test macOS-Mail mit Fehler und verbose."""
         mock_subprocess.side_effect = subprocess.CalledProcessError(1, "osascript")
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_macos(
-            subject="Test", body="Body", ics_file_path=None, verbose=True
+            subject="Test", body="Body", attachment_path=None, verbose=True
         )
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any(
+            "Fehler" in str(mock_call) for mock_call in mock_print.call_args_list
+        )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
     def test_create_outlook_mail_macos_general_exception(self, mock_subprocess):
@@ -457,14 +478,16 @@ class TestCreateOutlookMailMacOS:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_macos(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is False
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.exists")
-    def test_create_outlook_mail_macos_special_chars(self, mock_exists, mock_subprocess):
+    def test_create_outlook_mail_macos_special_chars(
+        self, mock_exists, mock_subprocess
+    ):
         """Test macOS-Mail mit Sonderzeichen."""
         mock_exists.return_value = True
 
@@ -472,7 +495,7 @@ class TestCreateOutlookMailMacOS:
         result = generator._create_outlook_mail_macos(
             subject='Test "Subject" with \\backslash',
             body='Body with "quotes" and \\backslash',
-            ics_file_path='/path/with spaces/file.ics',
+            attachment_path="/path/with spaces/file.ics",
             verbose=False,
         )
 
@@ -499,7 +522,7 @@ class TestCreateOutlookMailLinux:
         result = generator._create_outlook_mail_linux(
             subject="Test Subject",
             body="Test Body",
-            ics_file_path="/path/to/calendar.ics",
+            attachment_path="/path/to/calendar.ics",
             verbose=False,
         )
 
@@ -523,13 +546,13 @@ class TestCreateOutlookMailLinux:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_linux(
-            subject="Test", body="Body", ics_file_path="/test.ics", verbose=True
+            subject="Test", body="Body", attachment_path="/test.ics", verbose=True
         )
 
         assert result is True
         assert any(
-            "nicht automatisch hinzugefügt" in str(call)
-            for call in mock_print.call_args_list
+            "nicht automatisch hinzugefügt" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -543,7 +566,7 @@ class TestCreateOutlookMailLinux:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_linux(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is False
@@ -560,13 +583,13 @@ class TestCreateOutlookMailLinux:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_linux(
-            subject="Test", body="Body", ics_file_path=None, verbose=True
+            subject="Test", body="Body", attachment_path=None, verbose=True
         )
 
         assert result is False
         assert any(
-            "Konnte Standard-Mail-Client nicht" in str(call)
-            for call in mock_print.call_args_list
+            "Konnte Standard-Mail-Client nicht" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -579,7 +602,7 @@ class TestCreateOutlookMailLinux:
 
         generator = OutlookMailGenerator()
         result = generator._create_outlook_mail_linux(
-            subject="Test", body="Body", ics_file_path=None, verbose=False
+            subject="Test", body="Body", attachment_path=None, verbose=False
         )
 
         assert result is False
@@ -589,35 +612,39 @@ class TestIntegration:
     """Integrationstests für OutlookMailGenerator."""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.exists")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.path.abspath")
-    def test_full_windows_workflow(
-        self, mock_abspath, mock_exists, mock_win32com, mock_platform
-    ):
+    def test_full_windows_workflow(self, mock_abspath, mock_exists, mock_platform):
         """Test vollständiger Windows-Workflow."""
         mock_platform.return_value = "Windows"
         mock_exists.return_value = True
         mock_abspath.return_value = "/abs/path/calendar.ics"
 
+        mock_win32com = MagicMock()
+        mock_win32com_client = MagicMock()
+        mock_win32com.client = mock_win32com_client
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
+        mock_win32com_client.Dispatch.return_value = mock_outlook
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
 
-        generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(
-            student_name="Mustermann, Max",
-            email_text="Lieber Prüfungsservice,\nhiermit möchte ich Herr Max Mustermann anmelden.",
-            ics_file_path="/path/to/calendar.ics",
-            verbose=False,
-        )
+        with patch.dict(
+            "sys.modules",
+            {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
+        ):
+            generator = OutlookMailGenerator()
+            result = generator.create_outlook_mail(
+                student_name="Mustermann, Max",
+                email_text="Lieber Prüfungsservice,\nhiermit möchte ich Herr Max Mustermann anmelden.",
+                attachment_path="/path/to/calendar.ics",
+                verbose=False,
+            )
 
-        assert result is True
-        assert mock_mail.Subject == "Anmeldung Kolloquium Mustermann, Max"
-        assert "Herr Max Mustermann" in mock_mail.Body
-        mock_mail.Attachments.Add.assert_called_once()
-        mock_mail.Display.assert_called_once()
+            assert result is True
+            assert mock_mail.Subject == "Anmeldung Kolloquium Mustermann, Max"
+            assert "Herr Max Mustermann" in mock_mail.Body
+            mock_mail.Attachments.Add.assert_called_once()
+            mock_mail.Display.assert_called_once()
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -631,7 +658,7 @@ class TestIntegration:
         result = generator.create_outlook_mail(
             student_name="Schmidt, Anna",
             email_text="Test email für macOS",
-            ics_file_path="/Users/test/calendar.ics",
+            attachment_path="/Users/test/calendar.ics",
             verbose=False,
         )
 
@@ -650,7 +677,7 @@ class TestIntegration:
         result = generator.create_outlook_mail(
             student_name="Weber, Julia",
             email_text="Test email für Linux",
-            ics_file_path=None,
+            attachment_path=None,
             verbose=False,
         )
 
@@ -662,60 +689,78 @@ class TestEdgeCases:
     """Tests für Grenzfälle und spezielle Szenarien."""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
-    def test_empty_email_text(self, mock_win32com, mock_platform):
+    def test_empty_email_text(self, mock_platform):
         """Test mit leerem E-Mail-Text."""
         mock_platform.return_value = "Windows"
+        mock_win32com = MagicMock()
+        mock_win32com_client = MagicMock()
+        mock_win32com.client = mock_win32com_client
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
+        mock_win32com_client.Dispatch.return_value = mock_outlook
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
 
-        generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(
-            student_name="Test", email_text="", verbose=False
-        )
+        with patch.dict(
+            "sys.modules",
+            {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
+        ):
+            generator = OutlookMailGenerator()
+            result = generator.create_outlook_mail(
+                student_name="Test", email_text="", verbose=False
+            )
 
-        assert result is True
-        assert mock_mail.Body == ""
+            assert result is True
+            assert mock_mail.Body == ""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
-    def test_very_long_student_name(self, mock_win32com, mock_platform):
+    def test_very_long_student_name(self, mock_platform):
         """Test mit sehr langem Studentennamen."""
         mock_platform.return_value = "Windows"
+        mock_win32com = MagicMock()
+        mock_win32com_client = MagicMock()
+        mock_win32com.client = mock_win32com_client
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
+        mock_win32com_client.Dispatch.return_value = mock_outlook
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
 
         long_name = "von und zu Testdoppelnamen-Mustermann, Maximilian Alexander"
-        generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(
-            student_name=long_name, email_text="Test", verbose=False
-        )
+        with patch.dict(
+            "sys.modules",
+            {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
+        ):
+            generator = OutlookMailGenerator()
+            result = generator.create_outlook_mail(
+                student_name=long_name, email_text="Test", verbose=False
+            )
 
-        assert result is True
-        assert long_name in mock_mail.Subject
+            assert result is True
+            assert long_name in mock_mail.Subject
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com")
-    def test_special_characters_in_email(self, mock_win32com, mock_platform):
+    def test_special_characters_in_email(self, mock_platform):
         """Test mit Sonderzeichen im E-Mail-Text."""
         mock_platform.return_value = "Windows"
+        mock_win32com = MagicMock()
+        mock_win32com_client = MagicMock()
+        mock_win32com.client = mock_win32com_client
         mock_outlook = MagicMock()
         mock_mail = MagicMock()
+        mock_win32com_client.Dispatch.return_value = mock_outlook
         mock_outlook.CreateItem.return_value = mock_mail
-        mock_win32com.client.Dispatch.return_value = mock_outlook
 
         special_text = "Test mit Umlauten: äöüß und Sonderzeichen: €@#"
-        generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(
-            student_name="Test", email_text=special_text, verbose=False
-        )
+        with patch.dict(
+            "sys.modules",
+            {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
+        ):
+            generator = OutlookMailGenerator()
+            result = generator.create_outlook_mail(
+                student_name="Test", email_text=special_text, verbose=False
+            )
 
-        assert result is True
-        assert mock_mail.Body == special_text
+            assert result is True
+            assert mock_mail.Body == special_text
 
 
 if __name__ == "__main__":

@@ -3,7 +3,6 @@
 import os
 from academic_doc_generator import cli
 
-
 # -------------------
 # Example usage
 # -------------------

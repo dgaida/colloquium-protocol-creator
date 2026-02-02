@@ -196,7 +196,7 @@ class ColloquiumConfig(TypedDict, total=False):
     company_name: Optional[str]  # Required if location_type="company"
     company_address: Optional[str]  # Optional for company
     zoom_link: Optional[str]  # Required if location_type="online"
-    zoom_passcode: Optional[str]  # Optional for online
+    zoom_meeting_access: Optional[str]  # Optional for online
 
 
 class GeminiEvaluationConfig(TypedDict, total=False):
@@ -219,8 +219,8 @@ class PDFConfig(TypedDict):
 ColloquiumResult = Tuple[str, str, str]
 """Result of colloquium pipeline: (tex_path, pdf_path, email_path)."""
 
-ProjectResult = Tuple[str, str]
-"""Result of project pipeline: (tex_path, pdf_path)."""
+ProjectResult = Tuple[str, str, str]
+"""Result of project pipeline: (tex_path, pdf_path, email_path)."""
 
 ReviewResult = str
 """Result of review pipeline: markdown_path."""

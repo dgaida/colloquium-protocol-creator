@@ -1,4 +1,3 @@
-# colloquium_creator/latex_generation.py
 """LaTeX generation and helper functions."""
 
 from typing import Dict, Optional
@@ -68,7 +67,7 @@ def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
 
 
 def return_seite_page(lang: str) -> str:
-    """
+    """Returns 'Seite' if German, 'page' if English.
 
     Args:
         lang (str): English or German
@@ -108,7 +107,7 @@ def create_formal_letter_tex(
         first_examiner_mail (str): email of first examiner.
         questions (str): questions from first examiner.
         place (str, optional): Place of issue. Defaults to "Gummersbach".
-        date (str, optional): Date string. Defaults to LaTeX \\today.
+        date (str, optional): Date string. Defaults to LaTeX \today.
         gemini_evaluation (str, optional): Automatische Bewertung von Gemini.
     """
     # Füge Gemini-Bewertung hinzu, falls vorhanden
@@ -116,172 +115,149 @@ def create_formal_letter_tex(
     if gemini_evaluation:
         gemini_section = f"\n\n{gemini_evaluation}\n"
 
-    tex_template = f"""
-\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
-\\usepackage{{fontspec}}
-\\setmainfont{{Latin Modern Roman}}
-\\usepackage[ngerman]{{babel}}
-\\usepackage{{geometry}}
-\\geometry{{a4paper, top=25mm, left=25mm, right=25mm, bottom=30mm}}
-\\usepackage{{url}}
+    tex_template = rf"""
+\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
+\usepackage{{fontspec}}
+\setmainfont{{Latin Modern Roman}}
+\usepackage[ngerman]{{babel}}
+\usepackage{{geometry}}
+\geometry{{a4paper, top=25mm, left=25mm, right=25mm, bottom=30mm}}
+\usepackage{{url}}
 
 % Sender info
-\\setkomavar{{fromname}}{{{first_examiner}}}
-\\setkomavar{{fromaddress}}{{Steinmüllerallee 1\\\\51643 Gummersbach}}
-\\setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\\setkomavar{{fromemail}}{{{first_examiner_mail}}}
-\\setkomavar{{place}}{{{place}}}
-\\setkomavar{{date}}{{{date}}}
-\\setkomavar{{signature}}{{{first_examiner}}}
-\\setkomavar{{subject}}{{{escape_for_latex(subject, preserve_latex=False)}}}
+\setkomavar{{fromname}}{{{first_examiner}}}
+\setkomavar{{fromaddress}}{{Steinmüllerallee 1\\51643 Gummersbach}}
+\setkomavar{{fromphone}}{{+49 2261-8196-6204}}
+\setkomavar{{fromemail}}{{{first_examiner_mail}}}
+\setkomavar{{place}}{{{place}}}
+\setkomavar{{date}}{{{date}}}
+\setkomavar{{signature}}{{{first_examiner}}}
+\setkomavar{{subject}}{{{escape_for_latex(subject, preserve_latex=False)}}}
 
 % Footer
-\\setkomavar{{firstfoot}}{{%
-  \\parbox[t]{{\\textwidth}}{{\\footnotesize
-    Technische Hochschule Köln, Campus Gummersbach \\\\
-    Sitz des Präsidiums: Claudiusstrasse 1, 50678 Köln \\\\
-    www.th-koeln.de \\\\
-    Steuer-Nr.: 214/5817/3402 - USt-IdNr.: DE 122653679 \\\\
-    Bankverbindung: Sparkasse KölnBonn \\\\
+\setkomavar{{firstfoot}}{{%
+  \parbox[t]{{\textwidth}}{{\footnotesize
+    Technische Hochschule Köln, Campus Gummersbach \\
+    Sitz des Präsidiums: Claudiusstrasse 1, 50678 Köln \\
+    www.th-koeln.de \\
+    Steuer-Nr.: 214/5817/3402 - USt-IdNr.: DE 122653679 \\
+    Bankverbindung: Sparkasse KölnBonn \\
     IBAN: DE34 3705 0198 1900 7098 56 - BIC: COLSDE33
   }}
 }}
 
-\\begin{{document}}
+\begin{{document}}
 
-\\begin{{letter}}{{{escape_for_latex(recipient, preserve_latex=False)}}}
+\begin{{letter}}{{{escape_for_latex(recipient, preserve_latex=False)}}}
 
-\\opening{{Sehr geehrte Damen und Herren,}}
+\opening{{Sehr geehrte Damen und Herren,}}
 
-Bewertung folgender Thesis:\\\\
+Bewertung folgender Thesis:\\[1ex]
 
-\\textbf{{Titel:}} {escape_for_latex(title, preserve_latex=False)} \\\\[1ex]
-\\textbf{{Autor:}} {escape_for_latex(author, preserve_latex=False)} \\\\[2ex]
+\textbf{{Titel:}} {escape_for_latex(title, preserve_latex=False)} \\[1ex]
+\textbf{{Autor:}} {escape_for_latex(author, preserve_latex=False)} \\[2ex]
 
-\\textbf{{Zusammenfassung der Thesis:}} \\\\
+\textbf{{Zusammenfassung der Thesis:}} \\
 
 {summary}
 
-\n\n
-\\textbf{{Protokoll des Kolloquiums:}}\\\\[1ex]
 
-\\textbf{{Fragen {first_examiner}:}}\\\\
+\textbf{{Protokoll des Kolloquiums:}}\\[1ex]
 
-{questions}\\\\
+\textbf{{Fragen {first_examiner}:}}\\
 
-\n
-\\textbf{{Fragen {second_examiner}:}}\\\\
+{questions}\\
 
-\\textbf{{Vortrag:}} xx Minuten\\\\
+
+\textbf{{Fragen {second_examiner}:}}\\
+
+\textbf{{Vortrag:}} xx Minuten\\
 
 Bewertung des Vortrags:
 
-1. Inhaltliche Qualität \& Struktur:
+1. Inhaltliche Qualität & Struktur:
 
 Kriterien:
-\\begin{{itemize}}
-\\item Verständlichkeit von Ziel, Problemstellung und Ergebnissen
-\\item Fachliche Richtigkeit
-\\item Logischer Aufbau, klarer roter Faden, sinnvolle Schwerpunktsetzung
-\\item Einhaltung der Zeit
-\\end{{itemize}}
+\begin{{itemize}}
+\item Verständlichkeit von Ziel, Problemstellung und Ergebnissen
+\item Fachliche Richtigkeit
+\item Logischer Aufbau, klarer roter Faden, sinnvolle Schwerpunktsetzung
+\item Einhaltung der Zeit
+\end{{itemize}}
 
 Bewertung der Kriterien:
 
-\\begin{{itemize}}
-\\item sehr gut
-\\item gut
-\\item befriedigend
-\\item ausreichend
-\\end{{itemize}}
+\begin{{itemize}}
+\item sehr gut
+\item gut
+\item befriedigend
+\item ausreichend
+\end{{itemize}}
 
-2. Darstellung \& Visualisierung:
+2. Darstellung & Visualisierung:
 
 Kriterien:
-\\begin{{itemize}}
-\\item Unterstützung des Vortrags durch Folien und Visualisierungen
-\\item Übersichtlichkeit und Angemessenheit der Gestaltung
-\\item Verständliche Vermittlung auch komplexer Inhalte
-\\end{{itemize}}
+\begin{{itemize}}
+\item Unterstützung des Vortrags durch Folien und Visualisierungen
+\item Übersichtlichkeit und Angemessenheit der Gestaltung
+\item Verständliche Vermittlung auch komplexer Inhalte
+\end{{itemize}}
 
 Bewertung der Kriterien:
 
-\\begin{{itemize}}
-\\item sehr gut
-\\item gut
-\\item befriedigend
-\\item ausreichend
-\\end{{itemize}}
+\begin{{itemize}}
+\item sehr gut
+\item gut
+\item befriedigend
+\item ausreichend
+\end{{itemize}}
 
-3. Präsentation \& Auftreten:
+3. Präsentation & Auftreten:
 
 Kriterien:
-\\begin{{itemize}}
-\\item Freier, sicherer und verständlicher Vortrag (Sprache, Tempo, Körpersprache)
-\\item Souveräner Umgang mit Fragen
-\\item Kritische Reflexion der eigenen Arbeit (Stärken, Grenzen, Ausblick)
-\\end{{itemize}}
+\begin{{itemize}}
+\item Freier, sicherer und verständlicher Vortrag (Sprache, Tempo, Körpersprache)
+\item Souveräner Umgang mit Fragen
+\item Kritische Reflexion der eigenen Arbeit (Stärken, Grenzen, Ausblick)
+\end{{itemize}}
 
 Bewertung der Kriterien:
 
-\\begin{{itemize}}
-\\item sehr gut
-\\item gut
-\\item befriedigend
-\\item ausreichend
-\\end{{itemize}}
-
-% Fachliche Qualität (Inhalt)
-% Klarheit und Nachvollziehbarkeit: Werden Ziel, Problemstellung und Ergebnisse verständlich erläutert?
-% Tiefe und Relevanz: Sind die wichtigsten Aspekte des Projekts dargestellt, ohne sich in Details zu verlieren?
-% Richtigkeit: Sind die dargestellten Inhalte fachlich korrekt und konsistent?
-
-% Struktur und Aufbau
-% Roter Faden: Ist die Präsentation logisch gegliedert (Einleitung – Hauptteil – Fazit)?
-% Zeitmanagement: Wird die vorgegebene Zeit sinnvoll eingehalten?
-% Schwerpunktsetzung: Werden die zentralen Punkte angemessen hervorgehoben?
-
-% Visualisierung
-% Foliengestaltung: Sind die Folien übersichtlich, nicht überladen und unterstützen den Vortrag?
-% Visualisierung komplexer Inhalte: Werden Grafiken, Diagramme oder Beispiele sinnvoll eingesetzt?
-
-% Vortragstechnik
-% Sprachliche Verständlichkeit: Deutliche Aussprache, angemessenes Tempo, Vermeidung von Füllwörtern.
-% Präsentationsstil: Freier, sicherer Vortrag statt reines Ablesen.
-% Körpersprache und Kontakt: Blickkontakt, Gestik, Haltung unterstützen den Vortrag.
-
-% Reflexion und Ergebnisdarstellung
-% Eigenständigkeit: Werden die eigenen Beiträge und deren Bedeutung klar herausgestellt?
-% Kritische Einordnung: Werden Stärken, Grenzen und mögliche Weiterentwicklungen benannt?
+\begin{{itemize}}
+\item sehr gut
+\item gut
+\item befriedigend
+\item ausreichend
+\end{{itemize}}
 
 Demo:
-\\begin{{itemize}}
-\\item ja, live
-\\item ja, live, aber Fehlerhaft/nicht so gut
-\\item ja, Video
-\\item nein
-\\item nicht möglich
-\\end{{itemize}}
+\begin{{itemize}}
+\item ja, live
+\item ja, live, aber Fehlerhaft/nicht so gut
+\item ja, Video
+\item nein
+\item nicht möglich
+\end{{itemize}}
 
 Fragen konnten beantwortet werden:
-\\begin{{itemize}}
-\\item sehr gut
-\\item sehr gut, manche gut
-\\item gut
-\\item gut, manche nicht so gut
-\\item viele nicht so gut oder gar nicht
-\\end{{itemize}}
+\begin{{itemize}}
+\item sehr gut
+\item sehr gut, manche gut
+\item gut
+\item gut, manche nicht so gut
+\item viele nicht so gut oder gar nicht
+\end{{itemize}}
 
-.\\\\[2ex]
+.\\[2ex]
 
 Dauer des Kolloquiums: 45 Minuten
 {gemini_section}
 
-\\closing{{Mit freundlichen Grü{{\\ss}}en}}
+\closing{{Mit freundlichen Grü{{\ss}}en}}
 
-\\end{{letter}}
+\end{{letter}}
 
-\\end{{document}}
+\end{{document}}
 """
     with open(filename, "w", encoding="utf-8") as f:
         f.write(tex_template)

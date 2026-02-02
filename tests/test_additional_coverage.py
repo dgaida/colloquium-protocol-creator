@@ -9,7 +9,6 @@ import json
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.core import llm_interface, pdf_processing
 
-
 # ============================================================================
 # Additional Tests for llm_interface.py
 # ============================================================================
@@ -161,7 +160,7 @@ class TestLLMInterfaceAdditional:
 
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = (
-            "This thesis investigates X.\\\\\n" "The main findings are Y."
+            "This thesis investigates X.\\\\\nThe main findings are Y."
         )
 
         result = llm_interface.summarize_thesis({0: ""}, "English", mock_client)
@@ -255,9 +254,10 @@ class TestLLMInterfaceAdditional:
         mock_client_class.return_value = mock_client
 
         mock_extract.return_value = {0: "Test content"}
-        
+
         # FIXED: Mock muss zwei Aufrufe behandeln korrekt
         call_count = [0]
+
         def mock_completion(messages):
             call_count[0] += 1
             if call_count[0] == 1:
@@ -266,7 +266,7 @@ class TestLLMInterfaceAdditional:
             else:
                 # Zweiter Aufruf: summarize_thesis
                 return "Summary text"
-        
+
         mock_client.chat_completion.side_effect = mock_completion
 
         summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
@@ -286,16 +286,17 @@ class TestLLMInterfaceAdditional:
         mock_extract.return_value = {0: "Test"}
 
         mock_client = MagicMock()
-        
+
         # FIXED: Verwende Funktion statt Liste
         call_count = [0]
+
         def mock_completion(messages):
             call_count[0] += 1
             if call_count[0] == 1:
                 return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
             else:
                 return "Summary"
-        
+
         mock_client.chat_completion.side_effect = mock_completion
 
         llm_interface.get_summary_and_metadata_of_pdf(
@@ -316,16 +317,17 @@ class TestLLMInterfaceAdditional:
         mock_extract.return_value = {0: "Test"}
 
         mock_client = MagicMock()
-        
+
         # FIXED: Verwende Funktion statt Liste
         call_count = [0]
+
         def mock_completion(messages):
             call_count[0] += 1
             if call_count[0] == 1:
                 return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
             else:
                 return "Test summary"
-        
+
         mock_client.chat_completion.side_effect = mock_completion
 
         summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(

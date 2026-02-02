@@ -156,6 +156,14 @@ class ConfigLoader:
         """
         return self.config.get("colloquium")
 
+    def get_project_config(self) -> Optional[Dict[str, Any]]:
+        """Gibt die Projekt-Konfiguration zurück.
+
+        Returns:
+            Dictionary mit Projekt-Details oder None wenn nicht vorhanden.
+        """
+        return self.config.get("project")
+
     def get_gemini_evaluation_config(self) -> Dict[str, Any]:
         """Gibt die Gemini-Evaluations-Konfiguration zurück.
 
@@ -173,7 +181,7 @@ class ConfigLoader:
         Returns:
             Beschreibung der geladenen Konfiguration.
         """
-        return f"ConfigLoader(task={self.get_task()}, " f"pdf={self.get_pdf_path()})"
+        return f"ConfigLoader(task={self.get_task()}, pdf={self.get_pdf_path()})"
 
 
 def load_config(folder_path: str) -> ConfigLoader:

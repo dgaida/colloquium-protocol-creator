@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 from academic_doc_generator.project import latex_generation, llm_interface
 
-
 # ============================================================================
 # Tests for project_creator/latex_generation.py
 # ============================================================================
@@ -80,6 +79,7 @@ class TestProjectLatexGeneration:
                 examiner_mail="test@example.com",
                 gender="Herr",
                 work_type="Praxisprojekt",
+                grade="1.3",
             )
 
             assert os.path.exists(tex_path)
@@ -93,6 +93,7 @@ class TestProjectLatexGeneration:
             assert "12345" in content
             assert "Test Project Title" in content
             assert "Prof. Test" in content
+            assert "1.3" in content
 
             # Check gender-specific text
             assert "Herr" in content

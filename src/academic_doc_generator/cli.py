@@ -4,10 +4,10 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional, List, NoReturn
+from typing import List
 from llm_client import LLMClient
 from .config_loader import ConfigLoader, load_config
-from .colloquium.orchestrator import run_pipeline, LocationType
+from .colloquium.orchestrator import run_pipeline
 from .project.orchestrator import run_project_pipeline
 from .review.orchestrator import run_review_pipeline
 
@@ -17,10 +17,10 @@ def run_from_config(config_path: str | Path) -> None:
 
     Args:
         config_path: Path to JSON configuration file.
-        
+
     Raises:
         SystemExit: If configuration loading or task execution fails.
-        
+
     Example:
         >>> run_from_config("config_templates/config_colloquium_campus.json")
     """
@@ -50,7 +50,7 @@ def run_from_config(config_path: str | Path) -> None:
     if task == "colloquium":
         coll_config = config.get_colloquium_config()
         gemini_config = config.get_gemini_evaluation_config()
-        
+
         if coll_config is None:
             print("❌ Fehler: Kolloquium-Konfiguration fehlt")
             sys.exit(1)
@@ -69,7 +69,7 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            zoom_passcode=coll_config.get("zoom_passcode"),
+            zoom_meeting_access=coll_config.get("zoom_meeting_access"),
             gemini_evaluation_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
@@ -83,18 +83,24 @@ def run_from_config(config_path: str | Path) -> None:
             print(f"  • E-Mail: {email}")
 
     elif task == "project":
-        tex, pdf = run_project_pipeline(
+        proj_config = config.get_project_config() or {}
+        grade = proj_config.get("grade")
+
+        tex, pdf, email = run_project_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=output_config.get("folder"),
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
+            grade=grade,
         )
 
         print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
         print(f"  • LaTeX: {tex}")
         if pdf:
             print(f"  • PDF: {pdf}")
+        if email:
+            print(f"  • E-Mail: {email}")
 
     elif task == "review":
         md_path = run_review_pipeline(
@@ -113,7 +119,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -141,7 +147,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        zoom_passcode=args.zoom_passcode,
+        zoom_meeting_access=args.zoom_meeting_access,
         gemini_evaluation_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
@@ -160,7 +166,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -174,18 +180,21 @@ def run_project_direct(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    tex, pdf = run_project_pipeline(
+    tex, pdf, email = run_project_pipeline(
         pdf_path=args.pdf,
         llm_client=llm_client,
         output_folder=args.out,
         compile_pdf=not args.no_compile,
         signature_file=args.signature,
+        grade=getattr(args, "grade", None),
     )
 
     print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
     print(f"  • LaTeX: {tex}")
     if pdf:
         print(f"  • PDF: {pdf}")
+    if email:
+        print(f"  • E-Mail: {email}")
 
 
 def run_review_direct(args: argparse.Namespace) -> None:
@@ -193,7 +202,7 @@ def run_review_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -266,7 +275,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-passcode", help="Zoom passcode (for online)")
+    colloquium_parser.add_argument("--zoom-meeting-access", help="Zoom access code (for online)")
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],
@@ -294,6 +303,7 @@ def create_parser() -> argparse.ArgumentParser:
         "project", help="Generate project work grading letter"
     )
     project_parser.add_argument("pdf", help="Path to the project work PDF")
+    project_parser.add_argument("--grade", help="Grade for the project (e.g., 1.3)")
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],
@@ -329,9 +339,9 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Main CLI entry point.
-    
+
     Handles all command-line arguments and routes to appropriate functions.
-    
+
     Raises:
         SystemExit: On configuration errors or when listing templates.
     """

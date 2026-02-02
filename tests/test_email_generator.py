@@ -113,21 +113,21 @@ class TestEmailGenerator:
         with pytest.raises(ValueError, match="'company_name' benötigt"):
             generator._generate_location_text(location_type="company")
 
-    def test_generate_location_text_online_with_passcode(self):
+    def test_generate_location_text_online_with_meeting_access(self):
         """Test _generate_location_text für Online mit Passcode."""
         generator = email_generator.EmailGenerator()
 
         result = generator._generate_location_text(
             location_type="online",
             zoom_link="https://zoom.us/j/123456",
-            zoom_passcode="test123",
+            zoom_meeting_access="test123",
         )
 
         assert "über Zoom:" in result
         assert "https://zoom.us/j/123456" in result
         assert "Zugangscode: test123" in result
 
-    def test_generate_location_text_online_without_passcode(self):
+    def test_generate_location_text_online_without_meeting_access(self):
         """Test _generate_location_text für Online ohne Passcode."""
         generator = email_generator.EmailGenerator()
 
@@ -251,7 +251,7 @@ class TestEmailGenerator:
             first_examiner="Prof. Remote",
             location_type="online",
             zoom_link="https://zoom.us/j/123",
-            zoom_passcode="abc123",
+            zoom_meeting_access="abc123",
         )
 
         assert "über Zoom:" in generator.email_text
@@ -497,7 +497,7 @@ class TestIntegration:
                 first_examiner="Dr. Anna Schmidt",
                 location_type="online",
                 zoom_link="https://zoom.us/j/123456789",
-                zoom_passcode="Kolloquium2026",
+                zoom_meeting_access="Kolloquium2026",
             )
 
             # Prüfe Online-spezifische Details

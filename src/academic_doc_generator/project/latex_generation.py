@@ -1,6 +1,8 @@
 # project_creator/latex_generation.py
 """LaTeX generation for project work grading letters."""
 
+import os
+from typing import Optional
 from datetime import datetime
 from ..core.latex_generation import escape_for_latex
 
@@ -41,6 +43,7 @@ def create_project_grading_letter_tex(
     place: str = "Gummersbach",
     date: str = r"\today",
     signature_file: str = "signature.png",
+    grade: Optional[str] = None,
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
 
@@ -56,6 +59,7 @@ def create_project_grading_letter_tex(
         place: Place of issue (default: "Gummersbach").
         date: Date string (default: LaTeX \\today).
         signature_file: Path to signature image file (default: "signature.png").
+        grade: The grade obtained (default: None, results in a blank line).
     """
     semester = get_current_semester()
 
@@ -66,6 +70,18 @@ def create_project_grading_letter_tex(
 
     sein_ihr = "sein" if gender == "Herr" else "ihr"
     er_sie = "Er" if gender == "Herr" else "Sie"
+
+    # Handle grade
+    grade_tex = grade if grade is not None else r"\underline{\hspace{2cm}}"
+
+    # Handle signature
+    signature_path_safe = signature_file.replace("\\", "/")
+    signature_tex = f"\\includegraphics[width=4cm]{{{signature_path_safe}}}"
+    if not os.path.exists(signature_file):
+        signature_tex = f"""\\iffalse
+% Uncomment the following line and provide the path to your signature image
+% {signature_tex}
+\\fi"""
 
     tex_template = f"""\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}
@@ -106,7 +122,7 @@ def create_project_grading_letter_tex(
 
 {student_name_safe}, Matrikelnr. {matriculation_number},
 
-hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note \\underline{{\\hspace{{2cm}}}} erhalten.
+hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {grade_tex} erhalten.
 
 Das Thema war:
 
@@ -114,10 +130,7 @@ Das Thema war:
 
 \\closing{{Danke und viele Grü{{\\ss}}e,}}
 
-\\iffalse
-% Uncomment the following line and provide the path to your signature image
-% \\includegraphics[width=4cm]{{{signature_file}}}
-\\fi
+{signature_tex}
 
 \\end{{letter}}
 

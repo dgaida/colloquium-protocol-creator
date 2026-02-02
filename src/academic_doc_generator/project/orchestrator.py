@@ -9,9 +9,12 @@ from .llm_interface import (
     extract_project_metadata,
     determine_gender_from_name,
 )
+from ..core.utils import split_student_name
 from .latex_generation import create_project_grading_letter_tex
 from ..core.latex_generation import compile_latex_to_pdf
-from ..core.types import ProjectResult, ProjectMetadata, LLMClientProtocol
+from ..core.types import ProjectResult, LLMClientProtocol
+from ..colloquium.email_generator import EmailGenerator
+from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 
 
 def run_project_pipeline(
@@ -20,6 +23,7 @@ def run_project_pipeline(
     output_folder: Optional[str | Path] = None,
     compile_pdf: bool = True,
     signature_file: str = "signature.png",
+    grade: Optional[str] = None,
 ) -> ProjectResult:
     """Execute the full project work grading letter generation pipeline.
 
@@ -35,6 +39,8 @@ def run_project_pipeline(
            first name using an LLM.
         3. Generate a LaTeX letter template with TH Köln formatting.
         4. Optionally compile the LaTeX file to PDF.
+        5. Generate grading email template.
+        6. Optionally create Outlook mail draft.
 
     Args:
         pdf_path: Path to the project work PDF file.
@@ -46,12 +52,14 @@ def run_project_pipeline(
             using `lualatex`. Defaults to True.
         signature_file: Path to the examiner's signature image file.
             Defaults to "signature.png".
+        grade: The grade obtained for the project.
 
     Returns:
-        tuple[str, str]: A tuple `(tex_path, pdf_path_or_empty)` where:
+        tuple[str, str, str]: A tuple `(tex_path, pdf_path, email_path)` where:
             - `tex_path`: Path to the generated `.tex` file.
-            - `pdf_path_or_empty`: Path to the generated `.pdf` if `compile_pdf=True`,
+            - `pdf_path`: Path to the generated `.pdf` if `compile_pdf=True`,
               otherwise an empty string.
+            - `email_path`: Path to the generated email markdown file.
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
@@ -90,7 +98,7 @@ def run_project_pipeline(
     metadata = extract_project_metadata(pdf_path, llm_client)
 
     student_name = metadata.get("student_name", "Unknown")
-    student_first_name = metadata.get("student_first_name", "Unknown")
+    student_first_name, student_last_name = split_student_name(student_name)
     matriculation = metadata.get("matriculation_number", "unknown")
     project_title = metadata.get("title", "Unknown")
     examiner = metadata.get("first_examiner", "Unbekannt")
@@ -105,8 +113,14 @@ def run_project_pipeline(
     gender = determine_gender_from_name(student_first_name, llm_client)
     print(f"Detected gender: {gender}")
 
+    # Check for signature in data/
+    data_signature = os.path.join("data", "signature.png")
+    if os.path.exists(data_signature):
+        signature_file = data_signature
+        print(f"Using signature found in {data_signature}")
+
     # Create output filename
-    tex_name = f"projektarbeit_brief_{matriculation}.tex"
+    tex_name = f"bewertung_projekt_{matriculation}.tex"
     tex_path = os.path.join(output_folder, tex_name)
 
     # Generate LaTeX letter
@@ -120,6 +134,7 @@ def run_project_pipeline(
         gender=gender,
         work_type=work_type,
         signature_file=signature_file,
+        grade=grade,
     )
 
     # Compile to PDF if requested
@@ -131,4 +146,35 @@ def run_project_pipeline(
         except Exception as e:
             print(f"PDF compilation failed: {e}")
 
-    return tex_path, pdf_path
+    # Generate email
+    mymailgen = EmailGenerator()
+    grading_email_text = mymailgen.generate_final_grade_email(
+        evaluator_client=llm_client,
+        first_name=student_first_name,
+        last_name=student_last_name,
+        student_identifier=matriculation,
+        examiner_name=examiner,
+    )
+    email_path = mymailgen.save_email_to_markdown(
+        output_folder=output_folder,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
+        filename_prefix="bewertung_projekt_email",
+    )
+
+    # Create Outlook mail draft if grade is provided
+    if grade is not None:
+        print("\n📧 Erstelle Outlook-Mail...")
+        outlook_gen = OutlookMailGenerator()
+        try:
+            outlook_gen.create_outlook_mail(
+                student_name=student_name,
+                email_text=grading_email_text,
+                attachment_path=pdf_path if pdf_path else None,
+                subject=f"Bewertung Praxisprojekt {gender} {student_first_name} {student_last_name}",
+                verbose=False,
+            )
+        except Exception as e:
+            print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
+
+    return tex_path, pdf_path, email_path

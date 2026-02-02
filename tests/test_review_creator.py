@@ -8,7 +8,6 @@ import tempfile
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.review import md_generator
 
-
 # ============================================================================
 # Tests for review_creator/md_generator.py
 # ============================================================================

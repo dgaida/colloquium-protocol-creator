@@ -1,84 +1,30 @@
 # src/academic_doc_generator/core/pdf_processing.py
 """PDF processing utilities (Docling + pypdf) with comprehensive type annotations."""
 
-from typing import Dict, List, Tuple, TypedDict, Literal, Optional
+from typing import Dict, List, Tuple, Optional
 import re
 from pypdf import PdfReader
 from docling_parse.pdf_parser import DoclingPdfParser
 from docling_core.types.doc.page import TextCellUnit
 from .types import (
-    WordBox, AnnotationContext,
-    CommentStats, CommentCategory
+    WordBox,
+    AnnotationContext,
+    CommentStats,
+    CommentCategory,
+    AnnotationData,
 )
-
 
 # ============================================================================
 # Type Definitions
 # ============================================================================
-
-class WordBox(TypedDict):
-    """Represents a word with its bounding box in a PDF.
-    
-    Attributes:
-        text: The word text content.
-        bbox: Bounding box as (x0, y0, x1, y1) with bottom-left origin.
-    """
-    text: str
-    bbox: Tuple[float, float, float, float]  # (x0, y0, x1, y1)
-
-
-CommentCategory = Literal["llm", "quelle", "language", "ignore"]
-"""Valid comment categories for annotation classification."""
-
-
-class AnnotationDict(TypedDict):
-    """Raw annotation extracted from PDF.
-    
-    Attributes:
-        comment: The annotation comment text.
-        subtype: PDF annotation subtype.
-        rect: Annotation rectangle coordinates, if available.
-        quadpoints: QuadPoints for highlight annotations, if available.
-        category: Classification category for processing.
-    """
-    comment: str
-    subtype: str
-    rect: Optional[List[float]]
-    quadpoints: Optional[List[float]]
-    category: CommentCategory
-
-
-class AnnotationContext(TypedDict):
-    """Annotation with extracted context from PDF content.
-    
-    Attributes:
-        comment: Original annotation comment text.
-        highlighted: Text that was highlighted/selected.
-        paragraph: Surrounding paragraph for context.
-        category: Classification category for processing.
-    """
-    comment: str
-    highlighted: str
-    paragraph: str
-    category: CommentCategory
-
-
-class CommentStats(TypedDict):
-    """Statistics about special comment categories.
-    
-    Attributes:
-        quelle: Count of source-related comments.
-        language: Count of language/grammar comments.
-        ignore: Count of ignored comments (e.g., "ab hier" markers).
-    """
-    quelle: int
-    language: int
-    ignore: int
+# Redundant type definitions removed to avoid F811.
+# Using definitions from .types instead.
 
 
 # ============================================================================
 # Public Functions
 # ============================================================================
+
 
 def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
     """Extract text and bounding boxes for words from a PDF using Docling.
@@ -88,7 +34,7 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
 
     Returns:
         Dictionary mapping 0-based page indices to a list of words with bounding boxes.
-        
+
     Example:
         >>> words = extract_text_with_positions("thesis.pdf")
         >>> words[0][0]
@@ -103,7 +49,9 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         words: List[WordBox] = []
         for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
-            r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+            r = (
+                cell.rect
+            )  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
 
             words.append(
                 {
@@ -123,7 +71,7 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
 
 def is_quelle_comment(text: str, max_length: int = 20) -> bool:
     """Check if a comment is a source-related comment that should be counted but not rewritten.
-    
+
     Source comments (containing "Quelle" or "source") are counted in statistics but not
     sent to the LLM for rewriting. They must be short (≤max_length characters) and contain
     the keyword as a whole word (not part of another word like "Consequent").
@@ -135,7 +83,7 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
 
     Returns:
         True if this is a source-related comment, False otherwise.
-        
+
     Examples:
         >>> is_quelle_comment("Quelle?")
         True
@@ -160,9 +108,9 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
 
 def extract_annotations_with_positions(
     pdf_path: str, ignore_source: bool = True
-) -> Tuple[Dict[int, List[AnnotationDict]], CommentStats]:
+) -> Tuple[Dict[int, List[AnnotationData]], CommentStats]:
     """Extract annotations (comments/highlights) and their positions using pypdf.
-    
+
     Annotations are categorized for processing:
     - "llm": Regular comments sent to LLM for rewriting
     - "quelle": Source-related comments (counted only)
@@ -178,7 +126,7 @@ def extract_annotations_with_positions(
         Tuple of (annotations, stats):
         - annotations: Dict mapping 0-based page indices to lists of annotations
         - stats: Comment category statistics
-        
+
     Example:
         >>> annotations, stats = extract_annotations_with_positions("thesis.pdf")
         >>> stats
@@ -187,11 +135,11 @@ def extract_annotations_with_positions(
         'llm'
     """
     reader = PdfReader(pdf_path)
-    annotations: Dict[int, List[AnnotationDict]] = {}
+    annotations: Dict[int, List[AnnotationData]] = {}
     stats: CommentStats = {"quelle": 0, "language": 0, "ignore": 0}
 
     for idx, page in enumerate(reader.pages):
-        page_annots: List[AnnotationDict] = []
+        page_annots: List[AnnotationData] = []
         if "/Annots" in page:
             for annot_ref in page["/Annots"]:
                 annot = annot_ref.get_object()
@@ -256,7 +204,7 @@ def words_overlapping_rect(
 
     Returns:
         List of words that overlap with the rectangle.
-        
+
     Example:
         >>> words = [{'text': 'Hello', 'bbox': (10, 10, 50, 20)}]
         >>> rect = (5, 5, 55, 25)
@@ -279,7 +227,7 @@ def get_words_for_annotation_on_page(
     rect: Tuple[float, float, float, float],
 ) -> Tuple[int, List[WordBox]]:
     """Get words that match an annotation rectangle, checking neighboring pages if necessary.
-    
+
     Sometimes annotations appear on the wrong page in the PDF structure. This function
     checks the specified page first, then the next page (+1), then the previous page (-1).
 
@@ -291,7 +239,7 @@ def get_words_for_annotation_on_page(
     Returns:
         Tuple of (page_index_used, words) where page_index_used is the page
         where words were actually found, and words is the list of matching word dicts.
-        
+
     Example:
         >>> pages_words = {0: [{'text': 'test', 'bbox': (10, 10, 50, 20)}]}
         >>> rect = (5, 5, 55, 25)
@@ -324,7 +272,7 @@ def rect_overlap(
 
     Returns:
         True if the bounding boxes overlap, False otherwise.
-        
+
     Example:
         >>> rect_overlap((10, 10, 50, 20), (5, 5, 55, 25))
         True
@@ -337,11 +285,10 @@ def rect_overlap(
 
 
 def find_annotation_context(
-    pages_words: Dict[int, List[WordBox]], 
-    annotations: Dict[int, List[AnnotationDict]]
+    pages_words: Dict[int, List[WordBox]], annotations: Dict[int, List[AnnotationData]]
 ) -> Dict[int, List[AnnotationContext]]:
     """Match annotations to the words and paragraphs they reference.
-    
+
     For each annotation, this function:
     1. Finds the words that overlap with the annotation's bounding box
     2. Extracts the highlighted text from those words
@@ -355,10 +302,10 @@ def find_annotation_context(
     Returns:
         Dictionary mapping 1-based page numbers to lists of annotation contexts.
         Page numbers are 1-based for user display purposes.
-        
+
     Example:
         >>> pages_words = {0: [{'text': 'test', 'bbox': (10, 10, 50, 20)}]}
-        >>> annotations = {0: [{'comment': 'Why?', 'rect': [5, 5, 55, 25], 
+        >>> annotations = {0: [{'comment': 'Why?', 'rect': [5, 5, 55, 25],
         ...                     'category': 'llm', 'subtype': '/Text', 'quadpoints': None}]}
         >>> context = find_annotation_context(pages_words, annotations)
         >>> context[1][0]['highlighted']
@@ -421,7 +368,7 @@ def find_annotation_context(
 
 def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
     """Extract plain text (without positions) for the first `max_pages` pages.
-    
+
     This is faster than extracting word positions and is sufficient for metadata
     extraction and thesis summarization.
 
@@ -432,7 +379,7 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
     Returns:
         Dictionary mapping 0-based page indices to the full concatenated text
         of that page.
-        
+
     Example:
         >>> text = extract_text_per_page("thesis.pdf", max_pages=2)
         >>> text[0][:50]

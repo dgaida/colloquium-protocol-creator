@@ -21,36 +21,44 @@ class OutlookMailGenerator:
         self,
         student_name: str,
         email_text: str,
-        ics_file_path: Optional[str] = None,
+        attachment_path: Optional[str] = None,
         verbose: bool = False,
+        subject: Optional[str] = None,
+        recipient: Optional[str] = None,
     ) -> bool:
         """Erstellt eine neue Outlook-Mail mit vorausgefülltem Inhalt.
 
         Args:
             student_name: Name des Studierenden (für Betreff).
             email_text: Kompletter E-Mail-Text.
-            ics_file_path: Pfad zur ICS-Datei, die als Anhang hinzugefügt werden soll.
+            attachment_path: Pfad zur Datei, die als Anhang hinzugefügt werden soll.
             verbose: Debug-Ausgaben aktivieren.
+            subject: Optionaler Betreff. Falls None, wird ein Standardbetreff erstellt.
+            recipient: E-Mail-Empfänger. Falls None, wird RECIPIENT_EMAIL verwendet.
 
         Returns:
             True wenn erfolgreich, False bei Fehler.
         """
-        subject = f"Anmeldung Kolloquium {student_name}"
+        if subject is None:
+            subject = f"Anmeldung Kolloquium {student_name}"
+
+        if recipient is None:
+            recipient = self.RECIPIENT_EMAIL
 
         try:
             system = platform.system()
 
             if system == "Windows":
                 return self._create_outlook_mail_windows(
-                    subject, email_text, ics_file_path, verbose
+                    subject, email_text, attachment_path, verbose, recipient
                 )
             elif system == "Darwin":  # macOS
                 return self._create_outlook_mail_macos(
-                    subject, email_text, ics_file_path, verbose
+                    subject, email_text, attachment_path, verbose, recipient
                 )
             elif system == "Linux":
                 return self._create_outlook_mail_linux(
-                    subject, email_text, ics_file_path, verbose
+                    subject, email_text, attachment_path, verbose, recipient
                 )
             else:
                 print(f"⚠️  Plattform '{system}' wird nicht unterstützt")
@@ -82,9 +90,7 @@ class OutlookMailGenerator:
                 return True
             else:
                 if verbose:
-                    print(
-                        f"ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
-                    )
+                    print("ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt")
                 return False
 
         except Exception as e:
@@ -97,16 +103,18 @@ class OutlookMailGenerator:
         self,
         subject: str,
         body: str,
-        ics_file_path: Optional[str] = None,
+        attachment_path: Optional[str] = None,
         verbose: bool = False,
+        recipient: Optional[str] = None,
     ) -> bool:
         """Erstellt Outlook-Mail unter Windows mit COM-Automation.
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
-            ics_file_path: Pfad zur ICS-Datei als Anhang.
+            attachment_path: Pfad zur Datei als Anhang.
             verbose: Debug-Ausgaben aktivieren.
+            recipient: E-Mail-Empfänger.
 
         Returns:
             True wenn erfolgreich, False bei Fehler.
@@ -117,18 +125,18 @@ class OutlookMailGenerator:
             outlook = win32com.client.Dispatch("Outlook.Application")
             mail = outlook.CreateItem(0)  # 0 = olMailItem
 
-            mail.To = self.RECIPIENT_EMAIL
+            mail.To = recipient if recipient else self.RECIPIENT_EMAIL
             mail.Subject = subject
             mail.Body = body
 
-            # Füge ICS-Datei als Anhang hinzu
-            if ics_file_path:
-                if os.path.exists(ics_file_path):
-                    mail.Attachments.Add(os.path.abspath(ics_file_path))
+            # Füge Anhang hinzu
+            if attachment_path:
+                if os.path.exists(attachment_path):
+                    mail.Attachments.Add(os.path.abspath(attachment_path))
                     if verbose:
-                        print(f"✅ ICS-Datei als Anhang hinzugefügt: {ics_file_path}")
+                        print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
                 else:
-                    print(f"⚠️  ICS-Datei nicht gefunden: {ics_file_path}")
+                    print(f"⚠️  Datei nicht gefunden: {attachment_path}")
 
             # Mail anzeigen (nicht senden!)
             mail.Display(False)
@@ -137,9 +145,7 @@ class OutlookMailGenerator:
             return True
 
         except ImportError:
-            print(
-                "⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32"
-            )
+            print("⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32")
             return False
         except Exception as e:
             if verbose:
@@ -151,16 +157,18 @@ class OutlookMailGenerator:
         self,
         subject: str,
         body: str,
-        ics_file_path: Optional[str] = None,
+        attachment_path: Optional[str] = None,
         verbose: bool = False,
+        recipient: Optional[str] = None,
     ) -> bool:
         """Erstellt Outlook-Mail unter macOS mit AppleScript.
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
-            ics_file_path: Pfad zur ICS-Datei als Anhang.
+            attachment_path: Pfad zur Datei als Anhang.
             verbose: Debug-Ausgaben aktivieren.
+            recipient: E-Mail-Empfänger.
 
         Returns:
             True wenn erfolgreich, False bei Fehler.
@@ -169,7 +177,8 @@ class OutlookMailGenerator:
             # Escape Anführungszeichen und Backslashes für AppleScript
             escaped_subject = subject.replace('"', '\\"').replace("\\", "\\\\")
             escaped_body = body.replace('"', '\\"').replace("\\", "\\\\")
-            escaped_recipient = self.RECIPIENT_EMAIL.replace('"', '\\"')
+            final_recipient = recipient if recipient else self.RECIPIENT_EMAIL
+            escaped_recipient = final_recipient.replace('"', '\\"')
 
             # Basis-AppleScript
             applescript = f"""
@@ -179,16 +188,16 @@ class OutlookMailGenerator:
             """
 
             # Füge Anhang hinzu, falls vorhanden
-            if ics_file_path:
-                if os.path.exists(ics_file_path):
-                    escaped_path = (
-                        ics_file_path.replace('"', '\\"').replace("\\", "\\\\")
+            if attachment_path:
+                if os.path.exists(attachment_path):
+                    escaped_path = attachment_path.replace('"', '\\"').replace(
+                        "\\", "\\\\"
                     )
                     applescript += f"""
                 make new attachment at newMessage with properties {{file:POSIX file "{escaped_path}"}}
                 """
                     if verbose:
-                        print(f"✅ ICS-Datei als Anhang hinzugefügt: {ics_file_path}")
+                        print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
 
             applescript += """
                 open newMessage
@@ -214,16 +223,18 @@ class OutlookMailGenerator:
         self,
         subject: str,
         body: str,
-        ics_file_path: Optional[str] = None,
+        attachment_path: Optional[str] = None,
         verbose: bool = False,
+        recipient: Optional[str] = None,
     ) -> bool:
         """Erstellt Mail-Link unter Linux (Outlook Web/xdg-open).
 
         Args:
             subject: E-Mail-Betreff.
             body: E-Mail-Text.
-            ics_file_path: Pfad zur ICS-Datei (wird unter Linux ignoriert).
+            attachment_path: Pfad zur Datei (wird unter Linux ignoriert).
             verbose: Debug-Ausgaben aktivieren.
+            recipient: E-Mail-Empfänger.
 
         Returns:
             True wenn erfolgreich, False bei Fehler.
@@ -231,12 +242,13 @@ class OutlookMailGenerator:
         try:
             # Erstelle mailto-Link
             params = {"subject": subject, "body": body}
-            mailto_link = f"mailto:{self.RECIPIENT_EMAIL}?{urllib.parse.urlencode(params)}"
+            final_recipient = recipient if recipient else self.RECIPIENT_EMAIL
+            mailto_link = f"mailto:{final_recipient}?{urllib.parse.urlencode(params)}"
 
             # Öffne mit Standard-Mail-Client
             subprocess.run(["xdg-open", mailto_link], check=True)
 
-            if ics_file_path and verbose:
+            if attachment_path and verbose:
                 print(
                     "ℹ️  Anhänge werden unter Linux nicht automatisch hinzugefügt. Bitte manuell anhängen."
                 )

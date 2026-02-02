@@ -90,9 +90,7 @@ class OutlookMailGenerator:
                 return True
             else:
                 if verbose:
-                    print(
-                        "ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
-                    )
+                    print("ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt")
                 return False
 
         except Exception as e:
@@ -147,9 +145,7 @@ class OutlookMailGenerator:
             return True
 
         except ImportError:
-            print(
-                "⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32"
-            )
+            print("⚠️  pywin32 nicht installiert. Installiere mit: pip install pywin32")
             return False
         except Exception as e:
             if verbose:
@@ -194,8 +190,8 @@ class OutlookMailGenerator:
             # Füge Anhang hinzu, falls vorhanden
             if attachment_path:
                 if os.path.exists(attachment_path):
-                    escaped_path = (
-                        attachment_path.replace('"', '\\"').replace("\\", "\\\\")
+                    escaped_path = attachment_path.replace('"', '\\"').replace(
+                        "\\", "\\\\"
                     )
                     applescript += f"""
                 make new attachment at newMessage with properties {{file:POSIX file "{escaped_path}"}}

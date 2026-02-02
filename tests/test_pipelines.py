@@ -9,7 +9,6 @@ from academic_doc_generator.colloquium import orchestrator as colloquium_orchest
 from academic_doc_generator.project import orchestrator as project_orchestrator
 from academic_doc_generator.review import orchestrator as review_orchestrator
 
-
 # ============================================================================
 # Tests for colloquium_pipeline/orchestrator.py
 # ============================================================================
@@ -48,7 +47,9 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_colloquium_email.return_value = "Registration Email Text"
+        mock_email_gen.generate_colloquium_email.return_value = (
+            "Registration Email Text"
+        )
         mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 

@@ -196,7 +196,7 @@ class ColloquiumConfig(TypedDict, total=False):
     company_name: Optional[str]  # Required if location_type="company"
     company_address: Optional[str]  # Optional for company
     zoom_link: Optional[str]  # Required if location_type="online"
-    zoom_access_code: Optional[str]  # Optional for online
+    zoom_code: Optional[str]  # Optional for online
 
 
 class GeminiEvaluationConfig(TypedDict, total=False):

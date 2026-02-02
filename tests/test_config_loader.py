@@ -85,7 +85,7 @@ class TestConfigLoader:
                 "time": "15:30",
                 "location_type": "online",
                 "zoom_link": "https://zoom.us/j/123456",
-                "zoom_access_code": "test123",
+                "zoom_code": "test123",
             },
         }
 
@@ -96,7 +96,7 @@ class TestConfigLoader:
 
             assert coll_config["location_type"] == "online"
             assert coll_config["zoom_link"] == "https://zoom.us/j/123456"
-            assert coll_config["zoom_access_code"] == "test123"
+            assert coll_config["zoom_code"] == "test123"
 
     def test_load_valid_project_config(self):
         """Test laden einer validen Projektarbeits-Konfiguration."""

@@ -68,7 +68,7 @@ PRODID:-//TH Köln//Kolloquium//DE
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:kolloquium-{student_name.replace(' ', '-').replace(',', '')}-{now}@th-koeln.de
+UID:kolloquium-{student_name.replace(" ", "-").replace(",", "")}-{now}@th-koeln.de
 DTSTAMP:{now}
 DTSTART:{start_str}
 DTEND:{end_str}

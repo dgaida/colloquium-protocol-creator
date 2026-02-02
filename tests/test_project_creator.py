@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 from academic_doc_generator.project import latex_generation, llm_interface
 
-
 # ============================================================================
 # Tests for project_creator/latex_generation.py
 # ============================================================================

@@ -7,7 +7,9 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from academic_doc_generator.colloquium.calendar_generator import CalendarGenerator
-from academic_doc_generator.colloquium.outlook_mail_generator import OutlookMailGenerator
+from academic_doc_generator.colloquium.outlook_mail_generator import (
+    OutlookMailGenerator,
+)
 
 
 def test_calendar_generation():

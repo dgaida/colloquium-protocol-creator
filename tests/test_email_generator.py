@@ -120,7 +120,7 @@ class TestEmailGenerator:
         result = generator._generate_location_text(
             location_type="online",
             zoom_link="https://zoom.us/j/123456",
-            zoom_access_code="test123",
+            zoom_code="test123",
         )
 
         assert "über Zoom:" in result
@@ -251,7 +251,7 @@ class TestEmailGenerator:
             first_examiner="Prof. Remote",
             location_type="online",
             zoom_link="https://zoom.us/j/123",
-            zoom_access_code="abc123",
+            zoom_code="abc123",
         )
 
         assert "über Zoom:" in generator.email_text
@@ -497,7 +497,7 @@ class TestIntegration:
                 first_examiner="Dr. Anna Schmidt",
                 location_type="online",
                 zoom_link="https://zoom.us/j/123456789",
-                zoom_access_code="Kolloquium2026",
+                zoom_code="Kolloquium2026",
             )
 
             # Prüfe Online-spezifische Details

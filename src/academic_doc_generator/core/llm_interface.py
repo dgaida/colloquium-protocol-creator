@@ -6,10 +6,7 @@ import json
 import time
 from llm_client import LLMClient
 from . import pdf_processing, latex_generation
-from .types import (
-    RewrittenComment, ThesisMetadata, LLMClientProtocol
-)
-
+from .types import RewrittenComment, ThesisMetadata, LLMClientProtocol
 
 # ============================================================================
 # Type Definitions and Protocols
@@ -21,6 +18,7 @@ from .types import (
 # ============================================================================
 # Public Functions
 # ============================================================================
+
 
 def rewrite_comments(
     context_dict: Dict[int, List[pdf_processing.AnnotationContext]],
@@ -39,16 +37,16 @@ def rewrite_comments(
             annotation dict contains comment, highlighted text, paragraph, and category.
         llm_client: LLM client instance implementing the LLMClientProtocol.
         groq_free: Whether to apply request throttling to stay under Groq's
-            free-tier rate limits (4s per request, 10s every 5 requests). 
+            free-tier rate limits (4s per request, 10s every 5 requests).
             Defaults to False.
         verbose: If True, prints debug information about responses. Defaults to False.
 
     Returns:
         Dictionary mapping page numbers to rewritten comments. Skipped comments
         (quelle/language) are excluded from the output.
-        
+
     Example:
-        >>> context = {1: [{'comment': 'Why?', 'highlighted': 'text', 
+        >>> context = {1: [{'comment': 'Why?', 'highlighted': 'text',
         ...                 'paragraph': 'context', 'category': 'llm'}]}
         >>> client = LLMClient()
         >>> result = rewrite_comments(context, client)
@@ -71,7 +69,9 @@ def rewrite_comments(
             if category != "llm":
                 continue
 
-            if groq_free:  # always wait 4 seconds for rate limit of 30 requests per minute
+            if (
+                groq_free
+            ):  # always wait 4 seconds for rate limit of 30 requests per minute
                 time.sleep(4)
 
             comment = item["comment"]
@@ -170,10 +170,10 @@ If you cannot determine it, return "Unknown"
 
 
 def extract_document_metadata(
-    pages_text: Dict[int, str], 
-    language: str, 
+    pages_text: Dict[int, str],
+    language: str,
     llm_client: LLMClientProtocol,
-    pdf_path: str = None
+    pdf_path: str = None,
 ) -> ThesisMetadata:
     """Extract author, matriculation number, title, and examiners from the first two pages.
 
@@ -186,7 +186,7 @@ def extract_document_metadata(
     Returns:
         Dictionary with extracted metadata. If any field cannot be extracted,
         it will contain None as the value.
-        
+
     Example:
         >>> text = {0: "Bachelor Thesis by Max Mustermann (123456)"}
         >>> client = LLMClient()
@@ -235,7 +235,9 @@ Document text:
         metadata = {"error": "Could not parse JSON", "raw": content}
 
     # Fallback: Wenn bachelor_master nicht bestimmt werden konnte, versuche es über Dateinamen
-    if pdf_path and (not metadata.get("bachelor_master") or metadata.get("bachelor_master") is None):
+    if pdf_path and (
+        not metadata.get("bachelor_master") or metadata.get("bachelor_master") is None
+    ):
         print("   ⚠️  Bachelor/Master konnte nicht aus Dokument bestimmt werden")
         print("   🔄 Versuche Bestimmung über Dateinamen...")
         degree_from_filename = detect_degree_from_filename(pdf_path, llm_client)
@@ -249,9 +251,7 @@ Document text:
 
 
 def summarize_thesis(
-    pages_text: Dict[int, str], 
-    language: str, 
-    llm_client: LLMClientProtocol
+    pages_text: Dict[int, str], language: str, llm_client: LLMClientProtocol
 ) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
@@ -262,7 +262,7 @@ def summarize_thesis(
 
     Returns:
         A LaTeX-formatted summary string with escaped special characters.
-        
+
     Example:
         >>> text = {0: "This thesis examines...", 1: "The methodology..."}
         >>> client = LLMClient()
@@ -322,7 +322,7 @@ def detect_language(
 
     Returns:
         "German" if German language detected, "English" if English.
-        
+
     Example:
         >>> comments = {1: [{'rewritten': 'Warum wurde das gewählt?'}]}
         >>> client = LLMClient()
@@ -385,10 +385,10 @@ def rewrite_comments_in_pdf(
 
     Returns:
         Tuple of (rewritten_comments, stats):
-        - rewritten_comments: Dictionary mapping page numbers (1-based) to lists 
+        - rewritten_comments: Dictionary mapping page numbers (1-based) to lists
           of rewritten comment dicts
         - stats: Statistics about comment categories (quelle, language, ignore counts)
-        
+
     Example:
         >>> from llm_client import LLMClient
         >>> client = LLMClient()
@@ -404,6 +404,7 @@ def rewrite_comments_in_pdf(
 
     if pdf_processor is None:
         from . import pdf_processing as pdf_proc
+
         extract_text_with_positions = pdf_proc.extract_text_with_positions
         extract_annotations_with_positions = pdf_proc.extract_annotations_with_positions
         find_annotation_context = pdf_proc.find_annotation_context
@@ -462,7 +463,7 @@ def get_summary_and_metadata_of_pdf(
         Tuple of (summary, metadata):
         - summary: LaTeX-formatted summary of the thesis
         - metadata: Extracted thesis metadata including author, title, examiners
-        
+
     Example:
         >>> from llm_client import LLMClient
         >>> client = LLMClient()
@@ -484,7 +485,9 @@ def get_summary_and_metadata_of_pdf(
     pages_text = pdf_processing.extract_text_per_page(pdf_path)
 
     # Extract metadata (mit pdf_path für Fallback)
-    metadata = extract_document_metadata(pages_text, language, llm_client, pdf_path=pdf_path)
+    metadata = extract_document_metadata(
+        pages_text, language, llm_client, pdf_path=pdf_path
+    )
 
     if groq_free:
         print("Waiting for 20 seconds to avoid error: Too Many Requests")

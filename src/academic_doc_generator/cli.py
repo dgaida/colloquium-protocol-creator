@@ -17,10 +17,10 @@ def run_from_config(config_path: str | Path) -> None:
 
     Args:
         config_path: Path to JSON configuration file.
-        
+
     Raises:
         SystemExit: If configuration loading or task execution fails.
-        
+
     Example:
         >>> run_from_config("config_templates/config_colloquium_campus.json")
     """
@@ -50,7 +50,7 @@ def run_from_config(config_path: str | Path) -> None:
     if task == "colloquium":
         coll_config = config.get_colloquium_config()
         gemini_config = config.get_gemini_evaluation_config()
-        
+
         if coll_config is None:
             print("❌ Fehler: Kolloquium-Konfiguration fehlt")
             sys.exit(1)
@@ -69,7 +69,7 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            zoom_access_code=coll_config.get("zoom_access_code"),
+            zoom_code=coll_config.get("zoom_code"),
             gemini_evaluation_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
@@ -119,7 +119,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -147,7 +147,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        zoom_access_code=args.zoom_access_code,
+        zoom_code=args.zoom_code,
         gemini_evaluation_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
@@ -166,7 +166,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -202,7 +202,7 @@ def run_review_direct(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments from argparse.
-        
+
     Raises:
         SystemExit: If LLM client initialization fails.
     """
@@ -275,7 +275,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-access-code", help="Zoom access code (for online)")
+    colloquium_parser.add_argument("--zoom-code", help="Zoom access code (for online)")
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],
@@ -303,9 +303,7 @@ def create_parser() -> argparse.ArgumentParser:
         "project", help="Generate project work grading letter"
     )
     project_parser.add_argument("pdf", help="Path to the project work PDF")
-    project_parser.add_argument(
-        "--grade", help="Grade for the project (e.g., 1.3)"
-    )
+    project_parser.add_argument("--grade", help="Grade for the project (e.g., 1.3)")
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],
@@ -341,9 +339,9 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Main CLI entry point.
-    
+
     Handles all command-line arguments and routes to appropriate functions.
-    
+
     Raises:
         SystemExit: On configuration errors or when listing templates.
     """

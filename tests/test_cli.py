@@ -195,7 +195,7 @@ class TestRunColloquiumDirect:
         args.company_name = None
         args.company_address = None
         args.zoom_link = None
-        args.zoom_access_code = None
+        args.zoom_code = None
         args.api = "openai"
         args.model = "gpt-4o"
         args.groq_free = False
@@ -227,7 +227,7 @@ class TestRunColloquiumDirect:
         args.time = "15:30"
         args.location_type = "online"
         args.zoom_link = "https://zoom.us/j/123"
-        args.zoom_access_code = "test123"
+        args.zoom_code = "test123"
         args.room = None
         args.company_name = None
         args.company_address = None
@@ -416,14 +416,14 @@ class TestCreateParser:
                 "online",
                 "--zoom-link",
                 "https://zoom.us/j/123",
-                "--zoom-access-code",
+                "--zoom-code",
                 "test123",
             ]
         )
 
         assert args.location_type == "online"
         assert args.zoom_link == "https://zoom.us/j/123"
-        assert args.zoom_access_code == "test123"
+        assert args.zoom_code == "test123"
 
     def test_parser_colloquium_company(self):
         """Test Firmen-Kolloquium Argumente."""

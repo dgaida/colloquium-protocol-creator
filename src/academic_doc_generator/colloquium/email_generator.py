@@ -40,7 +40,6 @@ def weekday_from_string(date_str, lang="de"):
 
 
 class EmailGenerator:
-
     def __init__(self):
         """ """
         self.email_path = None
@@ -60,7 +59,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_access_code: Optional[str] = None,
+        zoom_code: Optional[str] = None,
     ) -> str:
         """Generiert und speichert die Kolloquiums-Anmelde-E-Mail.
 
@@ -77,7 +76,7 @@ class EmailGenerator:
             company_name: Firmenname.
             company_address: Firmenadresse.
             zoom_link: Zoom-Link.
-            zoom_access_code: Zoom-Code.
+            zoom_code: Zoom-Code.
 
         Returns:
             Pfad zur gespeicherten E-Mail-Datei.
@@ -103,7 +102,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_access_code=zoom_access_code,
+            zoom_code=zoom_code,
         )
 
         return self.save_email_to_markdown(
@@ -119,7 +118,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_access_code: Optional[str] = None,
+        zoom_code: Optional[str] = None,
     ) -> Optional[str]:
         """Generiert den Ortszusatz für die E-Mail und den Ort für das PDF-Formular.
 
@@ -129,7 +128,7 @@ class EmailGenerator:
             company_name: Name der Firma (nur für "company").
             company_address: Adresse der Firma (nur für "company").
             zoom_link: Zoom-Meeting-Link (nur für "online").
-            zoom_access_code: Zoom-Zugangscode (nur für "online").
+            zoom_code: Zoom-Zugangscode (nur für "online").
 
         Returns:
             Tuple aus (email_location_text, pdf_location_text).
@@ -156,8 +155,8 @@ class EmailGenerator:
                 raise ValueError("Für Online-Kolloquium wird 'zoom_link' benötigt")
 
             zoom_info = f"über Zoom:\n\nZoom-Link: {zoom_link}"
-            if zoom_access_code:
-                zoom_info += f"\nZugangscode: {zoom_access_code}"
+            if zoom_code:
+                zoom_info += f"\nZugangscode: {zoom_code}"
 
             email_text = zoom_info
         else:
@@ -179,7 +178,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_access_code: Optional[str] = None,
+        zoom_code: Optional[str] = None,
     ) -> str:
         """Generiert den Text für die Kolloquiums-Anmelde-E-Mail.
 
@@ -195,7 +194,7 @@ class EmailGenerator:
             company_name: Firmenname (optional, für Firma).
             company_address: Firmenadresse (optional, für Firma).
             zoom_link: Zoom-Link (optional, für Online).
-            zoom_access_code: Zoom-Passcode (optional, für Online).
+            zoom_code: Zoom-Passcode (optional, für Online).
 
         Returns:
             Der generierte E-Mail-Text.
@@ -209,7 +208,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_access_code=zoom_access_code,
+            zoom_code=zoom_code,
         )
 
         self.email_text = f"""Lieber Prüfungsservice,
@@ -223,30 +222,30 @@ Viele Grüße,
 
     def generate_final_grade_email(
         self,
-        llm_client,
-        student_first_name: str,
-        student_last_name: str,
-        matriculation_number: str,
-        first_examiner: str,
+        evaluator_client,
+        first_name: str,
+        last_name: str,
+        id_number: str,
+        examiner_name: str,
     ) -> str:
         """Generiert den Text für die E-Mail zur Einreichung der Note.
 
         Args:
-            llm_client: LLM-Client zur Geschlechtsbestimmung.
-            student_first_name: Vorname des Studierenden.
-            student_last_name: Nachname des Studierenden.
-            matriculation_number: Matrikelnummer.
-            first_examiner: Name des Prüfers.
+            evaluator_client: LLM-Client zur Geschlechtsbestimmung.
+            first_name: Vorname des Studierenden.
+            last_name: Nachname des Studierenden.
+            id_number: Matrikelnummer.
+            examiner_name: Name des Prüfers.
 
         Returns:
             Der generierte E-Mail-Text.
         """
-        salutation = determine_gender_from_name(student_first_name, llm_client)
+        salutation = determine_gender_from_name(first_name, evaluator_client)
 
         self.email_text = f"""Lieber Prüfungsservice,
-hiermit möchte ich die Bewertung für {salutation} {student_first_name} {student_last_name} ({matriculation_number}) einreichen (s. Anhang).
+hiermit möchte ich die Bewertung für {salutation} {first_name} {last_name} ({id_number}) einreichen (s. Anhang).
 Viele Grüße,
-{first_examiner.title()}"""
+{examiner_name.title()}"""
         return self.email_text
 
     def save_email_to_markdown(

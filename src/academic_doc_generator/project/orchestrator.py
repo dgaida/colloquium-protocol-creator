@@ -98,7 +98,7 @@ def run_project_pipeline(
     metadata = extract_project_metadata(pdf_path, llm_client)
 
     student_name = metadata.get("student_name", "Unknown")
-    student_first_name = metadata.get("student_first_name", "Unknown")
+    student_first_name, student_last_name = split_student_name(student_name)
     matriculation = metadata.get("matriculation_number", "unknown")
     project_title = metadata.get("title", "Unknown")
     examiner = metadata.get("first_examiner", "Unbekannt")
@@ -147,15 +147,13 @@ def run_project_pipeline(
             print(f"PDF compilation failed: {e}")
 
     # Generate email
-    student_first_name_split, student_last_name = split_student_name(student_name)
-
     mymailgen = EmailGenerator()
     grading_email_text = mymailgen.generate_final_grade_email(
-        llm_client=llm_client,
-        student_first_name=student_first_name,
-        student_last_name=student_last_name,
-        matriculation_number=matriculation,
-        first_examiner=examiner,
+        evaluator_client=llm_client,
+        first_name=student_first_name,
+        last_name=student_last_name,
+        id_number=matriculation,
+        examiner_name=examiner,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
@@ -173,7 +171,7 @@ def run_project_pipeline(
                 student_name=student_name,
                 email_text=grading_email_text,
                 attachment_path=pdf_path if pdf_path else None,
-                subject=f"Bewertung Praxisprojekt {gender} {student_first_name_split} {student_last_name}",
+                subject=f"Bewertung Praxisprojekt {gender} {student_first_name} {student_last_name}",
                 verbose=False,
             )
         except Exception as e:

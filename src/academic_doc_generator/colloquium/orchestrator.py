@@ -12,10 +12,10 @@ from .calendar_generator import CalendarGenerator
 from .outlook_mail_generator import OutlookMailGenerator
 from ..core.types import LocationType, LLMClientProtocol
 
-
 # ============================================================================
 # Public Functions
 # ============================================================================
+
 
 def run_pipeline(
     pdf_path: str | Path,
@@ -31,7 +31,7 @@ def run_pipeline(
     company_name: Optional[str] = None,
     company_address: Optional[str] = None,
     zoom_link: Optional[str] = None,
-    zoom_access_code: Optional[str] = None,
+    zoom_code: Optional[str] = None,
     gemini_evaluation_enabled: bool = False,
     gemini_model: Optional[str] = None,
 ) -> Tuple[str, str, str]:
@@ -59,11 +59,11 @@ def run_pipeline(
         pdf_path: Path to the thesis PDF file.
         date_colloquium: Colloquium date in format "DD.MM.YYYY".
         uhrzeit_colloquium: Colloquium time in format "HH:MM".
-        llm_client: LLM client instance implementing LLMClientProtocol. If None, 
+        llm_client: LLM client instance implementing LLMClientProtocol. If None,
             creates a new one with automatic API selection. Defaults to None.
         groq_free: Whether to apply request throttling to comply with
             free-tier rate limits. Adds delays between API calls. Defaults to False.
-        output_folder: Directory where outputs will be written. If None, defaults 
+        output_folder: Directory where outputs will be written. If None, defaults
             to the folder containing `pdf_path`. Defaults to None.
         compile_pdf: If True, compile the generated `.tex` file into a PDF
             using `lualatex`. Defaults to True.
@@ -74,7 +74,7 @@ def run_pipeline(
             - "company": At company location (requires `company_name`)
             - "online": Virtual colloquium (requires `zoom_link`)
             Defaults to "campus".
-        room: Room number for campus colloquium (e.g., "3.217"). 
+        room: Room number for campus colloquium (e.g., "3.217").
             Required if location_type="campus". Defaults to None.
         company_name: Company name for company colloquium (e.g., "Beispiel GmbH").
             Required if location_type="company". Defaults to None.
@@ -82,7 +82,7 @@ def run_pipeline(
             Defaults to None.
         zoom_link: Zoom meeting URL for online colloquium.
             Required if location_type="online". Defaults to None.
-        zoom_access_code: Zoom meeting passcode (optional for online colloquium).
+        zoom_code: Zoom meeting passcode (optional for online colloquium).
             Defaults to None.
         gemini_evaluation_enabled: If True, automatically evaluate the thesis
             using Google Gemini and include the evaluation in the protocol.
@@ -93,7 +93,7 @@ def run_pipeline(
     Returns:
         Tuple of (tex_path, pdf_path, email_path):
         - tex_path: Path to the generated `.tex` file
-        - pdf_path: Path to the generated `.pdf` if `compile_pdf=True`, 
+        - pdf_path: Path to the generated `.pdf` if `compile_pdf=True`,
           otherwise empty string
         - email_path: Path to the generated email markdown file
 
@@ -170,7 +170,7 @@ def run_pipeline(
             else:
                 summary = summary + "\\\\Häufig fehlen Quellenangaben."
             print("Häufig fehlen Quellenangaben")
-            
+
         # If many language comments, add note about language errors
         if stats["language"] > 5:
             # Check if summary ends with \end{itemize}, don't add line break (causes error)
@@ -301,7 +301,7 @@ def run_pipeline(
         company_name=company_name,
         company_address=company_address,
         zoom_link=zoom_link,
-        zoom_access_code=zoom_access_code,
+        zoom_code=zoom_code,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
@@ -311,11 +311,11 @@ def run_pipeline(
 
     # Generate final grade email template
     mymailgen.generate_final_grade_email(
-        llm_client=llm_client,
-        student_first_name=student_first_name,
-        student_last_name=student_last_name,
-        matriculation_number=matriculation,
-        first_examiner=first_examiner,
+        evaluator_client=llm_client,
+        first_name=student_first_name,
+        last_name=student_last_name,
+        id_number=matriculation,
+        examiner_name=first_examiner,
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
@@ -360,6 +360,7 @@ def run_pipeline(
         # Öffne ICS-Datei direkt in Outlook (nur Windows)
         if ics_path and outlook_success:
             import platform
+
             if platform.system() == "Windows":
                 print("\n📅 Öffne Kalender-Eintrag in Outlook...")
                 outlook_gen.open_ics_in_outlook(ics_path, verbose=False)

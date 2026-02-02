@@ -181,7 +181,7 @@ class ConfigLoader:
         Returns:
             Beschreibung der geladenen Konfiguration.
         """
-        return f"ConfigLoader(task={self.get_task()}, " f"pdf={self.get_pdf_path()})"
+        return f"ConfigLoader(task={self.get_task()}, pdf={self.get_pdf_path()})"
 
 
 def load_config(folder_path: str) -> ConfigLoader:

@@ -14,45 +14,8 @@ from .types import (
 # ============================================================================
 # Type Definitions and Protocols
 # ============================================================================
-
-class RewrittenComment(pdf_processing.TypedDict):
-    """A comment that has been processed by the LLM.
-    
-    Attributes:
-        original: The original annotation text.
-        rewritten: The LLM-rewritten text, or None if skipped (quelle/language).
-        highlighted: The highlighted text from the PDF.
-        paragraph: The surrounding paragraph context.
-        category: Comment category (llm, quelle, language, ignore).
-    """
-    original: str
-    rewritten: Optional[str]  # None if category != "llm"
-    highlighted: str
-    paragraph: str
-    category: pdf_processing.CommentCategory
-
-
-class ThesisMetadata(pdf_processing.TypedDict):
-    """Metadata extracted from a thesis PDF.
-    
-    Attributes:
-        author: Full name of the thesis author.
-        matriculation_number: Student matriculation number.
-        title: Title of the thesis.
-        first_examiner: Name of the first examiner.
-        second_examiner: Name of the second examiner.
-        first_examiner_christian: First examiner's first name.
-        first_examiner_family: First examiner's last name.
-        bachelor_master: Degree type, either "Bachelor" or "Master".
-    """
-    author: str
-    matriculation_number: str
-    title: str
-    first_examiner: str
-    second_examiner: str
-    first_examiner_christian: str
-    first_examiner_family: str
-    bachelor_master: str
+# Redundant type definitions removed to avoid F811.
+# Using definitions from .types instead.
 
 
 # ============================================================================

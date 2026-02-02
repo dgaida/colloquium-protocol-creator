@@ -3,10 +3,8 @@ Unit tests for src/academic_doc_generator/colloquium/outlook_mail_generator.py
 """
 
 import pytest
-import platform
 import subprocess
-from unittest.mock import MagicMock, patch, mock_open, call
-from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from academic_doc_generator.colloquium.outlook_mail_generator import (
     OutlookMailGenerator,
@@ -130,14 +128,14 @@ class TestCreateOutlookMail:
 
         assert result is False
         # Prüfe dass Fehler gedruckt wurde
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any("Fehler" in str(mock_call) for mock_call in mock_print.call_args_list)
 
 
 class TestOpenIcsInOutlook:
     """Tests für die open_ics_in_outlook Methode."""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile", create=True)
     @patch("builtins.print")
     def test_open_ics_in_outlook_windows_success(
         self, mock_print, mock_startfile, mock_platform
@@ -172,11 +170,11 @@ class TestOpenIcsInOutlook:
 
         assert result is False
         assert any(
-            "nur unter Windows" in str(call) for call in mock_print.call_args_list
+            "nur unter Windows" in str(mock_call) for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile", create=True)
     def test_open_ics_in_outlook_exception(self, mock_startfile, mock_platform):
         """Test open_ics_in_outlook mit Exception."""
         mock_platform.return_value = "Windows"
@@ -188,7 +186,7 @@ class TestOpenIcsInOutlook:
         assert result is False
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile")
+    @patch("academic_doc_generator.colloquium.outlook_mail_generator.os.startfile", create=True)
     @patch("builtins.print")
     def test_open_ics_in_outlook_verbose_exception(
         self, mock_print, mock_startfile, mock_platform
@@ -201,7 +199,7 @@ class TestOpenIcsInOutlook:
         result = generator.open_ics_in_outlook("/path/to/calendar.ics", verbose=True)
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any("Fehler" in str(mock_call) for mock_call in mock_print.call_args_list)
 
 
 class TestCreateOutlookMailWindows:
@@ -282,7 +280,7 @@ class TestCreateOutlookMailWindows:
         assert result is True
         mock_mail.Attachments.Add.assert_not_called()
         assert any(
-            "nicht gefunden" in str(call) for call in mock_print.call_args_list
+            "nicht gefunden" in str(mock_call) for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.win32com", create=True)
@@ -305,7 +303,7 @@ class TestCreateOutlookMailWindows:
         )
 
         assert any(
-            "als Anhang hinzugefügt" in str(call) for call in mock_print.call_args_list
+            "als Anhang hinzugefügt" in str(mock_call) for mock_call in mock_print.call_args_list
         )
 
     def test_create_outlook_mail_windows_import_error(self):
@@ -321,7 +319,7 @@ class TestCreateOutlookMailWindows:
             )
 
             # Um ImportError zu simulieren, müssen wir anders vorgehen
-            with patch("builtins.print") as mock_print:
+            with patch("builtins.print"):
                 # Simuliere dass win32com nicht importiert werden kann
                 original_import = __import__
 
@@ -333,7 +331,7 @@ class TestCreateOutlookMailWindows:
                 with patch("builtins.__import__", side_effect=custom_import):
                     try:
                         # Versuche die Methode aufzurufen
-                        result = generator._create_outlook_mail_windows(
+                        generator._create_outlook_mail_windows(
                             "Test", "Body", None, False
                         )
                         # Falls kein ImportError auftritt, sollte es trotzdem funktionieren
@@ -355,7 +353,7 @@ class TestCreateOutlookMailWindows:
         )
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any("Fehler" in str(mock_call) for mock_call in mock_print.call_args_list)
 
 
 class TestCreateOutlookMailMacOS:
@@ -421,7 +419,7 @@ class TestCreateOutlookMailMacOS:
 
         assert result is True
         assert any(
-            "als Anhang hinzugefügt" in str(call) for call in mock_print.call_args_list
+            "als Anhang hinzugefügt" in str(mock_call) for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -450,7 +448,7 @@ class TestCreateOutlookMailMacOS:
         )
 
         assert result is False
-        assert any("Fehler" in str(call) for call in mock_print.call_args_list)
+        assert any("Fehler" in str(mock_call) for mock_call in mock_print.call_args_list)
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
     def test_create_outlook_mail_macos_general_exception(self, mock_subprocess):
@@ -530,8 +528,8 @@ class TestCreateOutlookMailLinux:
 
         assert result is True
         assert any(
-            "nicht automatisch hinzugefügt" in str(call)
-            for call in mock_print.call_args_list
+            "nicht automatisch hinzugefügt" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")
@@ -567,8 +565,8 @@ class TestCreateOutlookMailLinux:
 
         assert result is False
         assert any(
-            "Konnte Standard-Mail-Client nicht" in str(call)
-            for call in mock_print.call_args_list
+            "Konnte Standard-Mail-Client nicht" in str(mock_call)
+            for mock_call in mock_print.call_args_list
         )
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.subprocess.run")

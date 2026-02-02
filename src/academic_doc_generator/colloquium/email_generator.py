@@ -60,7 +60,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None,
+        zoom_access_code: Optional[str] = None,
     ) -> str:
         """Generiert und speichert die Kolloquiums-Anmelde-E-Mail.
 
@@ -77,7 +77,7 @@ class EmailGenerator:
             company_name: Firmenname.
             company_address: Firmenadresse.
             zoom_link: Zoom-Link.
-            zoom_passcode: Zoom-Code.
+            zoom_access_code: Zoom-Code.
 
         Returns:
             Pfad zur gespeicherten E-Mail-Datei.
@@ -103,7 +103,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_passcode=zoom_passcode,
+            zoom_access_code=zoom_access_code,
         )
 
         return self.save_email_to_markdown(
@@ -119,7 +119,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None,
+        zoom_access_code: Optional[str] = None,
     ) -> Optional[str]:
         """Generiert den Ortszusatz für die E-Mail und den Ort für das PDF-Formular.
 
@@ -129,7 +129,7 @@ class EmailGenerator:
             company_name: Name der Firma (nur für "company").
             company_address: Adresse der Firma (nur für "company").
             zoom_link: Zoom-Meeting-Link (nur für "online").
-            zoom_passcode: Zoom-Zugangscode (nur für "online").
+            zoom_access_code: Zoom-Zugangscode (nur für "online").
 
         Returns:
             Tuple aus (email_location_text, pdf_location_text).
@@ -156,8 +156,8 @@ class EmailGenerator:
                 raise ValueError("Für Online-Kolloquium wird 'zoom_link' benötigt")
 
             zoom_info = f"über Zoom:\n\nZoom-Link: {zoom_link}"
-            if zoom_passcode:
-                zoom_info += f"\nZugangscode: {zoom_passcode}"
+            if zoom_access_code:
+                zoom_info += f"\nZugangscode: {zoom_access_code}"
 
             email_text = zoom_info
         else:
@@ -179,7 +179,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_passcode: Optional[str] = None,
+        zoom_access_code: Optional[str] = None,
     ) -> str:
         """Generiert den Text für die Kolloquiums-Anmelde-E-Mail.
 
@@ -195,7 +195,7 @@ class EmailGenerator:
             company_name: Firmenname (optional, für Firma).
             company_address: Firmenadresse (optional, für Firma).
             zoom_link: Zoom-Link (optional, für Online).
-            zoom_passcode: Zoom-Passcode (optional, für Online).
+            zoom_access_code: Zoom-Passcode (optional, für Online).
 
         Returns:
             Der generierte E-Mail-Text.
@@ -209,7 +209,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_passcode=zoom_passcode,
+            zoom_access_code=zoom_access_code,
         )
 
         self.email_text = f"""Lieber Prüfungsservice,

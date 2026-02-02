@@ -94,7 +94,11 @@ class TestRunFromConfig:
         with patch(
             "academic_doc_generator.cli.run_project_pipeline"
         ) as mock_run_pipeline:
-            mock_run_pipeline.return_value = ("/tmp/project.tex", "/tmp/project.pdf")
+            mock_run_pipeline.return_value = (
+                "/tmp/project.tex",
+                "/tmp/project.pdf",
+                "/tmp/email.md",
+            )
 
             cli.run_from_config("config.json")
 
@@ -191,7 +195,7 @@ class TestRunColloquiumDirect:
         args.company_name = None
         args.company_address = None
         args.zoom_link = None
-        args.zoom_passcode = None
+        args.zoom_access_code = None
         args.api = "openai"
         args.model = "gpt-4o"
         args.groq_free = False
@@ -223,7 +227,7 @@ class TestRunColloquiumDirect:
         args.time = "15:30"
         args.location_type = "online"
         args.zoom_link = "https://zoom.us/j/123"
-        args.zoom_passcode = "test123"
+        args.zoom_access_code = "test123"
         args.room = None
         args.company_name = None
         args.company_address = None
@@ -268,7 +272,11 @@ class TestRunProjectDirect:
         mock_client.llm = "llama-3.3-70b-versatile"
         mock_llm_class.return_value = mock_client
 
-        mock_pipeline.return_value = ("/tmp/project.tex", "/tmp/project.pdf")
+        mock_pipeline.return_value = (
+            "/tmp/project.tex",
+            "/tmp/project.pdf",
+            "/tmp/email.md",
+        )
 
         args = MagicMock()
         args.pdf = "project.pdf"
@@ -292,7 +300,7 @@ class TestRunProjectDirect:
         """Test Projekt ohne Kompilierung."""
         mock_client = MagicMock()
         mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = ("/tmp/project.tex", "")
+        mock_pipeline.return_value = ("/tmp/project.tex", "", "/tmp/email.md")
 
         args = MagicMock()
         args.pdf = "project.pdf"
@@ -408,14 +416,14 @@ class TestCreateParser:
                 "online",
                 "--zoom-link",
                 "https://zoom.us/j/123",
-                "--zoom-passcode",
+                "--zoom-access-code",
                 "test123",
             ]
         )
 
         assert args.location_type == "online"
         assert args.zoom_link == "https://zoom.us/j/123"
-        assert args.zoom_passcode == "test123"
+        assert args.zoom_access_code == "test123"
 
     def test_parser_colloquium_company(self):
         """Test Firmen-Kolloquium Argumente."""

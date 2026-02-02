@@ -1,7 +1,7 @@
 # src/academic_doc_generator/colloquium/orchestrator.py
 """High-level pipeline with comprehensive type annotations for colloquium protocol generation."""
 
-from typing import Tuple, Optional, Literal
+from typing import Tuple, Optional
 from pathlib import Path
 from llm_client import LLMClient
 from ..core import llm_interface, latex_generation, utils
@@ -31,7 +31,7 @@ def run_pipeline(
     company_name: Optional[str] = None,
     company_address: Optional[str] = None,
     zoom_link: Optional[str] = None,
-    zoom_passcode: Optional[str] = None,
+    zoom_access_code: Optional[str] = None,
     gemini_evaluation_enabled: bool = False,
     gemini_model: Optional[str] = None,
 ) -> Tuple[str, str, str]:
@@ -82,7 +82,7 @@ def run_pipeline(
             Defaults to None.
         zoom_link: Zoom meeting URL for online colloquium.
             Required if location_type="online". Defaults to None.
-        zoom_passcode: Zoom meeting passcode (optional for online colloquium).
+        zoom_access_code: Zoom meeting passcode (optional for online colloquium).
             Defaults to None.
         gemini_evaluation_enabled: If True, automatically evaluate the thesis
             using Google Gemini and include the evaluation in the protocol.
@@ -301,7 +301,7 @@ def run_pipeline(
         company_name=company_name,
         company_address=company_address,
         zoom_link=zoom_link,
-        zoom_passcode=zoom_passcode,
+        zoom_access_code=zoom_access_code,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,

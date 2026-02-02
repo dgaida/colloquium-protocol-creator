@@ -91,7 +91,7 @@ class OutlookMailGenerator:
             else:
                 if verbose:
                     print(
-                        f"ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
+                        "ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
                     )
                 return False
 

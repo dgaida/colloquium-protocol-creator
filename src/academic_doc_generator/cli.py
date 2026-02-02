@@ -4,10 +4,10 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional, List, NoReturn
+from typing import List
 from llm_client import LLMClient
 from .config_loader import ConfigLoader, load_config
-from .colloquium.orchestrator import run_pipeline, LocationType
+from .colloquium.orchestrator import run_pipeline
 from .project.orchestrator import run_project_pipeline
 from .review.orchestrator import run_review_pipeline
 
@@ -69,7 +69,7 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            zoom_passcode=coll_config.get("zoom_passcode"),
+            zoom_access_code=coll_config.get("zoom_access_code"),
             gemini_evaluation_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
@@ -147,7 +147,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        zoom_passcode=args.zoom_passcode,
+        zoom_access_code=args.zoom_access_code,
         gemini_evaluation_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
@@ -275,7 +275,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-passcode", help="Zoom passcode (for online)")
+    colloquium_parser.add_argument("--zoom-access-code", help="Zoom access code (for online)")
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

@@ -12,7 +12,7 @@ from .llm_interface import (
 from ..core.utils import split_student_name
 from .latex_generation import create_project_grading_letter_tex
 from ..core.latex_generation import compile_latex_to_pdf
-from ..core.types import ProjectResult, ProjectMetadata, LLMClientProtocol
+from ..core.types import ProjectResult, LLMClientProtocol
 from ..colloquium.email_generator import EmailGenerator
 from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 

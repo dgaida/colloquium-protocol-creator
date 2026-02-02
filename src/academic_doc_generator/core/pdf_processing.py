@@ -1,79 +1,23 @@
 # src/academic_doc_generator/core/pdf_processing.py
 """PDF processing utilities (Docling + pypdf) with comprehensive type annotations."""
 
-from typing import Dict, List, Tuple, TypedDict, Literal, Optional
+from typing import Dict, List, Tuple, Optional
 import re
 from pypdf import PdfReader
 from docling_parse.pdf_parser import DoclingPdfParser
 from docling_core.types.doc.page import TextCellUnit
 from .types import (
     WordBox, AnnotationContext,
-    CommentStats, CommentCategory
+    CommentStats, CommentCategory,
+    AnnotationData
 )
 
 
 # ============================================================================
 # Type Definitions
 # ============================================================================
-
-class WordBox(TypedDict):
-    """Represents a word with its bounding box in a PDF.
-    
-    Attributes:
-        text: The word text content.
-        bbox: Bounding box as (x0, y0, x1, y1) with bottom-left origin.
-    """
-    text: str
-    bbox: Tuple[float, float, float, float]  # (x0, y0, x1, y1)
-
-
-CommentCategory = Literal["llm", "quelle", "language", "ignore"]
-"""Valid comment categories for annotation classification."""
-
-
-class AnnotationDict(TypedDict):
-    """Raw annotation extracted from PDF.
-    
-    Attributes:
-        comment: The annotation comment text.
-        subtype: PDF annotation subtype.
-        rect: Annotation rectangle coordinates, if available.
-        quadpoints: QuadPoints for highlight annotations, if available.
-        category: Classification category for processing.
-    """
-    comment: str
-    subtype: str
-    rect: Optional[List[float]]
-    quadpoints: Optional[List[float]]
-    category: CommentCategory
-
-
-class AnnotationContext(TypedDict):
-    """Annotation with extracted context from PDF content.
-    
-    Attributes:
-        comment: Original annotation comment text.
-        highlighted: Text that was highlighted/selected.
-        paragraph: Surrounding paragraph for context.
-        category: Classification category for processing.
-    """
-    comment: str
-    highlighted: str
-    paragraph: str
-    category: CommentCategory
-
-
-class CommentStats(TypedDict):
-    """Statistics about special comment categories.
-    
-    Attributes:
-        quelle: Count of source-related comments.
-        language: Count of language/grammar comments.
-        ignore: Count of ignored comments (e.g., "ab hier" markers).
-    """
-    quelle: int
-    language: int
-    ignore: int
+# Redundant type definitions removed to avoid F811.
+# Using definitions from .types instead.
 
 
 # ============================================================================
@@ -160,7 +104,7 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
 
 def extract_annotations_with_positions(
     pdf_path: str, ignore_source: bool = True
-) -> Tuple[Dict[int, List[AnnotationDict]], CommentStats]:
+) -> Tuple[Dict[int, List[AnnotationData]], CommentStats]:
     """Extract annotations (comments/highlights) and their positions using pypdf.
     
     Annotations are categorized for processing:
@@ -187,11 +131,11 @@ def extract_annotations_with_positions(
         'llm'
     """
     reader = PdfReader(pdf_path)
-    annotations: Dict[int, List[AnnotationDict]] = {}
+    annotations: Dict[int, List[AnnotationData]] = {}
     stats: CommentStats = {"quelle": 0, "language": 0, "ignore": 0}
 
     for idx, page in enumerate(reader.pages):
-        page_annots: List[AnnotationDict] = []
+        page_annots: List[AnnotationData] = []
         if "/Annots" in page:
             for annot_ref in page["/Annots"]:
                 annot = annot_ref.get_object()
@@ -337,8 +281,8 @@ def rect_overlap(
 
 
 def find_annotation_context(
-    pages_words: Dict[int, List[WordBox]], 
-    annotations: Dict[int, List[AnnotationDict]]
+    pages_words: Dict[int, List[WordBox]],
+    annotations: Dict[int, List[AnnotationData]]
 ) -> Dict[int, List[AnnotationContext]]:
     """Match annotations to the words and paragraphs they reference.
     

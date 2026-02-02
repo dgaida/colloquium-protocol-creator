@@ -298,6 +298,7 @@ class TestProjectOrchestrator:
 
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
+    @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
@@ -310,6 +311,7 @@ class TestProjectOrchestrator:
         mock_email,
         mock_compile,
         mock_create,
+        mock_feedback,
         mock_gender,
         mock_extract,
     ):
@@ -323,19 +325,25 @@ class TestProjectOrchestrator:
             "first_examiner_christian": "Test",
             "first_examiner_family": "Examiner",
             "work_type": "Praxisprojekt",
+            "student_email": "test@th-koeln.de",
         }
         mock_gender.return_value = "Herr"
+        mock_feedback.return_value = "- Feedback item"
         mock_compile.return_value = "/test/output.pdf"
 
         mock_email_gen = MagicMock()
         mock_email_gen.generate_final_grade_email.return_value = "Email"
-        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
+        mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
+        mock_email_gen.save_email_to_markdown.side_effect = [
+            "/test/email.md",
+            "/test/student_email.md",
+        ]
         mock_email.return_value = mock_email_gen
 
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email = project_orchestrator.run_project_pipeline(
+            tex, pdf, email, email_student = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,
@@ -345,20 +353,23 @@ class TestProjectOrchestrator:
             assert tex.endswith("bewertung_projekt_99999.tex")
             assert pdf == "/test/output.pdf"
             assert email == "/test/email.md"
+            assert email_student == "/test/student_email.md"
 
             mock_extract.assert_called_once()
             mock_gender.assert_called_once_with("Test", mock_client)
+            mock_feedback.assert_called_once()
             mock_create.assert_called_once()
             mock_compile.assert_called_once()
 
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
+    @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     def test_run_project_pipeline_no_compile(
-        self, mock_email, mock_create, mock_gender, mock_extract
+        self, mock_email, mock_create, mock_feedback, mock_gender, mock_extract
     ):
         """Test project pipeline without compilation."""
         mock_extract.return_value = {
@@ -372,16 +383,21 @@ class TestProjectOrchestrator:
             "work_type": "Praxisprojekt",
         }
         mock_gender.return_value = "Frau"
+        mock_feedback.return_value = "Feedback"
 
         mock_email_gen = MagicMock()
         mock_email_gen.generate_final_grade_email.return_value = "Email"
-        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
+        mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
+        mock_email_gen.save_email_to_markdown.side_effect = [
+            "/test/email.md",
+            "/test/student_email.md",
+        ]
         mock_email.return_value = mock_email_gen
 
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email = project_orchestrator.run_project_pipeline(
+            tex, pdf, email, email_student = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,
@@ -390,15 +406,18 @@ class TestProjectOrchestrator:
 
             assert tex.endswith(".tex")
             assert pdf == ""
+            assert email == "/test/email.md"
+            assert email_student == "/test/student_email.md"
 
     @patch("academic_doc_generator.project.orchestrator.LLMClient")
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
+    @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
     def test_run_project_pipeline_auto_client(
-        self, mock_create, mock_gender, mock_extract, mock_client_class
+        self, mock_create, mock_feedback, mock_gender, mock_extract, mock_client_class
     ):
         """Test project pipeline with automatic client creation."""
         mock_client = MagicMock()
@@ -417,6 +436,7 @@ class TestProjectOrchestrator:
             "work_type": "Praxisprojekt",
         }
         mock_gender.return_value = "Herr"
+        mock_feedback.return_value = "Feedback"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_orchestrator.run_project_pipeline(

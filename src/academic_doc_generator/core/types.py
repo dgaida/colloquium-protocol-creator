@@ -162,6 +162,7 @@ class ProjectMetadata(TypedDict, total=False):
     first_examiner_christian: Optional[str]
     first_examiner_family: Optional[str]
     work_type: Optional[str]
+    student_email: Optional[str]
 
 
 # ==============================================================================
@@ -219,8 +220,8 @@ class PDFConfig(TypedDict):
 ColloquiumResult = Tuple[str, str, str]
 """Result of colloquium pipeline: (tex_path, pdf_path, email_path)."""
 
-ProjectResult = Tuple[str, str, str]
-"""Result of project pipeline: (tex_path, pdf_path, email_path)."""
+ProjectResult = Tuple[str, str, str, str]
+"""Result of project pipeline: (tex_path, pdf_path, service_email_path, student_email_path)."""
 
 ReviewResult = str
 """Result of review pipeline: markdown_path."""

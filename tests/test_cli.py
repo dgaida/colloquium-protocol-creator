@@ -98,6 +98,7 @@ class TestRunFromConfig:
                 "/tmp/project.tex",
                 "/tmp/project.pdf",
                 "/tmp/email.md",
+                "/tmp/student_email.md",
             )
 
             cli.run_from_config("config.json")
@@ -276,6 +277,7 @@ class TestRunProjectDirect:
             "/tmp/project.tex",
             "/tmp/project.pdf",
             "/tmp/email.md",
+            "/tmp/student_email.md",
         )
 
         args = MagicMock()
@@ -300,7 +302,12 @@ class TestRunProjectDirect:
         """Test Projekt ohne Kompilierung."""
         mock_client = MagicMock()
         mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = ("/tmp/project.tex", "", "/tmp/email.md")
+        mock_pipeline.return_value = (
+            "/tmp/project.tex",
+            "",
+            "/tmp/email.md",
+            "/tmp/student_email.md",
+        )
 
         args = MagicMock()
         args.pdf = "project.pdf"

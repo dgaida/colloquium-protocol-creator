@@ -248,6 +248,40 @@ Viele Grüße,
 {examiner_name.title()}"""
         return self.email_text
 
+    def generate_student_feedback_email(
+        self,
+        gender: str,
+        last_name: str,
+        grade: str,
+        feedback_bulletpoints: str,
+        examiner_name: str,
+    ) -> str:
+        """Generiert eine Feedback-E-Mail an den Studierenden.
+
+        Args:
+            gender: "Herr" oder "Frau".
+            last_name: Nachname des Studierenden.
+            grade: Note der Arbeit.
+            feedback_bulletpoints: Zusammengefasstes Feedback als Bulletpoints.
+            examiner_name: Name des Prüfers.
+
+        Returns:
+            Der generierte E-Mail-Text.
+        """
+        salutation = f"Guten Tag {gender} {last_name}"
+        if gender == "Herr/Frau":
+            salutation = "Guten Tag"
+
+        self.email_text = f"""{salutation},
+
+ich habe Ihre Arbeit mit einer {grade} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
+
+{feedback_bulletpoints}
+
+Viele Grüße,
+{examiner_name.title()}"""
+        return self.email_text
+
     def save_email_to_markdown(
         self,
         output_folder: str,

@@ -86,7 +86,7 @@ def run_from_config(config_path: str | Path) -> None:
         proj_config = config.get_project_config() or {}
         grade = proj_config.get("grade")
 
-        tex, pdf, email = run_project_pipeline(
+        tex, pdf, email, email_student = run_project_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=output_config.get("folder"),
@@ -100,7 +100,9 @@ def run_from_config(config_path: str | Path) -> None:
         if pdf:
             print(f"  • PDF: {pdf}")
         if email:
-            print(f"  • E-Mail: {email}")
+            print(f"  • E-Mail (Prüfungsservice): {email}")
+        if email_student:
+            print(f"  • E-Mail (Student): {email_student}")
 
     elif task == "review":
         md_path = run_review_pipeline(
@@ -180,7 +182,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    tex, pdf, email = run_project_pipeline(
+    tex, pdf, email, email_student = run_project_pipeline(
         pdf_path=args.pdf,
         llm_client=llm_client,
         output_folder=args.out,
@@ -194,7 +196,9 @@ def run_project_direct(args: argparse.Namespace) -> None:
     if pdf:
         print(f"  • PDF: {pdf}")
     if email:
-        print(f"  • E-Mail: {email}")
+        print(f"  • E-Mail (Prüfungsservice): {email}")
+    if email_student:
+        print(f"  • E-Mail (Student): {email_student}")
 
 
 def run_review_direct(args: argparse.Namespace) -> None:
@@ -275,7 +279,9 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-meeting-access", help="Zoom access code (for online)")
+    colloquium_parser.add_argument(
+        "--zoom-meeting-access", help="Zoom access code (for online)"
+    )
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

@@ -17,6 +17,37 @@ class OutlookMailGenerator:
         """Initialisiert den OutlookMailGenerator."""
         pass
 
+    @staticmethod
+    def is_outlook_open() -> bool:
+        """Prüft, ob Outlook aktuell geöffnet ist.
+
+        Returns:
+            True wenn Outlook läuft, sonst False.
+        """
+        import subprocess
+
+        system = platform.system()
+        try:
+            if system == "Windows":
+                # Prüfe mit tasklist unter Windows
+                output = subprocess.check_output(
+                    'tasklist /FI "IMAGENAME eq outlook.exe"',
+                    shell=True,
+                    stderr=subprocess.STDOUT,
+                )
+                return b"outlook.exe" in output.lower()
+            elif system == "Darwin":  # macOS
+                # Prüfe mit pgrep unter macOS
+                try:
+                    subprocess.check_call(["pgrep", "-x", "Microsoft Outlook"])
+                    return True
+                except subprocess.CalledProcessError:
+                    return False
+            else:
+                return False
+        except Exception:
+            return False
+
     def create_outlook_mail(
         self,
         student_name: str,
@@ -90,7 +121,9 @@ class OutlookMailGenerator:
                 return True
             else:
                 if verbose:
-                    print("ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt")
+                    print(
+                        "ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
+                    )
                 return False
 
         except Exception as e:

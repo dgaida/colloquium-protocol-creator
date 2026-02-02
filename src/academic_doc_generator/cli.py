@@ -69,7 +69,7 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            zoom_code=coll_config.get("zoom_code"),
+            zoom_meeting_access=coll_config.get("zoom_meeting_access"),
             gemini_evaluation_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
@@ -147,7 +147,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        zoom_code=args.zoom_code,
+        zoom_meeting_access=args.zoom_meeting_access,
         gemini_evaluation_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
@@ -275,7 +275,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-code", help="Zoom access code (for online)")
+    colloquium_parser.add_argument("--zoom-meeting-access", help="Zoom access code (for online)")
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

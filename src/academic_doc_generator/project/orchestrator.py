@@ -152,7 +152,7 @@ def run_project_pipeline(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        id_number=matriculation,
+        student_identifier=matriculation,
         examiner_name=examiner,
     )
     email_path = mymailgen.save_email_to_markdown(

@@ -31,7 +31,7 @@ def run_pipeline(
     company_name: Optional[str] = None,
     company_address: Optional[str] = None,
     zoom_link: Optional[str] = None,
-    zoom_code: Optional[str] = None,
+    zoom_meeting_access: Optional[str] = None,
     gemini_evaluation_enabled: bool = False,
     gemini_model: Optional[str] = None,
 ) -> Tuple[str, str, str]:
@@ -82,7 +82,7 @@ def run_pipeline(
             Defaults to None.
         zoom_link: Zoom meeting URL for online colloquium.
             Required if location_type="online". Defaults to None.
-        zoom_code: Zoom meeting passcode (optional for online colloquium).
+        zoom_meeting_access: Zoom meeting meeting_access (optional for online colloquium).
             Defaults to None.
         gemini_evaluation_enabled: If True, automatically evaluate the thesis
             using Google Gemini and include the evaluation in the protocol.
@@ -301,7 +301,7 @@ def run_pipeline(
         company_name=company_name,
         company_address=company_address,
         zoom_link=zoom_link,
-        zoom_code=zoom_code,
+        zoom_meeting_access=zoom_meeting_access,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
@@ -314,7 +314,7 @@ def run_pipeline(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        id_number=matriculation,
+        student_identifier=matriculation,
         examiner_name=first_examiner,
     )
     mymailgen.save_email_to_markdown(

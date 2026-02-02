@@ -78,11 +78,12 @@ at TH Köln University. Extract the following information if available:
 - Christian name of first examiner
 - Family name of first examiner
 - Type of work (e.g., "Praxisprojekt", "Projektarbeit")
+- Student's email address
 
 Return the result as a valid JSON object with keys:
 "student_name", "student_first_name", "matriculation_number", "title", 
 "first_examiner", "first_examiner_christian", "first_examiner_family", 
-"work_type".
+"work_type", "student_email".
 
 If something is missing, use null as the value.
 Do not include any extra text, only valid JSON.

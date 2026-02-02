@@ -9,6 +9,7 @@ from .llm_interface import (
     extract_project_metadata,
     determine_gender_from_name,
 )
+from .feedback_generator import generate_feedback_summary
 from ..core.utils import split_student_name
 from .latex_generation import create_project_grading_letter_tex
 from ..core.latex_generation import compile_latex_to_pdf
@@ -138,15 +139,15 @@ def run_project_pipeline(
     )
 
     # Compile to PDF if requested
-    pdf_path = ""
+    compiled_pdf_path = ""
     if compile_pdf:
         try:
-            pdf_path = compile_latex_to_pdf(tex_path, output_dir=output_folder)
-            print(f"PDF compiled: {pdf_path}")
+            compiled_pdf_path = compile_latex_to_pdf(tex_path, output_dir=output_folder)
+            print(f"PDF compiled: {compiled_pdf_path}")
         except Exception as e:
             print(f"PDF compilation failed: {e}")
 
-    # Generate email
+    # Generate email for Prüfungsservice
     mymailgen = EmailGenerator()
     grading_email_text = mymailgen.generate_final_grade_email(
         evaluator_client=llm_client,
@@ -162,19 +163,57 @@ def run_project_pipeline(
         filename_prefix="bewertung_projekt_email",
     )
 
-    # Create Outlook mail draft if grade is provided
+    # Generate student feedback email
+    print("\n📝 Generiere Feedback-Zusammenfassung...")
+    feedback_bullets = generate_feedback_summary(pdf_path, llm_client)
+
+    student_email_text = mymailgen.generate_student_feedback_email(
+        gender=gender,
+        last_name=student_last_name,
+        grade=grade if grade else "[NOTE]",
+        feedback_bulletpoints=feedback_bullets,
+        examiner_name=examiner,
+    )
+    student_email_path = mymailgen.save_email_to_markdown(
+        output_folder=output_folder,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
+        filename_prefix="feedback_projekt_email",
+    )
+
+    # Create Outlook mail drafts if grade is provided
     if grade is not None:
-        print("\n📧 Erstelle Outlook-Mail...")
         outlook_gen = OutlookMailGenerator()
+
+        # 1. Draft for Prüfungsservice
+        print("\n📧 Erstelle Outlook-Mail für Prüfungsservice...")
         try:
             outlook_gen.create_outlook_mail(
                 student_name=student_name,
                 email_text=grading_email_text,
-                attachment_path=pdf_path if pdf_path else None,
+                attachment_path=compiled_pdf_path if compiled_pdf_path else None,
                 subject=f"Bewertung Praxisprojekt {gender} {student_first_name} {student_last_name}",
                 verbose=False,
             )
         except Exception as e:
-            print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
+            print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Service): {e}")
 
-    return tex_path, pdf_path, email_path
+        # 2. Draft for Student (only if Outlook is open)
+        if outlook_gen.is_outlook_open():
+            print("\n📧 Erstelle Outlook-Mail für Studierenden...")
+            student_email_addr = metadata.get("student_email")
+            try:
+                outlook_gen.create_outlook_mail(
+                    student_name=student_name,
+                    email_text=student_email_text,
+                    attachment_path=None,
+                    subject=f"Feedback zu Ihrem Praxisprojekt - {student_name}",
+                    recipient=student_email_addr if student_email_addr else "",
+                    verbose=False,
+                )
+            except Exception as e:
+                print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Student): {e}")
+        else:
+            print("\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert.")
+
+    return tex_path, compiled_pdf_path, email_path, student_email_path

@@ -1,6 +1,6 @@
-
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.project.orchestrator import run_project_pipeline
+
 
 @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
 @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
@@ -17,7 +17,7 @@ def test_run_project_pipeline_feedback_toggle(
     mock_create_tex,
     mock_gender,
     mock_metadata,
-    tmp_path
+    tmp_path,
 ):
     # Setup mocks
     mock_metadata.return_value = {
@@ -25,13 +25,16 @@ def test_run_project_pipeline_feedback_toggle(
         "matriculation_number": "123456",
         "title": "Test Title",
         "first_examiner": "Prof. Test",
-        "work_type": "Praxisprojekt"
+        "work_type": "Praxisprojekt",
     }
     mock_gender.return_value = "Herr"
 
     mock_email_gen = MagicMock()
     mock_email_gen_class.return_value = mock_email_gen
-    mock_email_gen.save_email_to_markdown.side_effect = ["service_email.md", "student_email.md"]
+    mock_email_gen.save_email_to_markdown.side_effect = [
+        "service_email.md",
+        "student_email.md",
+    ]
 
     mock_outlook = MagicMock()
     mock_outlook_gen.return_value = mock_outlook
@@ -45,7 +48,7 @@ def test_run_project_pipeline_feedback_toggle(
         pdf_path=pdf_file,
         grade="1.0",
         output_folder=tmp_path,
-        create_feedback_mail=True
+        create_feedback_mail=True,
     )
 
     assert result[3] == "student_email.md"
@@ -62,7 +65,7 @@ def test_run_project_pipeline_feedback_toggle(
         pdf_path=pdf_file,
         grade="1.0",
         output_folder=tmp_path,
-        create_feedback_mail=False
+        create_feedback_mail=False,
     )
 
     assert result[3] == ""

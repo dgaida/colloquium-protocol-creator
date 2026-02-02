@@ -1,5 +1,5 @@
-
 from academic_doc_generator.cli import create_parser
+
 
 def test_project_parser_feedback_toggle():
     parser = create_parser()

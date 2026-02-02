@@ -21,7 +21,9 @@ def generate_feedback_summary(pdf_path: str, llm_client: LLMClient) -> str:
     """
     # 1. Extract annotations and text
     pages_words = extract_text_with_positions(pdf_path)
-    annotations, _stats = extract_annotations_with_positions(pdf_path, ignore_source=True)
+    annotations, _stats = extract_annotations_with_positions(
+        pdf_path, ignore_source=True
+    )
 
     # 2. Get context for each annotation
     context_dict = find_annotation_context(pages_words, annotations)

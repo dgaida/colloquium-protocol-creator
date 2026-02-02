@@ -302,7 +302,12 @@ class TestRunProjectDirect:
         """Test Projekt ohne Kompilierung."""
         mock_client = MagicMock()
         mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = ("/tmp/project.tex", "", "/tmp/email.md", "/tmp/student_email.md")
+        mock_pipeline.return_value = (
+            "/tmp/project.tex",
+            "",
+            "/tmp/email.md",
+            "/tmp/student_email.md",
+        )
 
         args = MagicMock()
         args.pdf = "project.pdf"

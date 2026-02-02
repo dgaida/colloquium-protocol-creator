@@ -388,7 +388,10 @@ class TestProjectOrchestrator:
         mock_email_gen = MagicMock()
         mock_email_gen.generate_final_grade_email.return_value = "Email"
         mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
-        mock_email_gen.save_email_to_markdown.side_effect = ["/test/email.md", "/test/student_email.md"]
+        mock_email_gen.save_email_to_markdown.side_effect = [
+            "/test/email.md",
+            "/test/student_email.md",
+        ]
         mock_email.return_value = mock_email_gen
 
         mock_client = MagicMock()

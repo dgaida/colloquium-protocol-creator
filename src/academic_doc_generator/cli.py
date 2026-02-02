@@ -279,7 +279,9 @@ def create_parser() -> argparse.ArgumentParser:
         "--company-address", help="Company address (for company)"
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
-    colloquium_parser.add_argument("--zoom-meeting-access", help="Zoom access code (for online)")
+    colloquium_parser.add_argument(
+        "--zoom-meeting-access", help="Zoom access code (for online)"
+    )
     colloquium_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

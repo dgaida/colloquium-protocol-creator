@@ -121,7 +121,9 @@ class OutlookMailGenerator:
                 return True
             else:
                 if verbose:
-                    print("ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt")
+                    print(
+                        "ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
+                    )
                 return False
 
         except Exception as e:

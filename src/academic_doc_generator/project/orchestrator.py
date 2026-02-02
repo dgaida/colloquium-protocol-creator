@@ -214,6 +214,8 @@ def run_project_pipeline(
             except Exception as e:
                 print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Student): {e}")
         else:
-            print("\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert.")
+            print(
+                "\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert."
+            )
 
     return tex_path, compiled_pdf_path, email_path, student_email_path

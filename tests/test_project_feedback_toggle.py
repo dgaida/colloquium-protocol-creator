@@ -1,7 +1,5 @@
 
-import pytest
 from unittest.mock import MagicMock, patch
-from pathlib import Path
 from academic_doc_generator.project.orchestrator import run_project_pipeline
 
 @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")

@@ -6,6 +6,10 @@
     "filename": "Praxisprojekt_Weber.pdf"
   },
   
+  "project": {
+    "grade": null
+  },
+
   "llm": {
     "api_choice": null,
     "model": null

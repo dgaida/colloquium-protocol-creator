@@ -4,6 +4,7 @@
 from typing import Optional
 from pathlib import Path
 from ..project.llm_interface import determine_gender_from_name
+from ..core.utils import split_student_name
 from datetime import datetime
 
 
@@ -60,23 +61,34 @@ class EmailGenerator:
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
         zoom_passcode: Optional[str] = None,
-    ):
+    ) -> str:
+        """Generiert und speichert die Kolloquiums-Anmelde-E-Mail.
+
+        Args:
+            llm_client: LLM-Client zur Geschlechtsbestimmung.
+            output_folder: Zielordner.
+            author: Name des Studierenden.
+            matriculation: Matrikelnummer.
+            date_colloquium: Datum des Kolloquiums.
+            uhrzeit_colloquium: Uhrzeit des Kolloquiums.
+            first_examiner: Erstprüfer.
+            location_type: Art des Ortes.
+            room: Raumnummer.
+            company_name: Firmenname.
+            company_address: Firmenadresse.
+            zoom_link: Zoom-Link.
+            zoom_passcode: Zoom-Code.
+
+        Returns:
+            Pfad zur gespeicherten E-Mail-Datei.
+        """
         print("START WRITING MAIL")
 
         if author is None:
-            print("Error: author ", author)
-            return
+            print("Error: author is None")
+            return ""
 
-        # Extrahiere Vornamen und Nachnamen aus name_student
-        # Format: "Nachname, Vorname" oder "Vorname Nachname"
-        if "," in author:
-            student_last_name, student_first_name = author.split(",", 1)
-            student_last_name = student_last_name.strip()
-            student_first_name = student_first_name.strip()
-        else:
-            parts = author.split()
-            student_first_name = parts[0] if parts else "Student"
-            student_last_name = parts[-1] if len(parts) > 1 else "Name"
+        student_first_name, student_last_name = split_student_name(author)
 
         self.generate_colloquium_email(
             llm_client=llm_client,
@@ -94,7 +106,7 @@ class EmailGenerator:
             zoom_passcode=zoom_passcode,
         )
 
-        self.save_email_to_markdown(
+        return self.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
             matriculation_number=matriculation,
@@ -168,7 +180,7 @@ class EmailGenerator:
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
         zoom_passcode: Optional[str] = None,
-    ) -> None:
+    ) -> str:
         """Generiert den Text für die Kolloquiums-Anmelde-E-Mail.
 
         Args:
@@ -186,7 +198,7 @@ class EmailGenerator:
             zoom_passcode: Zoom-Passcode (optional, für Online).
 
         Returns:
-            Tuple aus (email_text, pdf_location) für E-Mail-Text und PDF-Formular-Ort.
+            Der generierte E-Mail-Text.
         """
         salutation = determine_gender_from_name(student_first_name, llm_client)
         weekday = weekday_from_string(date_colloquium)
@@ -207,17 +219,50 @@ hiermit möchte ich {salutation} {student_first_name} {student_last_name} ({matr
 {salutation} {student_last_name}: Bitte bereiten Sie eine max. 15-minütige Präsentation zu Ihrer Arbeit vor (wenn möglich inkl. Demo).
 Viele Grüße,
 {first_examiner.title()}"""
+        return self.email_text
+
+    def generate_final_grade_email(
+        self,
+        llm_client,
+        student_first_name: str,
+        student_last_name: str,
+        matriculation_number: str,
+        first_examiner: str,
+    ) -> str:
+        """Generiert den Text für die E-Mail zur Einreichung der Note.
+
+        Args:
+            llm_client: LLM-Client zur Geschlechtsbestimmung.
+            student_first_name: Vorname des Studierenden.
+            student_last_name: Nachname des Studierenden.
+            matriculation_number: Matrikelnummer.
+            first_examiner: Name des Prüfers.
+
+        Returns:
+            Der generierte E-Mail-Text.
+        """
+        salutation = determine_gender_from_name(student_first_name, llm_client)
+
+        self.email_text = f"""Lieber Prüfungsservice,
+hiermit möchte ich die Bewertung für {salutation} {student_first_name} {student_last_name} ({matriculation_number}) einreichen (s. Anhang).
+Viele Grüße,
+{first_examiner.title()}"""
+        return self.email_text
 
     def save_email_to_markdown(
-        self, output_folder: str, student_last_name: str, matriculation_number: str
+        self,
+        output_folder: str,
+        student_last_name: str,
+        matriculation_number: str,
+        filename_prefix: str = "kolloquium_anmeldung",
     ) -> str:
         """Speichert den E-Mail-Text in einer Markdown-Datei.
 
         Args:
-            email_text: Der vollständige E-Mail-Text.
             output_folder: Ordner, in dem die Datei gespeichert wird.
             student_last_name: Nachname des Studierenden (für Dateinamen).
             matriculation_number: Matrikelnummer (für Dateinamen).
+            filename_prefix: Präfix für den Dateinamen.
 
         Returns:
             Pfad zur gespeicherten Markdown-Datei.
@@ -225,7 +270,7 @@ Viele Grüße,
         output_path = Path(output_folder)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        filename = f"kolloquium_anmeldung_{student_last_name}_{matriculation_number}.md"
+        filename = f"{filename_prefix}_{student_last_name}_{matriculation_number}.md"
         self.email_path = output_path / filename
 
         with open(self.email_path, "w", encoding="utf-8") as f:

@@ -156,6 +156,14 @@ class ConfigLoader:
         """
         return self.config.get("colloquium")
 
+    def get_project_config(self) -> Optional[Dict[str, Any]]:
+        """Gibt die Projekt-Konfiguration zurück.
+
+        Returns:
+            Dictionary mit Projekt-Details oder None wenn nicht vorhanden.
+        """
+        return self.config.get("project")
+
     def get_gemini_evaluation_config(self) -> Dict[str, Any]:
         """Gibt die Gemini-Evaluations-Konfiguration zurück.
 

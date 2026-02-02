@@ -83,18 +83,24 @@ def run_from_config(config_path: str | Path) -> None:
             print(f"  • E-Mail: {email}")
 
     elif task == "project":
-        tex, pdf = run_project_pipeline(
+        proj_config = config.get_project_config() or {}
+        grade = proj_config.get("grade")
+
+        tex, pdf, email = run_project_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=output_config.get("folder"),
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
+            grade=grade,
         )
 
         print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
         print(f"  • LaTeX: {tex}")
         if pdf:
             print(f"  • PDF: {pdf}")
+        if email:
+            print(f"  • E-Mail: {email}")
 
     elif task == "review":
         md_path = run_review_pipeline(
@@ -174,18 +180,21 @@ def run_project_direct(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    tex, pdf = run_project_pipeline(
+    tex, pdf, email = run_project_pipeline(
         pdf_path=args.pdf,
         llm_client=llm_client,
         output_folder=args.out,
         compile_pdf=not args.no_compile,
         signature_file=args.signature,
+        grade=getattr(args, "grade", None),
     )
 
     print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
     print(f"  • LaTeX: {tex}")
     if pdf:
         print(f"  • PDF: {pdf}")
+    if email:
+        print(f"  • E-Mail: {email}")
 
 
 def run_review_direct(args: argparse.Namespace) -> None:
@@ -294,6 +303,9 @@ def create_parser() -> argparse.ArgumentParser:
         "project", help="Generate project work grading letter"
     )
     project_parser.add_argument("pdf", help="Path to the project work PDF")
+    project_parser.add_argument(
+        "--grade", help="Grade for the project (e.g., 1.3)"
+    )
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

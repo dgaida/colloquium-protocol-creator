@@ -4,7 +4,7 @@
 from typing import Tuple, Optional, Literal
 from pathlib import Path
 from llm_client import LLMClient
-from ..core import llm_interface, latex_generation
+from ..core import llm_interface, latex_generation, utils
 from . import pdf_form_filler
 from . import email_generator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator
@@ -286,13 +286,15 @@ def run_pipeline(
 
     # 7) Generate email
     mymailgen = email_generator.EmailGenerator()
-    mymailgen.generate_and_save_email(
+    student_first_name, student_last_name = utils.split_student_name(author)
+
+    registration_email_text = mymailgen.generate_colloquium_email(
         llm_client=llm_client,
-        output_folder=output_folder,
-        author=author,
-        matriculation=matriculation,
+        student_first_name=student_first_name,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
         date_colloquium=date_colloquium,
-        uhrzeit_colloquium=uhrzeit_colloquium,
+        time_colloquium=uhrzeit_colloquium,
         first_examiner=first_examiner,
         location_type=location_type,
         room=room,
@@ -301,7 +303,26 @@ def run_pipeline(
         zoom_link=zoom_link,
         zoom_passcode=zoom_passcode,
     )
-    email_path = mymailgen.email_path
+    email_path = mymailgen.save_email_to_markdown(
+        output_folder=output_folder,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
+    )
+
+    # Generate final grade email template
+    mymailgen.generate_final_grade_email(
+        llm_client=llm_client,
+        student_first_name=student_first_name,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
+        first_examiner=first_examiner,
+    )
+    mymailgen.save_email_to_markdown(
+        output_folder=output_folder,
+        student_last_name=student_last_name,
+        matriculation_number=matriculation,
+        filename_prefix="bewertung_thesis_email",
+    )
 
     # 8) Generate ICS calendar file
     print("\n📅 Erstelle Kalender-Datei...")
@@ -328,8 +349,8 @@ def run_pipeline(
     try:
         outlook_success = outlook_gen.create_outlook_mail(
             student_name=author,
-            email_text=mymailgen.email_text,
-            ics_file_path=ics_path,  # ICS-Datei als Anhang
+            email_text=registration_email_text,
+            attachment_path=ics_path,  # ICS-Datei als Anhang
             verbose=False,
         )
         if not outlook_success:

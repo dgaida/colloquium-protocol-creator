@@ -48,7 +48,8 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.email_path = "/test/email.md"
+        mock_email_gen.generate_colloquium_email.return_value = "Registration Email Text"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         mock_client = MagicMock()
@@ -105,7 +106,8 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.email_path = "/test/email.md"
+        mock_email_gen.generate_colloquium_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         mock_client = MagicMock()
@@ -156,7 +158,8 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.email_path = "/test/email.md"
+        mock_email_gen.generate_colloquium_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         mock_client = MagicMock()
@@ -207,7 +210,8 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.email_path = "/test/email.md"
+        mock_email_gen.generate_colloquium_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         mock_client = MagicMock()
@@ -264,7 +268,8 @@ class TestColloquiumOrchestrator:
         mock_form.fill_form.return_value = "/test/form.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.email_path = "/test/email.md"
+        mock_email_gen.generate_colloquium_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -296,8 +301,16 @@ class TestProjectOrchestrator:
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
     @patch("academic_doc_generator.project.orchestrator.compile_latex_to_pdf")
+    @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
+    @patch("academic_doc_generator.project.orchestrator.OutlookMailGenerator")
     def test_run_project_pipeline_basic(
-        self, mock_compile, mock_create, mock_gender, mock_extract
+        self,
+        mock_outlook,
+        mock_email,
+        mock_compile,
+        mock_create,
+        mock_gender,
+        mock_extract,
     ):
         """Test basic project pipeline execution."""
         mock_extract.return_value = {
@@ -313,18 +326,24 @@ class TestProjectOrchestrator:
         mock_gender.return_value = "Herr"
         mock_compile.return_value = "/test/output.pdf"
 
+        mock_email_gen = MagicMock()
+        mock_email_gen.generate_final_grade_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
+        mock_email.return_value = mock_email_gen
+
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf = project_orchestrator.run_project_pipeline(
+            tex, pdf, email = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,
                 compile_pdf=True,
             )
 
-            assert tex.endswith("projektarbeit_brief_99999.tex")
+            assert tex.endswith("bewertung_projekt_99999.tex")
             assert pdf == "/test/output.pdf"
+            assert email == "/test/email.md"
 
             mock_extract.assert_called_once()
             mock_gender.assert_called_once_with("Test", mock_client)
@@ -336,8 +355,9 @@ class TestProjectOrchestrator:
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
+    @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     def test_run_project_pipeline_no_compile(
-        self, mock_create, mock_gender, mock_extract
+        self, mock_email, mock_create, mock_gender, mock_extract
     ):
         """Test project pipeline without compilation."""
         mock_extract.return_value = {
@@ -352,10 +372,15 @@ class TestProjectOrchestrator:
         }
         mock_gender.return_value = "Frau"
 
+        mock_email_gen = MagicMock()
+        mock_email_gen.generate_final_grade_email.return_value = "Email"
+        mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
+        mock_email.return_value = mock_email_gen
+
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf = project_orchestrator.run_project_pipeline(
+            tex, pdf, email = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,

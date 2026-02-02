@@ -219,8 +219,8 @@ class PDFConfig(TypedDict):
 ColloquiumResult = Tuple[str, str, str]
 """Result of colloquium pipeline: (tex_path, pdf_path, email_path)."""
 
-ProjectResult = Tuple[str, str]
-"""Result of project pipeline: (tex_path, pdf_path)."""
+ProjectResult = Tuple[str, str, str]
+"""Result of project pipeline: (tex_path, pdf_path, email_path)."""
 
 ReviewResult = str
 """Result of review pipeline: markdown_path."""

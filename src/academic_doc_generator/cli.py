@@ -93,6 +93,7 @@ def run_from_config(config_path: str | Path) -> None:
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
             grade=grade,
+            create_feedback_mail=output_config.get("create_feedback_mail", True),
         )
 
         print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
@@ -189,6 +190,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         compile_pdf=not args.no_compile,
         signature_file=args.signature,
         grade=getattr(args, "grade", None),
+        create_feedback_mail=args.create_feedback_mail,
     )
 
     print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
@@ -322,6 +324,19 @@ def create_parser() -> argparse.ArgumentParser:
     )
     project_parser.add_argument(
         "--signature", default="signature.png", help="Path to signature image"
+    )
+    project_parser.add_argument(
+        "--create-feedback-mail",
+        action="store_true",
+        dest="create_feedback_mail",
+        default=True,
+        help="Generate feedback summary and student email (default: True)",
+    )
+    project_parser.add_argument(
+        "--no-feedback-mail",
+        action="store_false",
+        dest="create_feedback_mail",
+        help="Do not generate feedback summary and student email",
     )
 
     # --- Review Subcommand ---

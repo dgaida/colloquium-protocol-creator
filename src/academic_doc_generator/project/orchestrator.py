@@ -25,6 +25,7 @@ def run_project_pipeline(
     compile_pdf: bool = True,
     signature_file: str = "signature.png",
     grade: Optional[str] = None,
+    create_feedback_mail: bool = True,
 ) -> ProjectResult:
     """Execute the full project work grading letter generation pipeline.
 
@@ -54,13 +55,16 @@ def run_project_pipeline(
         signature_file: Path to the examiner's signature image file.
             Defaults to "signature.png".
         grade: The grade obtained for the project.
+        create_feedback_mail: If True, generates a feedback summary and an email
+            template for the student. Defaults to True.
 
     Returns:
-        tuple[str, str, str]: A tuple `(tex_path, pdf_path, email_path)` where:
+        tuple[str, str, str, str]: A tuple `(tex_path, pdf_path, service_email_path, student_email_path)` where:
             - `tex_path`: Path to the generated `.tex` file.
             - `pdf_path`: Path to the generated `.pdf` if `compile_pdf=True`,
               otherwise an empty string.
-            - `email_path`: Path to the generated email markdown file.
+            - `service_email_path`: Path to the generated email markdown file for the examination service.
+            - `student_email_path`: Path to the generated email markdown file for the student (empty if disabled).
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
@@ -164,22 +168,24 @@ def run_project_pipeline(
     )
 
     # Generate student feedback email
-    print("\n📝 Generiere Feedback-Zusammenfassung...")
-    feedback_bullets = generate_feedback_summary(pdf_path, llm_client)
+    student_email_path = ""
+    if create_feedback_mail:
+        print("\n📝 Generiere Feedback-Zusammenfassung...")
+        feedback_bullets = generate_feedback_summary(pdf_path, llm_client)
 
-    student_email_text = mymailgen.generate_student_feedback_email(
-        gender=gender,
-        last_name=student_last_name,
-        grade=grade if grade else "[NOTE]",
-        feedback_bulletpoints=feedback_bullets,
-        examiner_name=examiner,
-    )
-    student_email_path = mymailgen.save_email_to_markdown(
-        output_folder=output_folder,
-        student_last_name=student_last_name,
-        matriculation_number=matriculation,
-        filename_prefix="feedback_projekt_email",
-    )
+        student_email_text = mymailgen.generate_student_feedback_email(
+            gender=gender,
+            last_name=student_last_name,
+            grade=grade if grade else "[NOTE]",
+            feedback_bulletpoints=feedback_bullets,
+            examiner_name=examiner,
+        )
+        student_email_path = mymailgen.save_email_to_markdown(
+            output_folder=output_folder,
+            student_last_name=student_last_name,
+            matriculation_number=matriculation,
+            filename_prefix="feedback_projekt_email",
+        )
 
     # Create Outlook mail drafts if grade is provided
     if grade is not None:
@@ -199,23 +205,24 @@ def run_project_pipeline(
             print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Service): {e}")
 
         # 2. Draft for Student (only if Outlook is open)
-        if outlook_gen.is_outlook_open():
-            print("\n📧 Erstelle Outlook-Mail für Studierenden...")
-            student_email_addr = metadata.get("student_email")
-            try:
-                outlook_gen.create_outlook_mail(
-                    student_name=student_name,
-                    email_text=student_email_text,
-                    attachment_path=None,
-                    subject=f"Feedback zu Ihrem Praxisprojekt - {student_name}",
-                    recipient=student_email_addr if student_email_addr else "",
-                    verbose=False,
+        if create_feedback_mail:
+            if outlook_gen.is_outlook_open():
+                print("\n📧 Erstelle Outlook-Mail für Studierenden...")
+                student_email_addr = metadata.get("student_email")
+                try:
+                    outlook_gen.create_outlook_mail(
+                        student_name=student_name,
+                        email_text=student_email_text,
+                        attachment_path=None,
+                        subject=f"Feedback zu Ihrem Praxisprojekt - {student_name}",
+                        recipient=student_email_addr if student_email_addr else "",
+                        verbose=False,
+                    )
+                except Exception as e:
+                    print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Student): {e}")
+            else:
+                print(
+                    "\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert."
                 )
-            except Exception as e:
-                print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Student): {e}")
-        else:
-            print(
-                "\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert."
-            )
 
     return tex_path, compiled_pdf_path, email_path, student_email_path

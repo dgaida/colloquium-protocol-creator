@@ -18,6 +18,7 @@
   "output": {
     "folder": null,
     "compile_pdf": true,
-    "signature_file": "signature.png"
+    "signature_file": "signature.png",
+    "create_feedback_mail": true
   }
 }

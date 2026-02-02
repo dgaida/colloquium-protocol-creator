@@ -185,6 +185,7 @@ class OutputConfig(TypedDict, total=False):
     compile_pdf: bool
     fill_form_only: bool
     signature_file: Optional[str]
+    create_feedback_mail: bool
 
 
 class ColloquiumConfig(TypedDict, total=False):

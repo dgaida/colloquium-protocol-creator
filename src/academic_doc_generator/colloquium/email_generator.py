@@ -270,7 +270,7 @@ Viele Grüße,
         """
         salutation = f"Guten Tag {gender} {last_name}"
         if gender == "Herr/Frau":
-            salutation = f"Guten Tag"
+            salutation = "Guten Tag"
 
         self.email_text = f"""{salutation},
 

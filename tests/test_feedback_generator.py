@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.project.feedback_generator import generate_feedback_summary
 

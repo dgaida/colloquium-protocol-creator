@@ -1,7 +1,6 @@
 # project_creator/feedback_generator.py
 """Logic for extracting and summarizing feedback from PDF annotations."""
 
-from typing import List
 from llm_client import LLMClient
 from ..core.pdf_processing import (
     extract_annotations_with_positions,

@@ -290,7 +290,9 @@ def translate_latex_exam(
     print("✂️  Teile Dokument in Abschnitte...")
 
     # Teile in Abschnitte
-    preamble, questions, postamble = split_latex_exam_into_sections(latex_content, verbose)
+    preamble, questions, postamble = split_latex_exam_into_sections(
+        latex_content, verbose
+    )
 
     print(f"   • Präambel: {len(preamble)} Zeichen")
     print(f"   • Anzahl Fragen: {len(questions)}")

@@ -1,6 +1,4 @@
 
-import pytest
-import os
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.exam_translator.translator import (
     split_latex_exam_into_sections,
@@ -77,14 +75,6 @@ def test_translate_exam_preserves_comments(mock_llm_class):
         return content
 
     mock_llm.chat_completion.side_effect = side_effect
-
-    latex_content = r"""\documentclass{exam}
-% Preamble Comment
-\begin{questions}
-\question German Question
-% Question Comment
-\end{questions}
-\end{document}"""
 
     with patch("builtins.open", MagicMock()):
         with patch("pathlib.Path.exists", return_value=True):

@@ -3,28 +3,74 @@
 
 import re
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from llm_client import LLMClient
 
 
-def split_latex_exam_into_sections(latex_content: str) -> Tuple[str, List[str]]:
-    """Teilt ein LaTeX-Dokument in Präambel und einzelne Fragen auf.
+def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
+    """Ersetzt Zeilen, die mit % beginnen, durch Platzhalter.
+
+    Args:
+        text: Der LaTeX-Text.
+
+    Returns:
+        Tuple aus (maskierter_text, comment_map):
+        - maskierter_text: Text mit Platzhaltern
+        - comment_map: Mapping von Platzhalter zu Originalzeile
+    """
+    lines = text.splitlines()
+    masked_lines = []
+    comment_map = {}
+
+    for line in lines:
+        if line.strip().startswith("%"):
+            placeholder = f"%%COMMENT_{len(comment_map)}%%"
+            comment_map[placeholder] = line
+            masked_lines.append(placeholder)
+        else:
+            masked_lines.append(line)
+
+    return "\n".join(masked_lines), comment_map
+
+
+def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
+    """Stellt die ursprünglichen Kommentare aus den Platzhaltern wieder her.
+
+    Args:
+        text: Der übersetzte Text mit Platzhaltern.
+        comment_map: Mapping von Platzhalter zu Originalzeile.
+
+    Returns:
+        Der Text mit wiederhergestellten Kommentaren.
+    """
+
+    def replace_func(match):
+        return comment_map.get(match.group(0), match.group(0))
+
+    return re.sub(r"%%COMMENT_\d+%%", replace_func, text)
+
+
+def split_latex_exam_into_sections(latex_content: str) -> Tuple[str, List[str], str]:
+    """Teilt ein LaTeX-Dokument in Präambel, Fragen und Postamble auf.
+
+    Ignoriert auskommentierte \\begin{questions} und \\end{questions} Befehle.
 
     Args:
         latex_content: Der komplette LaTeX-Quelltext.
 
     Returns:
-        Tuple aus (preamble, questions_list):
+        Tuple aus (preamble, questions_list, postamble):
         - preamble: Der Teil vor \\begin{questions} inklusive \\begin{questions}
         - questions_list: Liste der einzelnen Fragen, die jeweils mit \\question beginnen
+        - postamble: Der Teil ab \\end{questions} inklusive \\end{questions}
 
     Example:
-        >>> preamble, questions = split_latex_exam_into_sections(latex_text)
+        >>> preamble, questions, postamble = split_latex_exam_into_sections(latex_text)
         >>> len(questions)
         5
     """
-    # Finde den Anfang der Questions-Umgebung
-    match = re.search(r"\\begin\{questions\}", latex_content)
+    # Finde den Anfang der Questions-Umgebung (nicht am Zeilenanfang auskommentiert)
+    match = re.search(r"(?m)^(?![ \t]*%).*\\begin\{questions\}", latex_content)
 
     if not match:
         raise ValueError("Keine \\begin{questions} Umgebung gefunden!")
@@ -36,8 +82,8 @@ def split_latex_exam_into_sections(latex_content: str) -> Tuple[str, List[str]]:
     # Rest des Dokuments
     remaining = latex_content[preamble_end:]
 
-    # Finde das Ende der Questions-Umgebung
-    end_match = re.search(r"\\end\{questions\}", remaining)
+    # Finde das Ende der Questions-Umgebung (nicht am Zeilenanfang auskommentiert)
+    end_match = re.search(r"(?m)^(?![ \t]*%).*\\end\{questions\}", remaining)
 
     if not end_match:
         raise ValueError("Keine \\end{questions} Umgebung gefunden!")
@@ -47,8 +93,9 @@ def split_latex_exam_into_sections(latex_content: str) -> Tuple[str, List[str]]:
     postamble = remaining[end_match.start() :]  # \end{questions} und alles danach
 
     # Teile in einzelne Questions auf (beginnend mit \question)
-    # Nutze einen lookahead, um \question als Delimiter zu verwenden
-    question_pattern = r"(?=\\question)"
+    # Nutze einen lookahead, um \question als Delimiter zu verwenden,
+    # aber nur wenn es nicht am Zeilenanfang auskommentiert ist.
+    question_pattern = r"(?m)^(?![ \t]*%)(?=\\question)"
     questions_raw = re.split(question_pattern, questions_content)
 
     # Entferne leere Strings und Whitespace-only Einträge
@@ -74,6 +121,9 @@ def translate_question_to_english(
         >>> client = LLMClient()
         >>> translated = translate_question_to_english(question, client)
     """
+    # Maskiere Kommentare vor der Übersetzung
+    masked_text, comment_map = mask_comments(question_text)
+
     prompt = f"""You are a professional translator specialized in academic LaTeX documents.
 
 Your task: Translate the following LaTeX exam question from German to English.
@@ -88,16 +138,18 @@ CRITICAL RULES:
 7. Preserve line breaks and spacing
 8. Do NOT add explanations or comments
 9. Return ONLY the translated LaTeX code
+10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
 
 Examples of what to preserve:
 - Math: $s_1$, $\\gamma = 0.9$, \\[equation\\]
 - Commands: \\question[7], \\part[\\half], \\CorrectChoice
 - Environments: \\begin{{oneparchoices}}, \\begin{{parts}}
 - References: \\ref{{tab:...}}, \\label{{...}}
+- Placeholders: %%COMMENT_0%%, %%COMMENT_1%%
 
 German LaTeX question to translate:
 
-{question_text}
+{masked_text}
 
 Translated English LaTeX question:
 """
@@ -114,7 +166,8 @@ Translated English LaTeX question:
         print(translated[:200] + "...")
         print(f"{'='*60}\n")
 
-    return translated.strip()
+    # Stelle Kommentare wieder her
+    return unmask_comments(translated, comment_map).strip()
 
 
 def translate_preamble_to_english(
@@ -130,6 +183,9 @@ def translate_preamble_to_english(
     Returns:
         Die übersetzte Präambel.
     """
+    # Maskiere Kommentare vor der Übersetzung
+    masked_text, comment_map = mask_comments(preamble)
+
     prompt = f"""You are a professional translator specialized in academic LaTeX documents.
 
 Your task: Translate the following LaTeX exam preamble/header from German to English.
@@ -144,10 +200,11 @@ CRITICAL RULES:
 7. Change babel language from ngerman to english where appropriate
 8. Do NOT add explanations
 9. Return ONLY the translated LaTeX code
+10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
 
 German LaTeX preamble:
 
-{preamble}
+{masked_text}
 
 Translated English LaTeX preamble:
 """
@@ -160,7 +217,8 @@ Translated English LaTeX preamble:
         print("PREAMBLE TRANSLATED")
         print(f"{'='*60}\n")
 
-    return translated.strip()
+    # Stelle Kommentare wieder her
+    return unmask_comments(translated, comment_map).strip()
 
 
 def translate_latex_exam(

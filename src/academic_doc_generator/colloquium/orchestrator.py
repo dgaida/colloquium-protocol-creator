@@ -248,6 +248,8 @@ def run_pipeline(
             pdf_path_str = latex_generation.compile_latex_to_pdf(
                 tex_path, output_dir=output_folder
             )
+            if pdf_path_str:
+                print(f"✅ PDF compiled: {pdf_path_str}")
     else:
         tex_path = ""
         pdf_path_str = ""

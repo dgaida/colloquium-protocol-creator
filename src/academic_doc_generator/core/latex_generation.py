@@ -329,7 +329,9 @@ def compile_latex_to_pdf(
         print(f"   Exit status: {e.returncode}")
         return ""
     except FileNotFoundError:
-        print(f"❌ Error: LaTeX engine '{engine}' not found. Please ensure it is installed.")
+        print(
+            f"❌ Error: LaTeX engine '{engine}' not found. Please ensure it is installed."
+        )
         return ""
 
     pdf_path = os.path.join(

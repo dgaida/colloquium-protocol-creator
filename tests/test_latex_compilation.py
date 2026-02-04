@@ -3,6 +3,7 @@ import subprocess
 from unittest.mock import patch, MagicMock
 from academic_doc_generator.core.latex_generation import compile_latex_to_pdf
 
+
 def test_compile_latex_to_pdf_success():
     """Test successful LaTeX compilation."""
     with patch("subprocess.run") as mock_run:
@@ -12,6 +13,7 @@ def test_compile_latex_to_pdf_success():
 
         assert pdf_path == os.path.join("out", "test.pdf")
         mock_run.assert_called_once()
+
 
 def test_compile_latex_to_pdf_failure():
     """Test LaTeX compilation failure."""
@@ -23,6 +25,7 @@ def test_compile_latex_to_pdf_failure():
 
         assert pdf_path == ""
         mock_run.assert_called_once()
+
 
 def test_compile_latex_to_pdf_not_found():
     """Test when LaTeX engine is not found."""

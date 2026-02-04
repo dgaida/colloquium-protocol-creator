@@ -50,13 +50,16 @@ def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
     return re.sub(r"%%COMMENT_\d+%%", replace_func, text)
 
 
-def split_latex_exam_into_sections(latex_content: str, verbose: bool) -> Tuple[str, List[str], str]:
+def split_latex_exam_into_sections(
+    latex_content: str, verbose: bool = False
+) -> Tuple[str, List[str], str]:
     """Teilt ein LaTeX-Dokument in Präambel, Fragen und Postamble auf.
 
     Ignoriert auskommentierte \\begin{questions} und \\end{questions} Befehle.
 
     Args:
         latex_content: Der komplette LaTeX-Quelltext.
+        verbose: Wenn True, werden zusätzliche Informationen ausgegeben.
 
     Returns:
         Tuple aus (preamble, questions_list, postamble):
@@ -70,7 +73,8 @@ def split_latex_exam_into_sections(latex_content: str, verbose: bool) -> Tuple[s
         5
     """
     # Finde den Anfang der Questions-Umgebung (nicht am Zeilenanfang auskommentiert)
-    match = re.search(r"(?m)^(?![ \t]*%).*\\begin\{questions\}", latex_content)
+    # Nutze [^\n%]*?, um sicherzustellen, dass kein % vor \begin{questions} steht.
+    match = re.search(r"(?m)^(?![ \t]*%)[^\n%]*?\\begin\{questions\}", latex_content)
 
     if not match:
         raise ValueError("Keine \\begin{questions} Umgebung gefunden!")
@@ -83,7 +87,7 @@ def split_latex_exam_into_sections(latex_content: str, verbose: bool) -> Tuple[s
     remaining = latex_content[preamble_end:]
 
     # Finde das Ende der Questions-Umgebung (nicht am Zeilenanfang auskommentiert)
-    end_match = re.search(r"(?m)^(?![ \t]*%).*\\end\{questions\}", remaining)
+    end_match = re.search(r"(?m)^(?![ \t]*%)[^\n%]*?\\end\{questions\}", remaining)
 
     if not end_match:
         raise ValueError("Keine \\end{questions} Umgebung gefunden!")
@@ -95,7 +99,8 @@ def split_latex_exam_into_sections(latex_content: str, verbose: bool) -> Tuple[s
     # Teile in einzelne Questions auf (beginnend mit \question)
     # Nutze einen lookahead, um \question als Delimiter zu verwenden,
     # aber nur wenn es nicht am Zeilenanfang auskommentiert ist.
-    question_pattern = r"(?m)^(?![ \t]*%)(?=\\question)"
+    # [ \t]* erlaubt eingerückte Fragen.
+    question_pattern = r"(?m)^(?![ \t]*%)[ \t]*(?=\\question)"
     questions_raw = re.split(question_pattern, questions_content)
 
     # Entferne leere Strings und Whitespace-only Einträge

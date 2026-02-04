@@ -45,6 +45,24 @@ def test_split_latex_exam_ignores_commented_question():
     assert r"\end{document}" in postamble
 
 
+def test_split_latex_exam_with_tabs():
+    latex_content = """\\documentclass{exam}
+\\begin{document}
+\t\\begin{questions}
+\t\\question Tabbed Q1
+\t\\question Tabbed Q2
+\t\\end{questions}
+\\end{document}
+"""
+    preamble, questions, postamble = split_latex_exam_into_sections(latex_content)
+
+    assert "\\begin{questions}" in preamble
+    assert len(questions) == 2
+    assert "Tabbed Q1" in questions[0]
+    assert "Tabbed Q2" in questions[1]
+    assert "\\end{questions}" in postamble
+
+
 def test_mask_unmask_comments():
     text = r"""\question Eine Frage
 % Ein Kommentar

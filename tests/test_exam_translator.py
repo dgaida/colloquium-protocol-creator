@@ -63,6 +63,31 @@ def test_split_latex_exam_with_tabs():
     assert "\\end{questions}" in postamble
 
 
+def test_split_latex_with_user_complex_data():
+    latex_content = r"""\documentclass[a4paper]{exam}
+\begin{document}
+\begin{center} \fbox{Test} \end{center}
+\clearpage
+\section*{Szenario}
+Text before questions.
+	\begin{questions}
+		\question Q1
+		\question Q2
+	\end{questions}\end{document}"""
+
+    preamble, questions, postamble = split_latex_exam_into_sections(latex_content)
+
+    assert r"\begin{document}" in preamble
+    assert "Szenario" in preamble
+    assert "Text before questions" in preamble
+    assert r"\begin{questions}" in preamble
+    assert len(questions) == 2
+    assert "Q1" in questions[0]
+    assert "Q2" in questions[1]
+    assert r"\end{questions}" in postamble
+    assert r"\end{document}" in postamble
+
+
 def test_mask_unmask_comments():
     text = r"""\question Eine Frage
 % Ein Kommentar

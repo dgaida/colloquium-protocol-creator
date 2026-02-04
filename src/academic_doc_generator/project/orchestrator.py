@@ -145,11 +145,9 @@ def run_project_pipeline(
     # Compile to PDF if requested
     compiled_pdf_path = ""
     if compile_pdf:
-        try:
-            compiled_pdf_path = compile_latex_to_pdf(tex_path, output_dir=output_folder)
-            print(f"PDF compiled: {compiled_pdf_path}")
-        except Exception as e:
-            print(f"PDF compilation failed: {e}")
+        compiled_pdf_path = compile_latex_to_pdf(tex_path, output_dir=output_folder)
+        if compiled_pdf_path:
+            print(f"✅ PDF compiled: {compiled_pdf_path}")
 
     # Generate email for Prüfungsservice
     mymailgen = EmailGenerator()

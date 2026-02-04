@@ -301,7 +301,7 @@ def concatenate_comments(
 def compile_latex_to_pdf(
     tex_path: str, output_dir: str = None, engine: str = "lualatex"
 ) -> str:
-    """Compile a LaTeX file into a PDF using pdflatex.
+    """Compile a LaTeX file into a PDF using the specified engine.
 
     Args:
         tex_path (str): Path to the .tex file.
@@ -309,7 +309,7 @@ def compile_latex_to_pdf(
         engine (str, optional): "lualatex" or "pdflatex"
 
     Returns:
-        str: Path to the generated PDF.
+        str: Path to the generated PDF, or an empty string if compilation fails.
     """
     if output_dir is None:
         output_dir = os.path.dirname(tex_path)
@@ -321,7 +321,18 @@ def compile_latex_to_pdf(
         tex_path,
     ]
 
-    subprocess.run(cmd, check=True)
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error: LaTeX compilation failed for {tex_path}")
+        print(f"   Command: {' '.join(cmd)}")
+        print(f"   Exit status: {e.returncode}")
+        return ""
+    except FileNotFoundError:
+        print(
+            f"❌ Error: LaTeX engine '{engine}' not found. Please ensure it is installed."
+        )
+        return ""
 
     pdf_path = os.path.join(
         output_dir, os.path.splitext(os.path.basename(tex_path))[0] + ".pdf"

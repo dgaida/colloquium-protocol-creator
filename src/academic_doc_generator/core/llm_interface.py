@@ -214,10 +214,11 @@ Extract the following information if available:
 - Family name of first examiner
 - Second examiner (Zweitprüfer)
 - 'Bachelor' if it is a Bachelor thesis or 'Master' if it is a Master thesis
+- Course of study (Studiengang). Often find "Studiengang" followed by either "Informatik", "Wirtschaftsinformatik", "Medieninformatik" or "IT-Management".
 
 Return the result as a valid JSON object with keys:
 "author", "matriculation_number", "title", "first_examiner", "first_examiner_christian", "first_examiner_family", 
-"second_examiner", "bachelor_master".
+"second_examiner", "bachelor_master", "course_of_study".
 
 If something is missing, use null as the value.
 Do not include any extra text.

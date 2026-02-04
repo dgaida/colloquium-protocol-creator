@@ -220,7 +220,9 @@ Translated English LaTeX preamble:
     if verbose:
         print(f"\n{'='*60}")
         print("PREAMBLE TRANSLATED")
-        print(f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}")
+        print(
+            f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}"
+        )
         if len(translated) < len(preamble) - 500:
             print(translated)
         print(f"{'='*60}\n")

@@ -1,11 +1,11 @@
-
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.exam_translator.translator import (
     split_latex_exam_into_sections,
     translate_latex_exam,
     mask_comments,
-    unmask_comments
+    unmask_comments,
 )
+
 
 def test_split_latex_exam_with_comments():
     latex_content = r"""
@@ -25,6 +25,7 @@ def test_split_latex_exam_with_comments():
     assert questions[0] == r"\question Erste Frage" + "\n" + r"% \end{questions}"
     assert r"\end{questions}" in postamble
 
+
 def test_split_latex_exam_ignores_commented_question():
     latex_content = r"""
 \begin{questions}
@@ -43,6 +44,7 @@ def test_split_latex_exam_ignores_commented_question():
     assert "Active Q3" in questions[1]
     assert r"\end{document}" in postamble
 
+
 def test_mask_unmask_comments():
     text = r"""\question Eine Frage
 % Ein Kommentar
@@ -58,16 +60,24 @@ Noch mehr Text
     restored = unmask_comments(masked, comment_map)
     assert restored == text
 
+
 @patch("academic_doc_generator.exam_translator.translator.LLMClient")
 def test_translate_exam_preserves_comments(mock_llm_class):
     mock_llm = mock_llm_class.return_value
     # Mock LLM to just return the input (pretending it's translated)
-    mock_llm.chat_completion.side_effect = lambda messages: messages[0]['content'].split("German LaTeX question to translate:")[1].split("Translated English LaTeX question:")[0].strip() if "German LaTeX question to translate:" in messages[0]['content'] else messages[0]['content']
+    mock_llm.chat_completion.side_effect = lambda messages: (
+        messages[0]["content"]
+        .split("German LaTeX question to translate:")[1]
+        .split("Translated English LaTeX question:")[0]
+        .strip()
+        if "German LaTeX question to translate:" in messages[0]["content"]
+        else messages[0]["content"]
+    )
 
     # Simpler mock for this test
     # In each section, placeholders start from %%COMMENT_0%%
     def side_effect(messages):
-        content = messages[0]['content']
+        content = messages[0]["content"]
         if "German LaTeX preamble:" in content:
             return "Translated Preamble\n%%COMMENT_0%%"
         if "German LaTeX question to translate:" in content:
@@ -78,22 +88,35 @@ def test_translate_exam_preserves_comments(mock_llm_class):
 
     with patch("builtins.open", MagicMock()):
         with patch("pathlib.Path.exists", return_value=True):
-            with patch("academic_doc_generator.exam_translator.translator.split_latex_exam_into_sections") as mock_split:
+            with patch(
+                "academic_doc_generator.exam_translator.translator.split_latex_exam_into_sections"
+            ) as mock_split:
                 mock_split.return_value = (
-                    r"\documentclass{exam}" + "\n" + r"% Preamble Comment" + "\n" + r"\begin{questions}",
+                    r"\documentclass{exam}"
+                    + "\n"
+                    + r"% Preamble Comment"
+                    + "\n"
+                    + r"\begin{questions}",
                     [r"\question German Question" + "\n" + r"% Question Comment"],
-                    r"\end{questions}" + "\n" + r"\end{document}"
+                    r"\end{questions}" + "\n" + r"\end{document}",
                 )
 
                 # Mocking file writing
                 output_file = "test_engl.tex"
-                with patch("academic_doc_generator.exam_translator.translator.open", create=True) as mock_open:
+                with patch(
+                    "academic_doc_generator.exam_translator.translator.open",
+                    create=True,
+                ) as mock_open:
                     mock_open.return_value.__enter__.return_value = MagicMock()
 
-                    translate_latex_exam("test.tex", llm_client=mock_llm, output_path=output_file)
+                    translate_latex_exam(
+                        "test.tex", llm_client=mock_llm, output_path=output_file
+                    )
 
                     # Get the written content
-                    args, kwargs = mock_open.return_value.__enter__.return_value.write.call_args
+                    args, kwargs = (
+                        mock_open.return_value.__enter__.return_value.write.call_args
+                    )
                     written_content = args[0]
 
                     assert "% Preamble Comment" in written_content

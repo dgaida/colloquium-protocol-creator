@@ -24,7 +24,7 @@ def main():
         verbose=False  # Setze auf True für detaillierte Debug-Ausgaben
     )
     
-    print(f"\n✨ Übersetzung erfolgreich!")
+    print("\n✨ Übersetzung erfolgreich!")
     print(f"📁 Ausgabedatei: {output_path}")
 
 

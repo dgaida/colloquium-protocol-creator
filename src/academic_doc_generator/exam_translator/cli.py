@@ -55,7 +55,7 @@ def exam_translator_main() -> None:
         sys.exit(1)
     
     if input_path.suffix != ".tex":
-        print(f"⚠️  Warnung: Datei hat keine .tex Endung")
+        print("⚠️  Warnung: Datei hat keine .tex Endung")
     
     # Create LLM client
     try:
@@ -75,7 +75,7 @@ def exam_translator_main() -> None:
             verbose=args.verbose,
         )
         
-        print(f"\n✅ Übersetzung erfolgreich!")
+        print("\n✅ Übersetzung erfolgreich!")
         print(f"📄 Original: {args.input}")
         print(f"📄 Übersetzt: {output_path}")
         

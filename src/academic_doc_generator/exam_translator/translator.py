@@ -276,7 +276,7 @@ def translate_latex_exam(
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(translated_content)
     
-    print(f"✅ Übersetzung abgeschlossen!")
+    print("✅ Übersetzung abgeschlossen!")
     print(f"   Original: {input_path}")
     print(f"   Übersetzt: {output_path}")
     

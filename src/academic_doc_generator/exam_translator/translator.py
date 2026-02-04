@@ -50,7 +50,7 @@ def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
     return re.sub(r"%%COMMENT_\d+%%", replace_func, text)
 
 
-def split_latex_exam_into_sections(latex_content: str) -> Tuple[str, List[str], str]:
+def split_latex_exam_into_sections(latex_content: str, verbose: bool) -> Tuple[str, List[str], str]:
     """Teilt ein LaTeX-Dokument in Präambel, Fragen und Postamble auf.
 
     Ignoriert auskommentierte \\begin{questions} und \\end{questions} Befehle.
@@ -285,7 +285,7 @@ def translate_latex_exam(
     print("✂️  Teile Dokument in Abschnitte...")
 
     # Teile in Abschnitte
-    preamble, questions, postamble = split_latex_exam_into_sections(latex_content)
+    preamble, questions, postamble = split_latex_exam_into_sections(latex_content, verbose)
 
     print(f"   • Präambel: {len(preamble)} Zeichen")
     print(f"   • Anzahl Fragen: {len(questions)}")

@@ -3,7 +3,7 @@
 """Beispiel-Skript zur Übersetzung einer LaTeX-Klausur."""
 
 from llm_client import LLMClient
-from latex_exam_translator import translate_latex_exam
+from academic_doc_generator.exam_translator import translate_latex_exam
 
 
 def main():

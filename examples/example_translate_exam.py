@@ -15,7 +15,7 @@ def main():
     )
 
     # Erstelle LLMClient (verwendet automatisch verfügbare API)
-    client = LLMClient()
+    client = LLMClient(max_tokens=2048)
 
     print(f"🤖 Verwende LLM: {client.api_choice} / {client.llm}")
 
@@ -23,7 +23,7 @@ def main():
     output_path = translate_latex_exam(
         input_path=input_path,
         llm_client=client,
-        verbose=False,  # Setze auf True für detaillierte Debug-Ausgaben
+        verbose=True,  # Setze auf True für detaillierte Debug-Ausgaben
     )
 
     print("\n✨ Übersetzung erfolgreich!")

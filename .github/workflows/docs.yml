@@ -33,7 +33,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install mkdocs mkdocs-material pymdown-extensions mkdocs-autorefs
+          pip install -r requirements.txt
+          pip install .
+          pip install mkdocs mkdocs-material pymdown-extensions mkdocs-autorefs mkdocstrings[python]
+
+      - name: Generate API Documentation
+        run: python scripts/generate_api_docs.py
 
       - name: Deploy to GitHub Pages
         run: mkdocs gh-deploy --force

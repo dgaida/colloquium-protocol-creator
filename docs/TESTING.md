@@ -1,16 +1,10 @@
 # Testing Guide
 
-This document describes how to run tests for the colloquium-protocol-creator project.
+This document describes how to run tests for the Academic Document Generator project.
 
 ## Installation
 
 First, install the development dependencies:
-
-```bash
-pip install -r requirements-dev.txt
-```
-
-Or if you're using the editable install:
 
 ```bash
 pip install -e ".[dev]"
@@ -27,7 +21,7 @@ pytest
 ### Run with coverage report
 
 ```bash
-pytest --cov=colloquium_creator --cov=colloquium_pipeline --cov=review_creator --cov=review_pipeline
+pytest --cov=academic_doc_generator
 ```
 
 ### Run specific test file
@@ -36,150 +30,60 @@ pytest --cov=colloquium_creator --cov=colloquium_pipeline --cov=review_creator -
 pytest tests/test_colloquium_creator.py
 ```
 
-### Run specific test class or function
-
-```bash
-pytest tests/test_colloquium_creator.py::TestPdfProcessing
-pytest tests/test_colloquium_creator.py::TestPdfProcessing::test_is_quelle_comment_valid
-```
-
 ### Run with verbose output
 
 ```bash
 pytest -v
 ```
 
-### Run tests matching a pattern
-
-```bash
-pytest -k "quelle"  # Runs all tests with "quelle" in the name
-```
-
 ## Test Structure
 
-The test suite is organized as follows:
+The test suite is organized in the `tests/` directory:
 
-```
-tests/
-├── test_colloquium_creator.py  # Main test file
-└── ...
-```
-
-### Test Categories
-
-- **TestPdfProcessing**: Tests for PDF parsing and annotation extraction
-  - Quelle comment detection
-  - Word-rectangle overlap
-  - Annotation context finding
-
-- **TestLLMInterface**: Tests for LLM interaction
-  - Comment rewriting
-  - Category handling (ignore, quelle, language, llm)
-  - Language detection
-
-- **TestLatexGeneration**: Tests for LaTeX generation
-  - Special character escaping
-  - Letter template creation
-  - Comment concatenation
-
-- **TestUtils**: Tests for utility functions
-  - File finding
-
-- **TestIntegration**: Integration tests for complete workflows
+- `test_colloquium_creator.py`: Tests for PDF parsing, annotation extraction, and LaTeX generation for colloquiums.
+- `test_project_creator.py`: Tests for metadata extraction and gender detection in project work.
+- `test_review_creator.py`: Tests for line number detection and Markdown generation for peer reviews.
+- `test_pipelines.py`: Integration tests for the high-level orchestrators.
+- `test_outlook_mail_generator.py`: Platform-independent tests for email generation (using mocking for Windows/macOS specific COM/AppleScript calls).
+- `test_utils.py`: Unit tests for helper functions like name splitting.
 
 ## Key Features Tested
 
 ### 1. Comment Categorization
+Verified categories: `llm`, `quelle`, `language`, `ignore`.
 
-The system categorizes comments into four types:
+### 2. Metadata Extraction
+Testing LLM-based extraction of author, matriculation number, title, and course of study from various PDF formats.
 
-- **`llm`**: Regular comments that should be rewritten by the LLM
-- **`quelle`**: Source-related comments (e.g., "Quelle?", "Source missing") - counted but not rewritten
-- **`language`**: Language/grammar comments - counted but not rewritten
-- **`ignore`**: "ab hier" comments - completely ignored
-
-### 2. Quelle Detection
-
-Comments are identified as "Quelle" comments if they:
-- Are 20 characters or less (configurable)
-- Contain the word "quelle" or "source" (case-insensitive, whole word)
-
-Examples:
-- ✅ "Quelle?"
-- ✅ "Quelle fehlt"
-- ✅ "source"
-- ❌ "Quelle fehlt hier an dieser Stelle komplett" (too long)
-- ❌ "Consequent" (not a whole word match)
-
-### 3. Comment Processing Flow
-
-1. PDF annotations are extracted with categories
-2. Categories are counted in stats: `{"quelle": X, "language": Y, "ignore": Z}`
-3. Comments are processed:
-   - `ignore`: Excluded entirely
-   - `quelle` and `language`: Kept with `rewritten=None`
-   - `llm`: Sent to LLM for rewriting
-
-## Writing New Tests
-
-When adding new functionality, please add corresponding tests:
-
-```python
-def test_new_feature():
-    """Test description."""
-    # Arrange
-    input_data = ...
-    
-    # Act
-    result = function_under_test(input_data)
-    
-    # Assert
-    assert result == expected_output
-```
+### 3. Integration Pipelines
+Mocked end-to-end tests for `colloquium`, `project`, and `review` tasks.
 
 ## Mocking External Dependencies
 
-For tests that would normally call external APIs (like Groq), use mocking:
+### LLM APIs
+We use `llm_client` mocks to avoid actual API calls and costs during testing.
+
+### Platform-Specific Modules
+For `win32com` (Outlook on Windows), we use `sys.modules` patching in `conftest.py` or within tests to allow the test suite to run on Linux CI environments:
 
 ```python
-from unittest.mock import patch, MagicMock
-
-def test_with_mocked_api():
-    with patch("module.ExternalAPI") as mock_api:
-        mock_client = MagicMock()
-        mock_api.return_value = mock_client
-        
-        # Your test code
-        result = function_that_calls_api()
-        
-        # Verify
-        mock_client.method.assert_called_once()
+with patch.dict("sys.modules", {"win32com.client": MagicMock()}):
+    # Test Windows-specific logic
 ```
 
 ## Continuous Integration
 
-Tests should pass before merging any pull request. Set up CI to run:
+Tests are automatically run on GitHub Actions for every push and pull request.
 
 ```bash
-pytest --cov=colloquium_creator --cov-report=term-missing
+# Example CI command
+pytest --cov=academic_doc_generator --cov-report=xml
 ```
 
 ## Troubleshooting
 
-### Tests fail with import errors
+### Tests fail with `ModuleNotFoundError`
+Ensure the package is installed in editable mode: `pip install -e .`
 
-Make sure the package is installed:
-```bash
-pip install -e .
-```
-
-### Tests fail with missing dependencies
-
-Install dev dependencies:
-```bash
-pip install -r requirements-dev.txt
-```
-
-### Mock tests fail
-
-Ensure you're patching the correct module path where the function is used, not where it's defined.
+### Platform-specific failures
+If tests related to Outlook fail on Linux, check the mocking of `win32com` and `subprocess` calls for AppleScript.

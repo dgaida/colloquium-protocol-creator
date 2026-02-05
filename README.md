@@ -15,34 +15,35 @@
 
 A tool that transforms annotated PDFs into professional LaTeX documents using AI. Extract your PDF annotations, rewrite them into clear questions or feedback, and generate formatted letters automatically.
 
-## Three Use Cases
+## Four Use Cases
 
 ### 1. 📝 Thesis Colloquium Protocols
 
 Generate formal protocol letters for Bachelor/Master thesis colloquiums:
 - Extract and rewrite your rough annotations in the thesis into clear, polite questions
-- Auto-detect student metadata (name, matriculation number, thesis title)
+- Auto-detect student metadata (name, matriculation number, thesis title, course of study)
 - Generate thesis summary from first pages
 - Create LaTeX letter with TH Köln formatting
-- Pre-fill official grading forms with dates and checkboxes
-- Generate registration emails for the Prüfungsservice
+- Pre-fill official grading forms with dates and checkboxes (automatically mapped to course of study)
+- Generate registration emails and Outlook drafts for the Prüfungsservice
 
 [**→ Full Documentation**](docs/COLLOQUIUM.md)
 
 ```bash
-colloquium-protocol-creator --config config_templates/config_colloquium_campus.json
+academic-doc-generator colloquium thesis.pdf --date 20.01.2026 --time 14:00 --room 3.217
 ```
 
 ### 2. 🎓 Project Work Grading Letters
 
 Generate grading letters for project work (Praxisprojekt):
-- Auto-extract project metadata from title page
+- Auto-extract project metadata from title page (including student email)
 - Create LaTeX grading letter template
+- Automatically generate feedback summary and student email
 
 [**→ Full Documentation**](docs/PROJECT.md)
 
 ```bash
-project-grading-letter /path/to/Praxisprojekt.pdf
+academic-doc-generator project /path/to/Praxisprojekt.pdf
 ```
 
 ### 3. 📄 Peer Review Comments
@@ -55,24 +56,40 @@ Generate professional peer review feedback for papers:
 
 [**→ Full Documentation**](docs/REVIEW.md)
 
+```bash
+academic-doc-generator review paper.pdf
+```
+
+### 4. 🔤 LaTeX Exam Translator
+
+Automatically translate LaTeX exam documents from German to English:
+- Specifically designed for the `exam` class
+- Preserves all LaTeX commands, environments, and mathematical formulas
+- Masks and preserves LaTeX comments during translation
+- Automatically handles preambles and question structures
+
+[**→ Full Documentation**](docs/TRANSLATOR.md)
+
 ```python
 from llm_client import LLMClient
-from academic_doc_generator.review import orchestrator
+from academic_doc_generator.exam_translator import translate_latex_exam
 
 client = LLMClient()
-md_file = orchestrator.run_review_pipeline("paper.pdf", client)
+output_path = translate_latex_exam("KIKlausur.tex", client)
 ```
 
 ## Key Features
 
+- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks
 - 🔍 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
 - 🤖 **Automatic API Detection** - Uses available API keys or falls back to local Ollama
 - 📄 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
 - 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs
 - ✍️ **Intelligent Comment Refinement** - Rewrites terse notes (e.g., "Why?") into full questions
 - 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer
+- ✒️ **Automatic Signature Detection** - Automatically includes signature if `data/signature.png` exists
 - 📋 **PDF Form Pre-filling** - Auto-fills official grading forms
-- 📧 **Email Generation** - Creates registration emails for colloquium scheduling
+- 📧 **Email Generation** - Creates registration emails and Outlook drafts
 - 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)
 - 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output
 
@@ -111,32 +128,32 @@ GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 
 ```bash
 # List available templates
-colloquium-protocol-creator --list-templates
+academic-doc-generator --list-templates
 ```
 
 2. Edit the json file.
 3. Open `main.py` from the project folder and set `folder`, e.g.: `folder = os.path.join("..", "BachelorThesen", "2025_26_WS", "Musterfrau")`
-4. Run `main.py`.
+4. Run `main.py` (which calls `cli.run_from_config(folder)`).
 5. All files are being created in the specified folder.
 
 Alternative to steps 3 and 4 if you want to run from cli:
 
 ```bash
 # Use a configuration template
-colloquium-protocol-creator --config path_to_thesis_folder/config_colloquium_campus.json
+academic-doc-generator --config path_to_thesis_folder/config_colloquium_campus.json
 ```
 
-#### Python API (Not Recommended - is used internally)
+#### Python API
 
 ```python
 from llm_client import LLMClient
-from academic_doc_generator.colloquium import orchestrator
+from academic_doc_generator.colloquium.orchestrator import run_pipeline
 
 # Auto-detects available API
 client = LLMClient()
 
 # Generate protocol letter, form, and email
-tex, pdf, email = orchestrator.run_pipeline(
+tex, pdf, email = run_pipeline(
     pdf_path="thesis.pdf",
     date_colloquium="15.01.2026",
     uhrzeit_colloquium="10:00",
@@ -214,6 +231,7 @@ The tool now supports JSON configuration files for easier workflow management:
 - [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.md)
 - [🎓 Project Work Grading Letters](docs/PROJECT.md)
 - [📄 Peer Review Comments](docs/REVIEW.md)
+- [🔤 LaTeX Exam Translator](docs/TRANSLATOR.md)
 
 ### Guides
 - [💿 Installation Guide](docs/INSTALL.md)
@@ -273,12 +291,12 @@ Seite 12: Wie verhält sich der Algorithmus bei größeren Datenmengen?
 ### Colloquium Registration Email
 ```markdown
 Lieber Prüfungsservice,
-hiermit möchte ich Herr Max Mustermann (123456) zum Kolloquium anmelden. 
+hiermit möchte ich Herr Max Mustermann (123456) zum Kolloquium anmelden.
 Dieses findet statt am:
 Montag, 20.01.2026, um 14:00,
 in Raum 3.217 am Campus GM.
 
-Herr Mustermann: Bitte bereiten Sie eine max. 15-minütige Präsentation zu 
+Herr Mustermann: Bitte bereiten Sie eine max. 15-minütige Präsentation zu
 Ihrer Arbeit vor (wenn möglich inkl. Demo).
 
 Viele Grüße,
@@ -290,7 +308,7 @@ Prof. Dr. Müller
 \setkomavar{subject}{Praxisprojekt Herr Max Mustermann}
 
 Herr Max Mustermann, Matrikelnr. 123456,
-hat im SoSe25 sein Praxisprojekt bei mir gemacht. 
+hat im SoSe25 sein Praxisprojekt bei mir gemacht.
 Er hat die Note _______ erhalten.
 
 Das Thema war:

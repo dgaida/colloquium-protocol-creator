@@ -2,7 +2,7 @@
 
 Welcome to the Academic Document Generator documentation!
 
-Transform annotated PDFs into professional LaTeX documents using AI. Generate thesis colloquium protocols, project grading letters, and peer review comments automatically.
+Transform annotated PDFs into professional LaTeX documents using AI. Generate thesis colloquium protocols, project grading letters, peer review comments, and translate LaTeX exams automatically.
 
 ## 🎯 Quick Links
 
@@ -20,11 +20,12 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     ---
 
-    Learn about the three main use cases
+    Learn about the four main use cases
 
     [:octicons-arrow-right-24: Colloquium Protocols](COLLOQUIUM.md)
     [:octicons-arrow-right-24: Project Grading](PROJECT.md)
     [:octicons-arrow-right-24: Peer Reviews](REVIEW.md)
+    [:octicons-arrow-right-24: Exam Translation](TRANSLATOR.md)
 
 -   :material-cog:{ .lg .middle } __Configuration__
 
@@ -46,30 +47,33 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
 ## ✨ Key Features
 
+- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks
 - 🔍 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
 - 🤖 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
 - 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs
 - ✍️ **Intelligent Comment Refinement** - Rewrites terse notes into full questions
 - 📝 **LaTeX Generation** - Creates professional letters with TH Köln formatting
-- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms
+- ✒️ **Automatic Signature Detection** - Automatically includes signature from `data/signature.png`
+- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms (auto-mapped to course of study)
+- 📧 **Email & Outlook Integration** - Creates registration emails and Outlook drafts
 - 🌐 **Unicode Support** - Handles German special characters correctly
 
-## 🎓 Three Main Use Cases
+## 🎓 Four Main Use Cases
 
 ### 1. Thesis Colloquium Protocols
 
 Generate formal protocol letters for Bachelor/Master thesis colloquiums:
 
 ```bash
-colloquium-protocol-creator --config config_colloquium_campus.json
+academic-doc-generator colloquium thesis.pdf --date 20.01.2026 --time 14:00 --room 3.217
 ```
 
 **Features:**
 - Extract and rewrite annotations into clear questions
-- Auto-detect student metadata
+- Auto-detect student metadata and course of study
 - Generate thesis summary
 - Create LaTeX letter with TH Köln formatting
-- Pre-fill grading forms
+- Pre-fill grading forms with course-specific checkboxes
 
 [→ Full Documentation](COLLOQUIUM.md)
 
@@ -78,13 +82,14 @@ colloquium-protocol-creator --config config_colloquium_campus.json
 Generate grading letters for project work (Praxisprojekt):
 
 ```bash
-project-grading-letter /path/to/Praxisprojekt.pdf
+academic-doc-generator project /path/to/Praxisprojekt.pdf
 ```
 
 **Features:**
-- Auto-extract project metadata
+- Auto-extract project metadata and student email
 - Determine formal German address (Herr/Frau)
 - Create LaTeX grading letter template
+- Automatically generate feedback summary and student email
 
 [→ Full Documentation](PROJECT.md)
 
@@ -92,12 +97,8 @@ project-grading-letter /path/to/Praxisprojekt.pdf
 
 Generate professional peer review feedback for papers:
 
-```python
-from llm_client import LLMClient
-from academic_doc_generator.review import orchestrator
-
-client = LLMClient()
-md_file = orchestrator.run_review_pipeline("paper.pdf", client)
+```bash
+academic-doc-generator review paper.pdf
 ```
 
 **Features:**
@@ -107,6 +108,26 @@ md_file = orchestrator.run_review_pipeline("paper.pdf", client)
 - Always output in English
 
 [→ Full Documentation](REVIEW.md)
+
+### 4. LaTeX Exam Translation
+
+Automatically translate LaTeX exam documents from German to English:
+
+```python
+from llm_client import LLMClient
+from academic_doc_generator.exam_translator import translate_latex_exam
+
+client = LLMClient()
+output_path = translate_latex_exam("KIKlausur.tex", client)
+```
+
+**Features:**
+- Designed for the LaTeX `exam` class
+- Preserves structure, math, and LaTeX commands
+- Masks and preserves LaTeX comments
+- Structure-aware translation (preamble, questions)
+
+[→ Full Documentation](TRANSLATOR.md)
 
 ## 🚀 Quick Start
 
@@ -137,10 +158,10 @@ GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 
 ```bash
 # List available templates
-colloquium-protocol-creator --list-templates
+academic-doc-generator --list-templates
 
 # Use a configuration template
-colloquium-protocol-creator --config config_templates/config_colloquium_campus.json
+academic-doc-generator --config config_templates/config_colloquium_campus.json
 ```
 
 ## 📊 System Architecture
@@ -148,15 +169,15 @@ colloquium-protocol-creator --config config_templates/config_colloquium_campus.j
 ```
 ┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
 │   Annotated     │         │   Multi-LLM      │         │   LaTeX         │
-│   PDF           │────────►│   Processing     │────────►│   Document      │
-│   (Thesis)      │ Extract │   (Rewriting)    │ Generate│   (Protocol)    │
+│   PDF / LaTeX   │────────►│   Processing     │────────►│   Document      │
+│   (Source)      │ Extract │   (Rewriting)    │ Generate│   (Protocol)    │
 └─────────────────┘         └──────────────────┘         └─────────────────┘
         │                            │                            │
         │                            │                            │
         ▼                            ▼                            ▼
 ┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
-│   Docling +     │         │   OpenAI/Groq/   │         │   PDF Form      │
-│   PyPDF         │         │   Gemini/Ollama  │         │   Pre-filling   │
+│   Docling +     │         │   OpenAI/Groq/   │         │   PDF Form /    │
+│   PyPDF         │         │   Gemini/Ollama  │         │   Email Drafts  │
 └─────────────────┘         └──────────────────┘         └─────────────────┘
 ```
 
@@ -175,8 +196,8 @@ The tool automatically selects the best available API based on your configuratio
 
 Pre-built JSON configurations for common workflows:
 
-- `config_colloquium_campus.json` - Colloquium on campus
-- `config_colloquium_company.json` - Colloquium at company
+- `config_colloquium_campus.json` - Campus colloquium
+- `config_colloquium_company.json` - Company colloquium
 - `config_colloquium_online.json` - Online colloquium via Zoom
 - `config_project_template.json` - Project work grading
 - `config_review_template.json` - Peer review comments

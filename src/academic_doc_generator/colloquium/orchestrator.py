@@ -3,8 +3,10 @@
 
 from typing import Tuple, Optional
 from pathlib import Path
+from datetime import datetime
 from llm_client import LLMClient
-from ..core import llm_interface, latex_generation, utils
+from ..core import llm_interface, latex_generation, utils, pdf_processing
+from ..core.web_metadata import generate_web_metadata_file
 from . import pdf_form_filler
 from . import email_generator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator
@@ -34,7 +36,7 @@ def run_pipeline(
     zoom_meeting_access: Optional[str] = None,
     gemini_evaluation_enabled: bool = False,
     gemini_model: Optional[str] = None,
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str, str, str]:
     """Execute the full colloquium protocol generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX
@@ -91,11 +93,12 @@ def run_pipeline(
             (e.g., "gemini-2.0-flash-exp"). Defaults to None (uses default model).
 
     Returns:
-        Tuple of (tex_path, pdf_path, email_path):
+        Tuple of (tex_path, pdf_path, email_path, web_metadata_path):
         - tex_path: Path to the generated `.tex` file
         - pdf_path: Path to the generated `.pdf` if `compile_pdf=True`,
           otherwise empty string
         - email_path: Path to the generated email markdown file
+        - web_metadata_path: Path to the generated Jekyll-style .md file
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
@@ -156,6 +159,7 @@ def run_pipeline(
         language = "German"
 
     # 3) summary & metadata
+    pages_text = pdf_processing.extract_text_per_page(str(pdf_path))
     summary, metadata = llm_interface.get_summary_and_metadata_of_pdf(
         str(pdf_path), language, llm_client, groq_free
     )
@@ -387,4 +391,24 @@ def run_pipeline(
         print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
         print(f"   Bitte öffne die Datei manuell: {email_path}")
 
-    return tex_path, pdf_path_str, email_path
+    # 10) Generate web metadata
+    print("\n🌐 Erstelle Web-Metadaten...")
+    try:
+        dt_colloquium = datetime.strptime(date_colloquium, "%d.%m.%Y")
+        semester_name = utils.get_semester(dt_colloquium)
+        web_md_path = generate_web_metadata_file(
+            output_folder=output_folder,
+            title=thesis_title,
+            author=author,
+            pages_text=pages_text,
+            llm_client=llm_client,
+            work_type=f"{degree}thesis",
+            semester=semester_name,
+            date_str=dt_colloquium.strftime("%Y-%m-%d"),
+        )
+        print(f"✅ Web-Metadaten erstellt: {web_md_path}")
+    except Exception as e:
+        print(f"⚠️  Fehler beim Erstellen der Web-Metadaten: {e}")
+        web_md_path = ""
+
+    return tex_path, pdf_path_str, email_path, web_md_path

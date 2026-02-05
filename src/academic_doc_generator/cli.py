@@ -55,7 +55,7 @@ def run_from_config(config_path: str | Path) -> None:
             print("❌ Fehler: Kolloquium-Konfiguration fehlt")
             sys.exit(1)
 
-        tex, pdf, email = run_pipeline(
+        tex, pdf, email, web_md = run_pipeline(
             pdf_path=pdf_path,
             date_colloquium=coll_config["date"],
             uhrzeit_colloquium=coll_config["time"],
@@ -81,12 +81,14 @@ def run_from_config(config_path: str | Path) -> None:
             print(f"  • PDF: {pdf}")
         if email:
             print(f"  • E-Mail: {email}")
+        if web_md:
+            print(f"  • Web-Metadaten: {web_md}")
 
     elif task == "project":
         proj_config = config.get_project_config() or {}
         grade = proj_config.get("grade")
 
-        tex, pdf, email, email_student = run_project_pipeline(
+        tex, pdf, email, email_student, web_md = run_project_pipeline(
             pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=output_config.get("folder"),
@@ -104,6 +106,8 @@ def run_from_config(config_path: str | Path) -> None:
             print(f"  • E-Mail (Prüfungsservice): {email}")
         if email_student:
             print(f"  • E-Mail (Student): {email_student}")
+        if web_md:
+            print(f"  • Web-Metadaten: {web_md}")
 
     elif task == "review":
         md_path = run_review_pipeline(
@@ -136,7 +140,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    tex, pdf, email = run_pipeline(
+    tex, pdf, email, web_md = run_pipeline(
         pdf_path=args.pdf,
         date_colloquium=args.date,
         uhrzeit_colloquium=args.time,
@@ -162,6 +166,8 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         print(f"  • PDF: {pdf}")
     if email:
         print(f"  • E-Mail: {email}")
+    if web_md:
+        print(f"  • Web-Metadaten: {web_md}")
 
 
 def run_project_direct(args: argparse.Namespace) -> None:
@@ -183,7 +189,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    tex, pdf, email, email_student = run_project_pipeline(
+    tex, pdf, email, email_student, web_md = run_project_pipeline(
         pdf_path=args.pdf,
         llm_client=llm_client,
         output_folder=args.out,
@@ -201,6 +207,8 @@ def run_project_direct(args: argparse.Namespace) -> None:
         print(f"  • E-Mail (Prüfungsservice): {email}")
     if email_student:
         print(f"  • E-Mail (Student): {email_student}")
+    if web_md:
+        print(f"  • Web-Metadaten: {web_md}")
 
 
 def run_review_direct(args: argparse.Namespace) -> None:

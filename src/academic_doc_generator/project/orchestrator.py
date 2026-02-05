@@ -5,12 +5,14 @@ import os
 from typing import Optional
 from pathlib import Path
 from llm_client import LLMClient
+from ..core import pdf_processing
+from ..core.web_metadata import generate_web_metadata_file
 from .llm_interface import (
     extract_project_metadata,
     determine_gender_from_name,
 )
 from .feedback_generator import generate_feedback_summary
-from ..core.utils import split_student_name
+from ..core.utils import split_student_name, get_semester
 from .latex_generation import create_project_grading_letter_tex
 from ..core.latex_generation import compile_latex_to_pdf
 from ..core.types import ProjectResult, LLMClientProtocol
@@ -59,12 +61,13 @@ def run_project_pipeline(
             template for the student. Defaults to True.
 
     Returns:
-        tuple[str, str, str, str]: A tuple `(tex_path, pdf_path, service_email_path, student_email_path)` where:
+        tuple[str, str, str, str, str]: A tuple `(tex_path, pdf_path, service_email_path, student_email_path, web_metadata_path)` where:
             - `tex_path`: Path to the generated `.tex` file.
             - `pdf_path`: Path to the generated `.pdf` if `compile_pdf=True`,
               otherwise an empty string.
             - `service_email_path`: Path to the generated email markdown file for the examination service.
             - `student_email_path`: Path to the generated email markdown file for the student (empty if disabled).
+            - `web_metadata_path`: Path to the generated Jekyll-style .md file.
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
@@ -98,8 +101,9 @@ def run_project_pipeline(
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
-    # Extract metadata from PDF
+    # Extract metadata and text from PDF
     print(f"Extracting metadata from {pdf_path}")
+    pages_text = pdf_processing.extract_text_per_page(str(pdf_path))
     metadata = extract_project_metadata(pdf_path, llm_client)
 
     student_name = metadata.get("student_name", "Unknown")
@@ -223,4 +227,28 @@ def run_project_pipeline(
                     "\nℹ️  Outlook ist nicht geöffnet. Student-Feedback-Mail nur als .md gespeichert."
                 )
 
-    return tex_path, compiled_pdf_path, email_path, student_email_path
+    # Generate web metadata
+    print("\n🌐 Erstelle Web-Metadaten...")
+    try:
+        semester_name = get_semester()
+        web_md_path = generate_web_metadata_file(
+            output_folder=output_folder,
+            title=project_title,
+            author=student_name,
+            pages_text=pages_text,
+            llm_client=llm_client,
+            work_type="Praxisprojekt",
+            semester=semester_name,
+        )
+        print(f"✅ Web-Metadaten erstellt: {web_md_path}")
+    except Exception as e:
+        print(f"⚠️  Fehler beim Erstellen der Web-Metadaten: {e}")
+        web_md_path = ""
+
+    return (
+        tex_path,
+        compiled_pdf_path,
+        email_path,
+        student_email_path,
+        web_md_path,
+    )

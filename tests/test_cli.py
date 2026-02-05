@@ -52,6 +52,7 @@ class TestRunFromConfig:
                 "/tmp/test.tex",
                 "/tmp/test.pdf",
                 "/tmp/email.md",
+                "/tmp/web_md.md",
             )
 
             cli.run_from_config("config.json")
@@ -99,6 +100,7 @@ class TestRunFromConfig:
                 "/tmp/project.pdf",
                 "/tmp/email.md",
                 "/tmp/student_email.md",
+                "/tmp/web_md.md",
             )
 
             cli.run_from_config("config.json")
@@ -185,7 +187,12 @@ class TestRunColloquiumDirect:
         mock_client.llm = "gpt-4o"
         mock_llm_class.return_value = mock_client
 
-        mock_pipeline.return_value = ("/tmp/test.tex", "/tmp/test.pdf", "/tmp/email.md")
+        mock_pipeline.return_value = (
+            "/tmp/test.tex",
+            "/tmp/test.pdf",
+            "/tmp/email.md",
+            "/tmp/web_md.md",
+        )
 
         args = MagicMock()
         args.pdf = "test.pdf"
@@ -220,7 +227,7 @@ class TestRunColloquiumDirect:
         """Test direkte Ausführung eines Online-Kolloquiums."""
         mock_client = MagicMock()
         mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = ("/tmp/test.tex", "", "/tmp/email.md")
+        mock_pipeline.return_value = ("/tmp/test.tex", "", "/tmp/email.md", "")
 
         args = MagicMock()
         args.pdf = "test.pdf"
@@ -278,6 +285,7 @@ class TestRunProjectDirect:
             "/tmp/project.pdf",
             "/tmp/email.md",
             "/tmp/student_email.md",
+            "/tmp/web_md.md",
         )
 
         args = MagicMock()
@@ -307,6 +315,7 @@ class TestRunProjectDirect:
             "",
             "/tmp/email.md",
             "/tmp/student_email.md",
+            "",
         )
 
         args = MagicMock()
@@ -690,6 +699,7 @@ class TestIntegration:
             "/tmp/bewertung_brief_12345.tex",
             "/tmp/bewertung_brief_12345.pdf",
             "/tmp/email.md",
+            "/tmp/web_md.md",
         )
 
         test_args = [
@@ -756,7 +766,12 @@ class TestIntegration:
         mock_client = MagicMock()
         mock_llm_class.return_value = mock_client
 
-        mock_pipeline.return_value = ("/tmp/test.tex", "/tmp/test.pdf", "/tmp/email.md")
+        mock_pipeline.return_value = (
+            "/tmp/test.tex",
+            "/tmp/test.pdf",
+            "/tmp/email.md",
+            "/tmp/web_md.md",
+        )
 
         # Run with config
         test_args = ["academic-doc-generator", "--config", "config.json"]

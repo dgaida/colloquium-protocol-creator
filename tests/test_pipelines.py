@@ -21,7 +21,11 @@ class TestColloquiumOrchestrator:
     @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    def test_run_pipeline_basic(self, mock_email, mock_form, mock_latex, mock_llm):
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    def test_run_pipeline_basic(
+        self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
+    ):
         """Test basic pipeline execution."""
         # Setup mocks
         mock_llm.rewrite_comments_in_pdf.return_value = (
@@ -45,6 +49,7 @@ class TestColloquiumOrchestrator:
         mock_latex.concatenate_comments.return_value = "Seite 1: Test question?"
         mock_latex.compile_latex_to_pdf.return_value = "/test/output.pdf"
         mock_form.fill_form.return_value = "/test/form.pdf"
+        mock_web.return_value = "/test/web.md"
 
         mock_email_gen = MagicMock()
         mock_email_gen.generate_colloquium_email.return_value = (
@@ -56,7 +61,7 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email = colloquium_orchestrator.run_pipeline(
+            tex, pdf, email, web_md = colloquium_orchestrator.run_pipeline(
                 "test.pdf",
                 date_colloquium="20.01.2026",
                 uhrzeit_colloquium="14:00",
@@ -71,6 +76,7 @@ class TestColloquiumOrchestrator:
             assert tex.endswith("bewertung_brief_12345.tex")
             assert pdf == "/test/output.pdf"
             assert email == "/test/email.md"
+            assert web_md == "/test/web.md"
 
             # Verify calls
             mock_llm.rewrite_comments_in_pdf.assert_called_once()
@@ -83,7 +89,11 @@ class TestColloquiumOrchestrator:
     @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    def test_run_pipeline_no_compile(self, mock_email, mock_form, mock_latex, mock_llm):
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    def test_run_pipeline_no_compile(
+        self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
+    ):
         """Test pipeline without PDF compilation."""
         mock_llm.rewrite_comments_in_pdf.return_value = (
             {1: [{"rewritten": "Test"}]},
@@ -114,7 +124,7 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email = colloquium_orchestrator.run_pipeline(
+            tex, pdf, email, web_md = colloquium_orchestrator.run_pipeline(
                 "test.pdf",
                 date_colloquium="20.01.2026",
                 uhrzeit_colloquium="14:00",
@@ -133,8 +143,10 @@ class TestColloquiumOrchestrator:
     @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
     def test_run_pipeline_many_quelle_comments(
-        self, mock_email, mock_form, mock_latex, mock_llm
+        self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
         """Test pipeline with many 'Quelle' comments."""
         mock_llm.rewrite_comments_in_pdf.return_value = (
@@ -185,8 +197,10 @@ class TestColloquiumOrchestrator:
     @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
     def test_run_pipeline_many_language_comments(
-        self, mock_email, mock_form, mock_latex, mock_llm
+        self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
         """Test pipeline with many language comments."""
         mock_llm.rewrite_comments_in_pdf.return_value = (
@@ -238,8 +252,17 @@ class TestColloquiumOrchestrator:
     @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
     def test_run_pipeline_auto_client(
-        self, mock_email, mock_form, mock_latex, mock_llm, mock_client_class
+        self,
+        mock_web,
+        mock_pdf_proc,
+        mock_email,
+        mock_form,
+        mock_latex,
+        mock_llm,
+        mock_client_class,
     ):
         """Test pipeline with automatic client creation."""
         mock_client = MagicMock()
@@ -305,8 +328,12 @@ class TestProjectOrchestrator:
     @patch("academic_doc_generator.project.orchestrator.compile_latex_to_pdf")
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     @patch("academic_doc_generator.project.orchestrator.OutlookMailGenerator")
+    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
     def test_run_project_pipeline_basic(
         self,
+        mock_web,
+        mock_pdf_proc,
         mock_outlook,
         mock_email,
         mock_compile,
@@ -343,7 +370,13 @@ class TestProjectOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email, email_student = project_orchestrator.run_project_pipeline(
+            (
+                tex,
+                pdf,
+                email,
+                email_student,
+                web_md,
+            ) = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,
@@ -368,8 +401,17 @@ class TestProjectOrchestrator:
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
+    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
     def test_run_project_pipeline_no_compile(
-        self, mock_email, mock_create, mock_feedback, mock_gender, mock_extract
+        self,
+        mock_web,
+        mock_pdf_proc,
+        mock_email,
+        mock_create,
+        mock_feedback,
+        mock_gender,
+        mock_extract,
     ):
         """Test project pipeline without compilation."""
         mock_extract.return_value = {
@@ -397,7 +439,13 @@ class TestProjectOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email, email_student = project_orchestrator.run_project_pipeline(
+            (
+                tex,
+                pdf,
+                email,
+                email_student,
+                web_md,
+            ) = project_orchestrator.run_project_pipeline(
                 "test.pdf",
                 llm_client=mock_client,
                 output_folder=tmpdir,
@@ -416,8 +464,17 @@ class TestProjectOrchestrator:
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
+    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
+    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
     def test_run_project_pipeline_auto_client(
-        self, mock_create, mock_feedback, mock_gender, mock_extract, mock_client_class
+        self,
+        mock_web,
+        mock_pdf_proc,
+        mock_create,
+        mock_feedback,
+        mock_gender,
+        mock_extract,
+        mock_client_class,
     ):
         """Test project pipeline with automatic client creation."""
         mock_client = MagicMock()

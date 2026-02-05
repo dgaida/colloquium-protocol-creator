@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 
+
 def generate_api_docs():
     """
     Automates the creation of API documentation markdown files for the project.
@@ -42,7 +43,11 @@ def generate_api_docs():
 
         # Calculate target markdown file path
         # Skip 'academic_doc_generator' for the folder structure to keep it cleaner
-        rel_module_path = pathlib.Path(*module_parts[1:]) if len(module_parts) > 1 else pathlib.Path(".")
+        rel_module_path = (
+            pathlib.Path(*module_parts[1:])
+            if len(module_parts) > 1
+            else pathlib.Path(".")
+        )
 
         if is_index:
             target_md = api_ref_root / rel_module_path / "index.md"
@@ -64,6 +69,7 @@ def generate_api_docs():
             f.write(f"- {mod}\n")
 
     print("Done!")
+
 
 if __name__ == "__main__":
     generate_api_docs()

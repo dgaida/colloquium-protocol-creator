@@ -3,32 +3,8 @@
 
 import os
 from typing import Optional
-from datetime import datetime
 from ..core.latex_generation import escape_for_latex
-
-
-def get_current_semester() -> str:
-    """Determine the current semester based on the current date.
-
-    Winter semester (WS) runs from October 1 to end of February.
-    Summer semester (SoSe) runs from March 1 to end of September.
-
-    Returns:
-        str: Semester string in format "WS25/26" or "SoSe25".
-    """
-    now = datetime.now()
-    month = now.month
-    year = now.year
-
-    if 3 <= month <= 9:
-        # Summer semester (March to September)
-        return f"SoSe{year % 100}"
-    else:
-        # Winter semester (October to February)
-        if month >= 10:
-            return f"WS{year % 100}/{(year + 1) % 100}"
-        else:
-            return f"WS{(year - 1) % 100}/{year % 100}"
+from ..core.utils import get_semester
 
 
 def create_project_grading_letter_tex(
@@ -61,7 +37,7 @@ def create_project_grading_letter_tex(
         signature_file: Path to signature image file (default: "signature.png").
         grade: The grade obtained (default: None, results in a blank line).
     """
-    semester = get_current_semester()
+    semester = get_semester()
 
     # Escape all text inputs for LaTeX
     student_name_safe = escape_for_latex(student_name, preserve_latex=False)

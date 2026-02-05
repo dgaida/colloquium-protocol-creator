@@ -18,50 +18,50 @@ from academic_doc_generator.project import latex_generation, llm_interface
 class TestProjectLatexGeneration:
     """Tests for project work LaTeX generation."""
 
-    def test_get_current_semester_summer(self):
+    def test_get_semester_summer(self):
         """Test semester detection for summer semester (March-September)."""
         # Mock summer months
-        with patch(
-            "academic_doc_generator.project.latex_generation.datetime"
-        ) as mock_dt:
+        from academic_doc_generator.core.utils import get_semester
+
+        with patch("academic_doc_generator.core.utils.datetime") as mock_dt:
             # Test June (summer semester)
             mock_dt.now.return_value = datetime(2025, 6, 15)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "SoSe25"
 
             # Test March (start of summer)
             mock_dt.now.return_value = datetime(2025, 3, 1)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "SoSe25"
 
             # Test September (end of summer)
             mock_dt.now.return_value = datetime(2025, 9, 30)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "SoSe25"
 
-    def test_get_current_semester_winter(self):
+    def test_get_semester_winter(self):
         """Test semester detection for winter semester (October-February)."""
-        with patch(
-            "academic_doc_generator.project.latex_generation.datetime"
-        ) as mock_dt:
+        from academic_doc_generator.core.utils import get_semester
+
+        with patch("academic_doc_generator.core.utils.datetime") as mock_dt:
             # Test November (winter semester)
             mock_dt.now.return_value = datetime(2025, 11, 15)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "WS25/26"
 
             # Test October (start of winter)
             mock_dt.now.return_value = datetime(2025, 10, 1)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "WS25/26"
 
             # Test February (end of winter, previous year)
             mock_dt.now.return_value = datetime(2025, 2, 28)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "WS24/25"
 
             # Test January
             mock_dt.now.return_value = datetime(2025, 1, 15)
-            semester = latex_generation.get_current_semester()
+            semester = get_semester()
             assert semester == "WS24/25"
 
     def test_create_project_grading_letter_tex_herr(self):

@@ -3,7 +3,36 @@
 
 import glob
 import os
+from datetime import datetime
 from typing import Optional, Tuple
+
+
+def get_semester(dt: Optional[datetime] = None) -> str:
+    """Determine the semester based on a date.
+
+    Winter semester (WS) runs from October 1 to end of February.
+    Summer semester (SoSe) runs from March 1 to end of September.
+
+    Args:
+        dt: The date to determine the semester for. Defaults to current date.
+
+    Returns:
+        str: Semester string in format "WS25/26" or "SoSe25".
+    """
+    if dt is None:
+        dt = datetime.now()
+    month = dt.month
+    year = dt.year
+
+    if 3 <= month <= 9:
+        # Summer semester (March to September)
+        return f"SoSe{year % 100}"
+    else:
+        # Winter semester (October to February)
+        if month >= 10:
+            return f"WS{year % 100}/{(year + 1) % 100}"
+        else:
+            return f"WS{(year - 1) % 100}/{year % 100}"
 
 
 def split_student_name(full_name: str) -> Tuple[str, str]:

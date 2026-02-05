@@ -259,23 +259,40 @@ def run_pipeline(
         # Student data
         "name_student": author,
         "MatrNr": matriculation,
-        # Thesis - First examiner
-        "Datum_schrift_Erstpruefer": date_colloquium,
-        "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
-        # Thesis - Second examiner
-        "Datum_schrift_Zweitpruefer": date_colloquium,
-        "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
-        # Colloquium - Details
-        "Datum der Prüfung": date_colloquium,
-        "Startzeit": uhrzeit_colloquium,
-        "Pruefungsfragen_Protokoll": True,  # Checkbox
-        # Colloquium - First examiner
-        "Datum_kolloq_Erstpruefer": date_colloquium,
-        "Kolloq_Begruendung": True,
-        # Colloquium - Second examiner
-        "Datum_kolloq_Zweitpruefer": date_colloquium,
-        "Kolloq_Anschluss_Begruendung": True,
     }
+
+    # Map course of study to checkboxes
+    course_map = {
+        "Informatik": "KontrollInformatik",
+        "Wirtschaftsinformatik": "ControlWI",
+        "Medieninformatik": "KontrollMedien",
+        "IT-Management": "KontrollITM",
+    }
+    course_of_study = metadata.get("course_of_study")
+    if course_of_study in course_map:
+        daten[course_map[course_of_study]] = True
+
+    # Add other fields to daten
+    daten.update(
+        {
+            # Thesis - First examiner
+            "Datum_schrift_Erstpruefer": date_colloquium,
+            "Schrift_Begruendung": True,  # Checkbox "Begründung liegt bei"
+            # Thesis - Second examiner
+            "Datum_schrift_Zweitpruefer": date_colloquium,
+            "Schrift_Anschluss_Begruendung": True,  # "Anschluss an Begründung"
+            # Colloquium - Details
+            "Datum der Prüfung": date_colloquium,
+            "Startzeit": uhrzeit_colloquium,
+            "Pruefungsfragen_Protokoll": True,  # Checkbox
+            # Colloquium - First examiner
+            "Datum_kolloq_Erstpruefer": date_colloquium,
+            "Kolloq_Begruendung": True,
+            # Colloquium - Second examiner
+            "Datum_kolloq_Zweitpruefer": date_colloquium,
+            "Kolloq_Anschluss_Begruendung": True,
+        }
+    )
 
     pdf_form_filler.fill_form(
         daten,

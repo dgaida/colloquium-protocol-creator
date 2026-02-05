@@ -149,6 +149,7 @@ class ThesisMetadata(TypedDict, total=False):
     first_examiner_christian: Optional[str]
     first_examiner_family: Optional[str]
     bachelor_master: Optional[DegreeType]
+    course_of_study: Optional[str]
 
 
 class ProjectMetadata(TypedDict, total=False):
@@ -163,6 +164,7 @@ class ProjectMetadata(TypedDict, total=False):
     first_examiner_family: Optional[str]
     work_type: Optional[str]
     student_email: Optional[str]
+    course_of_study: Optional[str]
 
 
 # ==============================================================================

@@ -40,7 +40,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     Complete API documentation for developers
 
-    [:octicons-arrow-right-24: API Docs](api/core.md)
+    [:octicons-arrow-right-24: API Docs](api_reference/index.md)
 
 </div>
 

@@ -40,6 +40,10 @@ theme:
 plugins:
   - search
   - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -74,9 +78,13 @@ nav:
       - Testing: TESTING.md
       - Contributing: CONTRIBUTING.md
   - API Reference:
-      - Configuration Loader: api/config_loader.md
-      - Core Modules: api/core.md
-      - LLM Interface: api/llm_interface.md
+      - Overview: api_reference/index.md
+      - Configuration Loader: api_reference/config_loader.md
+      - Core: api_reference/core/index.md
+      - Colloquium: api_reference/colloquium/index.md
+      - Project: api_reference/project/index.md
+      - Review: api_reference/review/index.md
+      - Exam Translator: api_reference/exam_translator/index.md
 
 extra:
   social:

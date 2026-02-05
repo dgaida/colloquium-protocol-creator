@@ -7,6 +7,7 @@ def generate_api_docs():
     Automates the creation of API documentation markdown files for the project.
     Each Python module in src/academic_doc_generator is mapped to a markdown file
     containing a mkdocstrings identifier.
+    Also generates a SUMMARY.md for mkdocs-literate-nav.
     """
     src_root = pathlib.Path("src")
     pkg_root = src_root / "academic_doc_generator"
@@ -18,10 +19,13 @@ def generate_api_docs():
 
     print(f"Generating API documentation in {api_ref_root}...")
 
-    # We'll collect all modules to create a main index later
-    all_modules = []
+    # For navigation
+    nav_lines = ["# Navigation\n"]
 
-    for path in sorted(pkg_root.rglob("*.py")):
+    # Sort files to ensure consistent order
+    paths = sorted(pkg_root.rglob("*.py"))
+
+    for path in paths:
         # Skip internal or private modules
         if path.name.startswith("_") and path.name != "__init__.py":
             continue
@@ -39,7 +43,6 @@ def generate_api_docs():
             is_index = False
 
         module_identifier = ".".join(module_parts)
-        all_modules.append(module_identifier)
 
         # Calculate target markdown file path
         # Skip 'academic_doc_generator' for the folder structure to keep it cleaner
@@ -60,13 +63,21 @@ def generate_api_docs():
             f.write(f"# {module_parts[-1]}\n\n")
             f.write(f"::: {module_identifier}\n")
 
-    # Create the main index.md for the API Reference
+        # Add to nav
+        indent = "  " * (len(module_parts) - 1)
+        display_name = module_parts[-1]
+        link = target_md.relative_to(api_ref_root)
+        nav_lines.append(f"{indent}* [{display_name}]({link})\n")
+
+    # Create the SUMMARY.md for literate-nav
+    with open(api_ref_root / "SUMMARY.md", "w", encoding="utf-8") as f:
+        f.writelines(nav_lines)
+
+    # Also create a main index.md if it doesn't exist or update it
     with open(api_ref_root / "index.md", "w", encoding="utf-8") as f:
         f.write("# API Reference\n\n")
         f.write("Welcome to the API reference for the Academic Document Generator.\n\n")
-        f.write("## Modules\n\n")
-        for mod in sorted(all_modules):
-            f.write(f"- {mod}\n")
+        f.write("::: academic_doc_generator\n")
 
     print("Done!")
 

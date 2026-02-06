@@ -1,7 +1,7 @@
 import os
 import subprocess
 from unittest.mock import patch, MagicMock
-from academic_doc_generator.core.latex_generation import compile_latex_to_pdf
+from academic_doc_generator.core.latex import compile_latex_to_pdf
 
 
 def test_compile_latex_to_pdf_success():

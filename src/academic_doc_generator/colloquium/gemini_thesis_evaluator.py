@@ -6,6 +6,7 @@ import tempfile
 from typing import Optional
 from llm_client import LLMClient
 from pypdf import PdfReader, PdfWriter
+from ..core.prompts import PromptTemplate, build_prompt
 
 
 class GeminiThesisEvaluator:
@@ -60,61 +61,9 @@ class GeminiThesisEvaluator:
         """
         niveau = "Bachelor" if degree == "Bachelor" else "Master"
 
-        prompt = f"""Du bist ein erfahrener Professor für Informatik an der TH Köln und bewertest eine {niveau}arbeit.
-
-**Titel der Arbeit:** {thesis_title}
-
-**Deine Aufgabe:**
-
-1. **Kritische Analyse der Stärken und Schwächen:**
-   - Analysiere die gesamte Arbeit gründlich
-   - Identifiziere mindestens 5 konkrete Stärken der Arbeit
-   - Identifiziere mindestens 5 konkrete Schwächen oder Verbesserungspotenziale
-   - Beziehe dich auf spezifische Kapitel, Methoden, Argumente oder Abbildungen
-   - Bewerte das Niveau angemessen für eine {niveau}arbeit
-
-2. **Kolloquiumsfragen:**
-   - Entwickle genau 10 Fragen für das Kolloquium
-   - Die Fragen sollen das Verständnis der Studierenden prüfen
-   - Fragen sollen sich auf kritische Stellen, Designentscheidungen und Ergebnisse beziehen
-   - Niveau muss einer {niveau}arbeit angemessen sein
-   - Mischung aus technischen Details und konzeptionellem Verständnis
-
-**Wichtig:**
-- Antworte ausschließlich auf Deutsch
-- Formatiere deine Antwort als LaTeX-Text (verwende \\\\, \\textbf{{}}, \\begin{{itemize}}, etc.)
-- Escape LaTeX-Sonderzeichen korrekt (verwende \\& statt &, \\% statt %, etc.)
-- Sei konstruktiv und professionell
-- Gib konkrete Beispiele aus der Arbeit
-
-**Format der Antwort:**
-
-\\textbf{{Stärken der Arbeit:}}
-
-\\begin{{itemize}}
-\\item Stärke 1 mit konkretem Bezug
-\\item Stärke 2 mit konkretem Bezug
-\\item ...
-\\end{{itemize}}
-
-\\textbf{{Schwächen und Verbesserungspotenzial:}}
-
-\\begin{{itemize}}
-\\item Schwäche 1 mit konkretem Bezug
-\\item Schwäche 2 mit konkretem Bezug
-\\item ...
-\\end{{itemize}}
-
-\\textbf{{Vorgeschlagene Kolloquiumsfragen:}}
-
-\\begin{{enumerate}}
-\\item Frage 1
-\\item Frage 2
-\\item ...
-\\item Frage 10
-\\end{{enumerate}}
-"""
-        return prompt
+        return build_prompt(
+            PromptTemplate.THESIS_EVALUATION, niveau=niveau, title=thesis_title
+        )
 
     def evaluate_thesis(
         self,

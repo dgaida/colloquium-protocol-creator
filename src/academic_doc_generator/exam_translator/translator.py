@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Dict
 from llm_client import LLMClient
+from ..core.prompts import PromptTemplate, build_prompt
 
 
 def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
@@ -129,35 +130,7 @@ def translate_question_to_english(
     # Maskiere Kommentare vor der Übersetzung
     masked_text, comment_map = mask_comments(question_text)
 
-    prompt = f"""You are a professional translator specialized in academic LaTeX documents.
-
-Your task: Translate the following LaTeX exam question from German to English.
-
-CRITICAL RULES:
-1. PRESERVE ALL LaTeX commands, environments, and formatting EXACTLY as they are
-2. PRESERVE ALL mathematical formulas and equations UNCHANGED
-3. ONLY translate the German text content to English
-4. Keep all \\question, \\part, \\begin{{...}}, \\end{{...}}, etc. commands unchanged
-5. Keep all \\choice, \\CorrectChoice commands unchanged
-6. Translate text inside solution environments (\\begin{{solutionordottedlines}}, \\begin{{solutionorgrid}}, etc.)
-7. Preserve line breaks and spacing
-8. Do NOT add explanations or comments
-9. Return ONLY the translated LaTeX code
-10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
-
-Examples of what to preserve:
-- Math: $s_1$, $\\gamma = 0.9$, \\[equation\\]
-- Commands: \\question[7], \\part[\\half], \\CorrectChoice
-- Environments: \\begin{{oneparchoices}}, \\begin{{parts}}
-- References: \\ref{{tab:...}}, \\label{{...}}
-- Placeholders: %%COMMENT_0%%, %%COMMENT_1%%
-
-German LaTeX question to translate:
-
-{masked_text}
-
-Translated English LaTeX question:
-"""
+    prompt = build_prompt(PromptTemplate.TRANSLATE_QUESTION, text=masked_text)
 
     messages = [{"role": "user", "content": prompt}]
     translated = llm_client.chat_completion(messages)
@@ -191,28 +164,7 @@ def translate_preamble_to_english(
     # Maskiere Kommentare vor der Übersetzung
     masked_text, comment_map = mask_comments(preamble)
 
-    prompt = f"""You are a professional translator specialized in academic LaTeX documents.
-
-Your task: Translate the following LaTeX exam preamble/header from German to English.
-
-CRITICAL RULES:
-1. PRESERVE ALL LaTeX commands and package declarations EXACTLY
-2. ONLY translate German text content in headers, instructions, and labels
-3. Translate exam instructions for students
-4. Translate header/footer content (course name, exam title, etc.)
-5. Translate labels like "Aufgabe Nr.", "Punktzahl:", "Summe", etc.
-6. Keep all \\usepackage, \\newcommand, \\setlength commands unchanged
-7. Change babel language from ngerman to english where appropriate
-8. Do NOT add explanations
-9. Return ONLY the translated LaTeX code
-10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
-
-German LaTeX preamble:
-
-{masked_text}
-
-Translated English LaTeX preamble:
-"""
+    prompt = build_prompt(PromptTemplate.TRANSLATE_PREAMBLE, text=masked_text)
 
     messages = [{"role": "user", "content": prompt}]
     translated = llm_client.chat_completion(messages)

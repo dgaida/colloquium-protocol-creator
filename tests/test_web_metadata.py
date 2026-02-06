@@ -1,31 +1,31 @@
 """
-Unit tests for src/academic_doc_generator/core/web_metadata.py
+Unit tests for src/academic_doc_generator/domain/metadata.py
 """
 
 import os
 import tempfile
 from unittest.mock import MagicMock
-from academic_doc_generator.core import web_metadata
+from academic_doc_generator.domain import metadata
 
 
 def test_get_initials():
     """Test generation of initials."""
-    assert web_metadata.get_initials("Max Mustermann") == "M. M."
-    assert web_metadata.get_initials("Max-Moritz Mustermann") == "M. M. M."
-    assert web_metadata.get_initials("Max Moritz Mustermann") == "M. M. M."
-    assert web_metadata.get_initials(None) == "U. A."
-    assert web_metadata.get_initials("Unknown Author") == "U. A."
+    assert metadata.get_initials("Max Mustermann") == "M. M."
+    assert metadata.get_initials("Max-Moritz Mustermann") == "M. M. M."
+    assert metadata.get_initials("Max Moritz Mustermann") == "M. M. M."
+    assert metadata.get_initials(None) == "U. A."
+    assert metadata.get_initials("Unknown Author") == "U. A."
 
 
 def test_get_author_slug():
     """Test generation of author slugs."""
-    assert web_metadata.get_author_slug("Max Mustermann") == "mamu"
-    assert web_metadata.get_author_slug("Max-Moritz Mustermann") == "mamu"
-    assert web_metadata.get_author_slug("Mustermann") == "must"
-    assert web_metadata.get_author_slug(None) == "unkn"
+    assert metadata.get_author_slug("Max Mustermann") == "mamu"
+    assert metadata.get_author_slug("Max-Moritz Mustermann") == "mamu"
+    assert metadata.get_author_slug("Mustermann") == "must"
+    assert metadata.get_author_slug(None) == "unkn"
 
 
-def test_generate_web_metadata_file():
+def test_generate_metadata_file():
     """Test generation of web metadata Markdown file."""
     mock_client = MagicMock()
     mock_client.chat_completion.return_value = "This is a test summary for the web."
@@ -33,7 +33,7 @@ def test_generate_web_metadata_file():
     pages_text = {0: "Page 1 content", 1: "Page 2 content"}
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        md_path = web_metadata.generate_web_metadata_file(
+        md_path = metadata.generate_metadata_file(
             output_folder=tmpdir,
             title="Test Thesis",
             author="Max Mustermann",

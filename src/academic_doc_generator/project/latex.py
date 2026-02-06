@@ -1,9 +1,9 @@
-# project_creator/latex_generation.py
+# project_creator/latex.py
 """LaTeX generation for project work grading letters."""
 
 import os
 from typing import Optional
-from ..core.latex_generation import escape_for_latex
+from ..core.latex import escape_for_latex
 from ..core.utils import get_semester
 
 

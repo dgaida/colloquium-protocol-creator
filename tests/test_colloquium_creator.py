@@ -7,14 +7,14 @@ import os
 import tempfile
 from unittest.mock import MagicMock
 from academic_doc_generator.core import (
-    pdf_processing,
-    llm_interface,
-    latex_generation,
+    pdf,
+    llm,
+    latex,
     utils,
 )
 
 # ============================================================================
-# Tests for pdf_processing.py
+# Tests for pdf.py
 # ============================================================================
 
 
@@ -23,32 +23,32 @@ class TestPdfProcessing:
 
     def test_is_quelle_comment_valid(self):
         """Test that valid 'Quelle' comments are detected."""
-        assert pdf_processing.is_quelle_comment("Quelle")
-        assert pdf_processing.is_quelle_comment("Quelle?")
-        assert pdf_processing.is_quelle_comment("Quelle fehlt")
-        assert pdf_processing.is_quelle_comment("quelle")
-        assert pdf_processing.is_quelle_comment("  Quelle  ")
-        assert pdf_processing.is_quelle_comment("source")
-        assert pdf_processing.is_quelle_comment("Source?")
-        assert pdf_processing.is_quelle_comment("source missing")
+        assert pdf.is_quelle_comment("Quelle")
+        assert pdf.is_quelle_comment("Quelle?")
+        assert pdf.is_quelle_comment("Quelle fehlt")
+        assert pdf.is_quelle_comment("quelle")
+        assert pdf.is_quelle_comment("  Quelle  ")
+        assert pdf.is_quelle_comment("source")
+        assert pdf.is_quelle_comment("Source?")
+        assert pdf.is_quelle_comment("source missing")
 
     def test_is_quelle_comment_invalid(self):
         """Test that invalid 'Quelle' comments are not detected."""
         # Too long
-        assert not pdf_processing.is_quelle_comment(
+        assert not pdf.is_quelle_comment(
             "Quelle fehlt hier an dieser Stelle komplett"
         )
         # Doesn't contain keyword
-        assert not pdf_processing.is_quelle_comment("Why?")
-        assert not pdf_processing.is_quelle_comment("Explain this")
+        assert not pdf.is_quelle_comment("Why?")
+        assert not pdf.is_quelle_comment("Explain this")
         # Keyword not as whole word
-        assert not pdf_processing.is_quelle_comment("Consequent")
+        assert not pdf.is_quelle_comment("Consequent")
 
     def test_is_quelle_comment_custom_length(self):
         """Test custom max_length parameter."""
         comment = "Quelle fehlt hier"  # 17 chars
-        assert pdf_processing.is_quelle_comment(comment, max_length=20)
-        assert not pdf_processing.is_quelle_comment(comment, max_length=15)
+        assert pdf.is_quelle_comment(comment, max_length=20)
+        assert not pdf.is_quelle_comment(comment, max_length=15)
 
     def test_words_overlapping_rect(self):
         """Test word-rectangle overlap detection."""
@@ -60,20 +60,20 @@ class TestPdfProcessing:
 
         # Rectangle overlapping first word
         rect = (5, 5, 55, 25)
-        hits = pdf_processing.words_overlapping_rect(words, rect)
+        hits = pdf.words_overlapping_rect(words, rect)
         assert len(hits) == 1
         assert hits[0]["text"] == "Hello"
 
         # Rectangle overlapping first two words
         rect = (5, 5, 105, 25)
-        hits = pdf_processing.words_overlapping_rect(words, rect)
+        hits = pdf.words_overlapping_rect(words, rect)
         assert len(hits) == 2
         assert hits[0]["text"] == "Hello"
         assert hits[1]["text"] == "World"
 
         # Rectangle not overlapping anything
         rect = (300, 300, 400, 400)
-        hits = pdf_processing.words_overlapping_rect(words, rect)
+        hits = pdf.words_overlapping_rect(words, rect)
         assert len(hits) == 0
 
     def test_rect_overlap(self):
@@ -81,12 +81,12 @@ class TestPdfProcessing:
         word_bbox = (10, 10, 50, 20)
 
         # Overlapping
-        assert pdf_processing.rect_overlap(word_bbox, (5, 5, 55, 25))
-        assert pdf_processing.rect_overlap(word_bbox, (40, 15, 60, 25))
+        assert pdf.rect_overlap(word_bbox, (5, 5, 55, 25))
+        assert pdf.rect_overlap(word_bbox, (40, 15, 60, 25))
 
         # Not overlapping
-        assert not pdf_processing.rect_overlap(word_bbox, (60, 10, 100, 20))
-        assert not pdf_processing.rect_overlap(word_bbox, (10, 30, 50, 40))
+        assert not pdf.rect_overlap(word_bbox, (60, 10, 100, 20))
+        assert not pdf.rect_overlap(word_bbox, (10, 30, 50, 40))
 
     def test_get_words_for_annotation_on_page(self):
         """Test finding words for annotation with page fallback."""
@@ -99,7 +99,7 @@ class TestPdfProcessing:
         rect = (5, 5, 55, 25)
 
         # Find on same page
-        page_idx, words = pdf_processing.get_words_for_annotation_on_page(
+        page_idx, words = pdf.get_words_for_annotation_on_page(
             pages_words, 1, rect
         )
         assert page_idx == 1
@@ -111,7 +111,7 @@ class TestPdfProcessing:
             0: [{"text": "Page0", "bbox": (100, 100, 150, 120)}],  # No overlap
             1: [{"text": "Page1", "bbox": (10, 10, 50, 20)}],
         }
-        page_idx, words = pdf_processing.get_words_for_annotation_on_page(
+        page_idx, words = pdf.get_words_for_annotation_on_page(
             pages_words_mod, 0, rect
         )
         assert page_idx == 1
@@ -119,7 +119,7 @@ class TestPdfProcessing:
 
 
 # ============================================================================
-# Tests for llm_interface.py
+# Tests for llm.py
 # ============================================================================
 
 
@@ -148,7 +148,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten question"
 
-        result = llm_interface.rewrite_comments(
+        result = llm.rewrite_comments(
             context_dict, mock_client, groq_free=False
         )
 
@@ -172,7 +172,7 @@ class TestLLMInterface:
 
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(
+        result = llm.rewrite_comments(
             context_dict, mock_client, groq_free=False
         )
 
@@ -201,7 +201,7 @@ class TestLLMInterface:
 
         mock_client = MagicMock()
 
-        result = llm_interface.rewrite_comments(
+        result = llm.rewrite_comments(
             context_dict, mock_client, groq_free=False
         )
 
@@ -227,7 +227,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Why is this approach used?"
 
-        result = llm_interface.rewrite_comments(
+        result = llm.rewrite_comments(
             context_dict, mock_client, groq_free=False
         )
 
@@ -249,7 +249,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "German"
 
-        lang = llm_interface.detect_language(results, mock_client, groq_free=False)
+        lang = llm.detect_language(results, mock_client, groq_free=False)
 
         assert lang == "German"
 
@@ -265,13 +265,13 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "English"
 
-        lang = llm_interface.detect_language(results, mock_client, groq_free=False)
+        lang = llm.detect_language(results, mock_client, groq_free=False)
 
         assert lang == "English"
 
 
 # ============================================================================
-# Tests for latex_generation.py
+# Tests for latex.py
 # ============================================================================
 
 
@@ -280,22 +280,22 @@ class TestLatexGeneration:
 
     def test_escape_for_latex_special_chars(self):
         """Test LaTeX special character escaping."""
-        assert latex_generation.escape_for_latex("100% done") == r"100\% done"
-        assert latex_generation.escape_for_latex("A & B") == r"A \& B"
-        assert latex_generation.escape_for_latex("$5") == r"\$5"
-        assert latex_generation.escape_for_latex("C#") == r"C\#"
-        assert latex_generation.escape_for_latex("file_name") == r"file\_name"
+        assert latex.escape_for_latex("100% done") == r"100\% done"
+        assert latex.escape_for_latex("A & B") == r"A \& B"
+        assert latex.escape_for_latex("$5") == r"\$5"
+        assert latex.escape_for_latex("C#") == r"C\#"
+        assert latex.escape_for_latex("file_name") == r"file\_name"
 
     def test_escape_for_latex_german_ss(self):
         """Test German sharp s handling."""
-        assert r"{\ss}" in latex_generation.escape_for_latex("Straße")
-        assert r"{\ss}" in latex_generation.escape_for_latex("außen")
+        assert r"{\ss}" in latex.escape_for_latex("Straße")
+        assert r"{\ss}" in latex.escape_for_latex("außen")
 
     def test_escape_for_latex_dashes(self):
         """Test dash normalization."""
         # Various Unicode dashes should be normalized
         text_with_dashes = "test–dash—test"  # en-dash and em-dash
-        result = latex_generation.escape_for_latex(
+        result = latex.escape_for_latex(
             text_with_dashes, preserve_latex=True
         )
         assert "{-}" in result
@@ -303,16 +303,16 @@ class TestLatexGeneration:
     def test_escape_for_latex_preserve_latex_commands(self):
         """Test that LaTeX commands are preserved when preserve_latex=True."""
         text = r"Some text with \textbf{bold} and \emph{italic}"
-        result = latex_generation.escape_for_latex(text, preserve_latex=True)
+        result = latex.escape_for_latex(text, preserve_latex=True)
         assert r"\textbf" in result
         assert r"\emph" in result
 
     def test_return_seite_page(self):
         """Test page/Seite translation."""
-        assert latex_generation.return_seite_page("German") == "Seite"
-        assert latex_generation.return_seite_page("german") == "Seite"
-        assert latex_generation.return_seite_page("English") == "page"
-        assert latex_generation.return_seite_page("english") == "page"
+        assert latex.return_seite_page("German") == "Seite"
+        assert latex.return_seite_page("german") == "Seite"
+        assert latex.return_seite_page("English") == "page"
+        assert latex.return_seite_page("english") == "page"
 
     def test_concatenate_comments(self):
         """Test comment concatenation for LaTeX."""
@@ -326,7 +326,7 @@ class TestLatexGeneration:
             ],
         }
 
-        output = latex_generation.concatenate_comments(results, "German", verbose=False)
+        output = latex.concatenate_comments(results, "German", verbose=False)
 
         assert "Seite 1: First question?" in output
         assert "Seite 1: Second question?" in output
@@ -339,7 +339,7 @@ class TestLatexGeneration:
             tex_path = f.name
 
         try:
-            latex_generation.create_formal_letter_tex(
+            latex.create_formal_letter_tex(
                 filename=tex_path,
                 recipient="Test Recipient",
                 subject="Test Subject",

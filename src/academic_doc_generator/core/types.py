@@ -5,6 +5,8 @@ This module provides TypedDicts and type aliases for complex data structures
 used throughout the package, improving type safety and IDE support.
 """
 
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TypedDict, Literal, Optional, Tuple, Protocol, List, Dict
 
 # ==============================================================================
@@ -217,14 +219,76 @@ class PDFConfig(TypedDict):
 
 
 # ==============================================================================
+# Dataclass Configuration Types
+# ==============================================================================
+
+
+@dataclass
+class ColloquiumWorkflowConfig:
+    """Consolidated configuration for colloquium workflow."""
+
+    pdf_path: Path
+    date: str
+    time: str
+    location_type: LocationType
+    llm_client: Optional[LLMClientProtocol] = None
+    output_folder: Optional[Path] = None
+    compile_pdf: bool = True
+    fill_form_only: bool = False
+    groq_free: bool = False
+    room: Optional[str] = None
+    company_name: Optional[str] = None
+    company_address: Optional[str] = None
+    zoom_link: Optional[str] = None
+    zoom_meeting_access: Optional[str] = None
+    gemini_evaluation_enabled: bool = False
+    gemini_model: Optional[str] = None
+
+
+@dataclass
+class ProjectWorkflowConfig:
+    """Consolidated configuration for project workflow."""
+
+    pdf_path: Path
+    llm_client: Optional[LLMClientProtocol] = None
+    output_folder: Optional[Path] = None
+    compile_pdf: bool = True
+    signature_file: str = "signature.png"
+    grade: Optional[str] = None
+    create_feedback_mail: bool = True
+
+
+# ==============================================================================
 # Pipeline Result Types
 # ==============================================================================
 
+
+@dataclass
+class ColloquiumWorkflowResult:
+    """Results produced by colloquium workflow."""
+
+    tex_path: str
+    pdf_path: str
+    email_path: str
+    metadata_path: str
+
+
+@dataclass
+class ProjectWorkflowResult:
+    """Results produced by project workflow."""
+
+    tex_path: str
+    pdf_path: str
+    service_email_path: str
+    student_email_path: str
+    metadata_path: str
+
+
 ColloquiumResult = Tuple[str, str, str, str]
-"""Result of colloquium pipeline: (tex_path, pdf_path, email_path, web_metadata_path)."""
+"""Legacy result type for colloquium pipeline."""
 
 ProjectResult = Tuple[str, str, str, str, str]
-"""Result of project pipeline: (tex_path, pdf_path, service_email_path, student_email_path, web_metadata_path)."""
+"""Legacy result type for project pipeline."""
 
 ReviewResult = str
 """Result of review pipeline: markdown_path."""

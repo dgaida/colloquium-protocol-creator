@@ -1,34 +1,30 @@
-# project_pipeline/orchestrator.py
+# src/academic_doc_generator/project/orchestrator.py
 """High-level pipeline for project work grading letter generation."""
 
 import os
 from typing import Optional
 from pathlib import Path
 from llm_client import LLMClient
-from ..core import pdf_processing
-from ..core.web_metadata import generate_web_metadata_file
-from .llm_interface import (
+from ..core import pdf
+from ..domain.metadata import generate_metadata_file
+from .llm import (
     extract_project_metadata,
-    determine_gender_from_name,
 )
+from ..core.llm import determine_gender_from_name
 from .feedback_generator import generate_feedback_summary
 from ..core.utils import split_student_name, get_semester
-from .latex_generation import create_project_grading_letter_tex
-from ..core.latex_generation import compile_latex_to_pdf
-from ..core.types import ProjectResult, LLMClientProtocol
+from .latex import create_project_grading_letter_tex
+from ..core.latex import compile_latex_to_pdf
+from ..core.types import (
+    ProjectWorkflowResult,
+    LLMClientProtocol,
+    ProjectWorkflowConfig,
+)
 from ..colloquium.email_generator import EmailGenerator
 from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 
 
-def run_project_pipeline(
-    pdf_path: str | Path,
-    llm_client: Optional[LLMClientProtocol] = None,
-    output_folder: Optional[str | Path] = None,
-    compile_pdf: bool = True,
-    signature_file: str = "signature.png",
-    grade: Optional[str] = None,
-    create_feedback_mail: bool = True,
-) -> ProjectResult:
+def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult:
     """Execute the full project work grading letter generation pipeline.
 
     This function orchestrates the complete workflow for creating a LaTeX
@@ -36,65 +32,29 @@ def run_project_pipeline(
     from the PDF, determines the appropriate formal address, and generates
     a letter template.
 
-    The pipeline performs the following steps:
-        1. Extract metadata from the project work PDF (student name,
-           matriculation number, title, examiner).
-        2. Determine the formal address (Herr/Frau) based on the student's
-           first name using an LLM.
-        3. Generate a LaTeX letter template with TH Köln formatting.
-        4. Optionally compile the LaTeX file to PDF.
-        5. Generate grading email template.
-        6. Optionally create Outlook mail draft.
-
     Args:
-        pdf_path: Path to the project work PDF file.
-        llm_client: LLMClient instance for API access. If None, creates a new one
-            with automatic API selection.
-        output_folder: Directory where the output `.tex` (and `.pdf` if compiled)
-            will be written. If None, defaults to the folder containing `pdf_path`.
-        compile_pdf: If True, the generated `.tex` file is compiled into a PDF
-            using `lualatex`. Defaults to True.
-        signature_file: Path to the examiner's signature image file.
-            Defaults to "signature.png".
-        grade: The grade obtained for the project.
-        create_feedback_mail: If True, generates a feedback summary and an email
-            template for the student. Defaults to True.
+        config: Configuration object for the project workflow.
 
     Returns:
-        tuple[str, str, str, str, str]: A tuple `(tex_path, pdf_path, service_email_path, student_email_path, web_metadata_path)` where:
-            - `tex_path`: Path to the generated `.tex` file.
-            - `pdf_path`: Path to the generated `.pdf` if `compile_pdf=True`,
-              otherwise an empty string.
-            - `service_email_path`: Path to the generated email markdown file for the examination service.
-            - `student_email_path`: Path to the generated email markdown file for the student (empty if disabled).
-            - `web_metadata_path`: Path to the generated Jekyll-style .md file.
+        ProjectWorkflowResult object containing paths to generated files.
 
     Raises:
         FileNotFoundError: If the provided `pdf_path` does not exist.
         subprocess.CalledProcessError: If LaTeX compilation fails when `compile_pdf=True`.
         Exception: Any errors raised by the LLM API (e.g., authentication issues).
-
-    Example:
-        >>> from llm_client import LLMClient
-        >>> client = LLMClient()  # Automatic API selection
-        >>> tex_file, pdf_file = run_project_pipeline(
-        ...     pdf_path="Praxisprojekt_Mueller.pdf",
-        ...     llm_client=client,
-        ...     output_folder="./out",
-        ...     compile_pdf=True
-        ... )
-        >>> print(tex_file)
-        ./out/projektarbeit_brief_123456.tex
-
-    Notes:
-        - The semester is automatically determined from the current date.
-        - The grade field in the letter is left blank (underlined space) to be
-          filled in manually.
-        - If the matriculation number cannot be detected, the output filename
-          defaults to `projektarbeit_brief_unknown.tex`.
     """
+    pdf_path = config.pdf_path
+    output_folder = config.output_folder
+    llm_client = config.llm_client
+    compile_pdf = config.compile_pdf
+    signature_file = config.signature_file
+    grade = config.grade
+    create_feedback_mail = config.create_feedback_mail
+
     if output_folder is None:
-        output_folder = os.path.dirname(pdf_path)
+        output_folder = str(Path(pdf_path).parent)
+    else:
+        output_folder = str(output_folder)
 
     # Create LLMClient if not provided
     if llm_client is None:
@@ -103,8 +63,8 @@ def run_project_pipeline(
 
     # Extract metadata and text from PDF
     print(f"Extracting metadata from {pdf_path}")
-    pages_text = pdf_processing.extract_text_per_page(str(pdf_path))
-    metadata = extract_project_metadata(pdf_path, llm_client)
+    pages_text = pdf.extract_text_per_page(str(pdf_path))
+    metadata = extract_project_metadata(str(pdf_path), llm_client)
 
     student_name = metadata.get("student_name", "Unknown")
     student_first_name, student_last_name = split_student_name(student_name)
@@ -173,7 +133,7 @@ def run_project_pipeline(
     student_email_path = ""
     if create_feedback_mail:
         print("\n📝 Generiere Feedback-Zusammenfassung...")
-        feedback_bullets = generate_feedback_summary(pdf_path, llm_client)
+        feedback_bullets = generate_feedback_summary(str(pdf_path), llm_client)
 
         student_email_text = mymailgen.generate_student_feedback_email(
             gender=gender,
@@ -231,7 +191,7 @@ def run_project_pipeline(
     print("\n🌐 Erstelle Web-Metadaten...")
     try:
         semester_name = get_semester()
-        web_md_path = generate_web_metadata_file(
+        web_md_path = generate_metadata_file(
             output_folder=output_folder,
             title=project_title,
             author=student_name,
@@ -245,10 +205,10 @@ def run_project_pipeline(
         print(f"⚠️  Fehler beim Erstellen der Web-Metadaten: {e}")
         web_md_path = ""
 
-    return (
-        tex_path,
-        compiled_pdf_path,
-        email_path,
-        student_email_path,
-        web_md_path,
+    return ProjectWorkflowResult(
+        tex_path=tex_path,
+        pdf_path=compiled_pdf_path,
+        service_email_path=email_path,
+        student_email_path=student_email_path,
+        metadata_path=web_md_path,
     )

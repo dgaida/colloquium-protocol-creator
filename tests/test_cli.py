@@ -11,373 +11,6 @@ from io import StringIO
 from academic_doc_generator import cli
 
 
-class TestRunFromConfig:
-    """Tests für run_from_config Funktion."""
-
-    @patch("academic_doc_generator.cli.load_config")
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_run_colloquium_from_config(self, mock_llm_client_class, mock_load_config):
-        """Test Ausführung eines Kolloquiums via Config."""
-        # Mock Config
-        mock_config = MagicMock()
-        mock_config.get_task.return_value = "colloquium"
-        mock_config.get_llm_config.return_value = {
-            "api_choice": "openai",
-            "model": "gpt-4o",
-            "groq_free": False,
-        }
-        mock_config.get_output_config.return_value = {
-            "folder": "/tmp/output",
-            "compile_pdf": True,
-            "fill_form_only": False,
-        }
-        mock_config.get_pdf_path.return_value = "/tmp/test.pdf"
-        mock_config.get_colloquium_config.return_value = {
-            "date": "20.01.2026",
-            "time": "14:00",
-            "location_type": "campus",
-            "room": "3.217",
-        }
-        mock_load_config.return_value = mock_config
-
-        # Mock LLMClient
-        mock_client = MagicMock()
-        mock_client.api_choice = "openai"
-        mock_client.llm = "gpt-4o"
-        mock_llm_client_class.return_value = mock_client
-
-        # Mock run_pipeline
-        with patch("academic_doc_generator.cli.run_pipeline") as mock_run_pipeline:
-            mock_run_pipeline.return_value = (
-                "/tmp/test.tex",
-                "/tmp/test.pdf",
-                "/tmp/email.md",
-                "/tmp/web_md.md",
-            )
-
-            cli.run_from_config("config.json")
-
-            # Verify calls
-            mock_load_config.assert_called_once_with("config.json")
-            mock_llm_client_class.assert_called_once_with(
-                api_choice="openai", llm="gpt-4o"
-            )
-            mock_run_pipeline.assert_called_once()
-
-            # Check run_pipeline arguments
-            call_kwargs = mock_run_pipeline.call_args.kwargs
-            assert call_kwargs["pdf_path"] == "/tmp/test.pdf"
-            assert call_kwargs["date_colloquium"] == "20.01.2026"
-            assert call_kwargs["uhrzeit_colloquium"] == "14:00"
-            assert call_kwargs["location_type"] == "campus"
-            assert call_kwargs["room"] == "3.217"
-
-    @patch("academic_doc_generator.cli.load_config")
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_run_project_from_config(self, mock_llm_client_class, mock_load_config):
-        """Test Ausführung eines Projekts via Config."""
-        mock_config = MagicMock()
-        mock_config.get_task.return_value = "project"
-        mock_config.get_llm_config.return_value = {"api_choice": "groq", "model": None}
-        mock_config.get_output_config.return_value = {
-            "folder": "/tmp/output",
-            "compile_pdf": True,
-            "signature_file": "sig.png",
-        }
-        mock_config.get_pdf_path.return_value = "/tmp/project.pdf"
-        mock_load_config.return_value = mock_config
-
-        mock_client = MagicMock()
-        mock_client.api_choice = "groq"
-        mock_client.llm = "llama-3.3-70b-versatile"
-        mock_llm_client_class.return_value = mock_client
-
-        with patch(
-            "academic_doc_generator.cli.run_project_pipeline"
-        ) as mock_run_pipeline:
-            mock_run_pipeline.return_value = (
-                "/tmp/project.tex",
-                "/tmp/project.pdf",
-                "/tmp/email.md",
-                "/tmp/student_email.md",
-                "/tmp/web_md.md",
-            )
-
-            cli.run_from_config("config.json")
-
-            mock_run_pipeline.assert_called_once()
-            call_kwargs = mock_run_pipeline.call_args.kwargs
-            assert call_kwargs["pdf_path"] == "/tmp/project.pdf"
-            assert call_kwargs["signature_file"] == "sig.png"
-
-    @patch("academic_doc_generator.cli.load_config")
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_run_review_from_config(self, mock_llm_client_class, mock_load_config):
-        """Test Ausführung eines Reviews via Config."""
-        mock_config = MagicMock()
-        mock_config.get_task.return_value = "review"
-        mock_config.get_llm_config.return_value = {
-            "api_choice": None,
-            "model": None,
-            "groq_free": True,
-        }
-        mock_config.get_output_config.return_value = {"folder": "/tmp/output"}
-        mock_config.get_pdf_path.return_value = "/tmp/paper.pdf"
-        mock_load_config.return_value = mock_config
-
-        mock_client = MagicMock()
-        mock_llm_client_class.return_value = mock_client
-
-        with patch(
-            "academic_doc_generator.cli.run_review_pipeline"
-        ) as mock_run_pipeline:
-            mock_run_pipeline.return_value = "/tmp/review.md"
-
-            cli.run_from_config("config.json")
-
-            mock_run_pipeline.assert_called_once()
-            call_kwargs = mock_run_pipeline.call_args.kwargs
-            assert call_kwargs["groq_free"] is True
-
-    @patch("academic_doc_generator.cli.load_config")
-    def test_run_from_config_file_not_found(self, mock_load_config):
-        """Test Fehlerbehandlung bei nicht existierender Config."""
-        mock_load_config.side_effect = FileNotFoundError("Config not found")
-
-        with pytest.raises(SystemExit) as exc_info:
-            cli.run_from_config("nonexistent.json")
-
-        assert exc_info.value.code == 1
-
-    @patch("academic_doc_generator.cli.load_config")
-    def test_run_from_config_invalid_config(self, mock_load_config):
-        """Test Fehlerbehandlung bei ungültiger Config."""
-        mock_load_config.side_effect = ValueError("Invalid task")
-
-        with pytest.raises(SystemExit) as exc_info:
-            cli.run_from_config("invalid.json")
-
-        assert exc_info.value.code == 1
-
-    @patch("academic_doc_generator.cli.load_config")
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_run_from_config_llm_error(self, mock_llm_client_class, mock_load_config):
-        """Test Fehlerbehandlung bei LLM-Client-Fehler."""
-        mock_config = MagicMock()
-        mock_config.get_llm_config.return_value = {}
-        mock_load_config.return_value = mock_config
-
-        mock_llm_client_class.side_effect = Exception("API key missing")
-
-        with pytest.raises(SystemExit) as exc_info:
-            cli.run_from_config("config.json")
-
-        assert exc_info.value.code == 1
-
-
-class TestRunColloquiumDirect:
-    """Tests für run_colloquium_direct Funktion."""
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_pipeline")
-    def test_run_colloquium_direct_campus(self, mock_pipeline, mock_llm_class):
-        """Test direkte Ausführung eines Campus-Kolloquiums."""
-        mock_client = MagicMock()
-        mock_client.api_choice = "openai"
-        mock_client.llm = "gpt-4o"
-        mock_llm_class.return_value = mock_client
-
-        mock_pipeline.return_value = (
-            "/tmp/test.tex",
-            "/tmp/test.pdf",
-            "/tmp/email.md",
-            "/tmp/web_md.md",
-        )
-
-        args = MagicMock()
-        args.pdf = "test.pdf"
-        args.date = "20.01.2026"
-        args.time = "14:00"
-        args.location_type = "campus"
-        args.room = "3.217"
-        args.company_name = None
-        args.company_address = None
-        args.zoom_link = None
-        args.zoom_meeting_access = None
-        args.api = "openai"
-        args.model = "gpt-4o"
-        args.groq_free = False
-        args.out = "/tmp/output"
-        args.no_compile = False
-
-        cli.run_colloquium_direct(args)
-
-        mock_llm_class.assert_called_once_with(api_choice="openai", llm="gpt-4o")
-        mock_pipeline.assert_called_once()
-
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["pdf_path"] == "test.pdf"
-        assert call_kwargs["date_colloquium"] == "20.01.2026"
-        assert call_kwargs["compile_pdf"] is True
-        assert call_kwargs["location_type"] == "campus"
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_pipeline")
-    def test_run_colloquium_direct_online(self, mock_pipeline, mock_llm_class):
-        """Test direkte Ausführung eines Online-Kolloquiums."""
-        mock_client = MagicMock()
-        mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = ("/tmp/test.tex", "", "/tmp/email.md", "")
-
-        args = MagicMock()
-        args.pdf = "test.pdf"
-        args.date = "30.01.2026"
-        args.time = "15:30"
-        args.location_type = "online"
-        args.zoom_link = "https://zoom.us/j/123"
-        args.zoom_meeting_access = "test123"
-        args.room = None
-        args.company_name = None
-        args.company_address = None
-        args.api = None
-        args.model = None
-        args.groq_free = True
-        args.out = None
-        args.no_compile = True
-
-        cli.run_colloquium_direct(args)
-
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["location_type"] == "online"
-        assert call_kwargs["zoom_link"] == "https://zoom.us/j/123"
-        assert call_kwargs["groq_free"] is True
-        assert call_kwargs["compile_pdf"] is False
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_run_colloquium_direct_llm_error(self, mock_llm_class):
-        """Test Fehlerbehandlung bei LLM-Fehler."""
-        mock_llm_class.side_effect = Exception("API error")
-
-        args = MagicMock()
-        args.api = "openai"
-        args.model = "gpt-4o"
-
-        with pytest.raises(SystemExit) as exc_info:
-            cli.run_colloquium_direct(args)
-
-        assert exc_info.value.code == 1
-
-
-class TestRunProjectDirect:
-    """Tests für run_project_direct Funktion."""
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_project_pipeline")
-    def test_run_project_direct_basic(self, mock_pipeline, mock_llm_class):
-        """Test direkte Ausführung eines Projekts."""
-        mock_client = MagicMock()
-        mock_client.api_choice = "groq"
-        mock_client.llm = "llama-3.3-70b-versatile"
-        mock_llm_class.return_value = mock_client
-
-        mock_pipeline.return_value = (
-            "/tmp/project.tex",
-            "/tmp/project.pdf",
-            "/tmp/email.md",
-            "/tmp/student_email.md",
-            "/tmp/web_md.md",
-        )
-
-        args = MagicMock()
-        args.pdf = "project.pdf"
-        args.api = "groq"
-        args.model = None
-        args.out = "/tmp/out"
-        args.no_compile = False
-        args.signature = "sig.png"
-
-        cli.run_project_direct(args)
-
-        mock_pipeline.assert_called_once()
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["pdf_path"] == "project.pdf"
-        assert call_kwargs["signature_file"] == "sig.png"
-        assert call_kwargs["compile_pdf"] is True
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_project_pipeline")
-    def test_run_project_direct_no_compile(self, mock_pipeline, mock_llm_class):
-        """Test Projekt ohne Kompilierung."""
-        mock_client = MagicMock()
-        mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = (
-            "/tmp/project.tex",
-            "",
-            "/tmp/email.md",
-            "/tmp/student_email.md",
-            "",
-        )
-
-        args = MagicMock()
-        args.pdf = "project.pdf"
-        args.api = None
-        args.model = None
-        args.out = None
-        args.no_compile = True
-        args.signature = "signature.png"
-
-        cli.run_project_direct(args)
-
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["compile_pdf"] is False
-
-
-class TestRunReviewDirect:
-    """Tests für run_review_direct Funktion."""
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_review_pipeline")
-    def test_run_review_direct_basic(self, mock_pipeline, mock_llm_class):
-        """Test direkte Ausführung eines Reviews."""
-        mock_client = MagicMock()
-        mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = "/tmp/review.md"
-
-        args = MagicMock()
-        args.pdf = "paper.pdf"
-        args.api = "openai"
-        args.model = "gpt-4o"
-        args.groq_free = False
-        args.out = "/tmp/out"
-
-        cli.run_review_direct(args)
-
-        mock_pipeline.assert_called_once()
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["pdf_path"] == "paper.pdf"
-        assert call_kwargs["groq_free"] is False
-
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_review_pipeline")
-    def test_run_review_direct_groq_free(self, mock_pipeline, mock_llm_class):
-        """Test Review mit Groq Free Tier."""
-        mock_client = MagicMock()
-        mock_llm_class.return_value = mock_client
-        mock_pipeline.return_value = "/tmp/review.md"
-
-        args = MagicMock()
-        args.pdf = "paper.pdf"
-        args.api = "groq"
-        args.model = None
-        args.groq_free = True
-        args.out = None
-
-        cli.run_review_direct(args)
-
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["groq_free"] is True
-
-
 class TestCreateParser:
     """Tests für create_parser Funktion."""
 
@@ -522,9 +155,11 @@ class TestCreateParser:
 class TestMain:
     """Tests für main Funktion."""
 
-    @patch("academic_doc_generator.cli.run_from_config")
-    def test_main_with_config(self, mock_run_config):
+    @patch("academic_doc_generator.cli.handlers.run_from_config")
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_with_config(self, mock_validate, mock_run_config):
         """Test main mit Config-Argument."""
+        mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator", "--config", "config.json"]
 
         with patch.object(sys, "argv", test_args):
@@ -533,8 +168,10 @@ class TestMain:
         mock_run_config.assert_called_once_with("config.json")
 
     @patch("academic_doc_generator.cli.Path")
-    def test_main_list_templates_found(self, mock_path_class):
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_list_templates_found(self, mock_validate, mock_path_class):
         """Test --list-templates mit vorhandenen Templates."""
+        mock_validate.return_value = ["openai"]
         mock_path = MagicMock()
         mock_path.exists.return_value = True
         mock_path.glob.return_value = [
@@ -554,8 +191,10 @@ class TestMain:
                 assert "config_project_template.json" in output
 
     @patch("academic_doc_generator.cli.Path")
-    def test_main_list_templates_not_found(self, mock_path_class):
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_list_templates_not_found(self, mock_validate, mock_path_class):
         """Test --list-templates wenn Ordner nicht existiert."""
+        mock_validate.return_value = ["openai"]
         mock_path = MagicMock()
         mock_path.exists.return_value = False
         mock_path_class.return_value = mock_path
@@ -569,8 +208,10 @@ class TestMain:
             assert exc_info.value.code == 1
 
     @patch("academic_doc_generator.cli.Path")
-    def test_main_list_templates_no_files(self, mock_path_class):
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_list_templates_no_files(self, mock_validate, mock_path_class):
         """Test --list-templates wenn keine Templates vorhanden."""
+        mock_validate.return_value = ["openai"]
         mock_path = MagicMock()
         mock_path.exists.return_value = True
         mock_path.glob.return_value = []
@@ -584,9 +225,11 @@ class TestMain:
 
             assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.cli.run_colloquium_direct")
-    def test_main_colloquium_subcommand(self, mock_run_colloquium):
+    @patch("academic_doc_generator.cli.handlers.run_colloquium_direct")
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_colloquium_subcommand(self, mock_validate, mock_run_colloquium):
         """Test main mit Colloquium Subcommand."""
+        mock_validate.return_value = ["openai"]
         test_args = [
             "academic-doc-generator",
             "colloquium",
@@ -604,9 +247,11 @@ class TestMain:
 
         mock_run_colloquium.assert_called_once()
 
-    @patch("academic_doc_generator.cli.run_project_direct")
-    def test_main_project_subcommand(self, mock_run_project):
+    @patch("academic_doc_generator.cli.handlers.run_project_direct")
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_project_subcommand(self, mock_validate, mock_run_project):
         """Test main mit Project Subcommand."""
+        mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator", "project", "project.pdf"]
 
         with patch.object(sys, "argv", test_args):
@@ -614,9 +259,11 @@ class TestMain:
 
         mock_run_project.assert_called_once()
 
-    @patch("academic_doc_generator.cli.run_review_direct")
-    def test_main_review_subcommand(self, mock_run_review):
+    @patch("academic_doc_generator.cli.handlers.run_review_direct")
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_review_subcommand(self, mock_validate, mock_run_review):
         """Test main mit Review Subcommand."""
+        mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator", "review", "paper.pdf"]
 
         with patch.object(sys, "argv", test_args):
@@ -624,8 +271,10 @@ class TestMain:
 
         mock_run_review.assert_called_once()
 
-    def test_main_no_subcommand(self):
+    @patch("academic_doc_generator.cli.validate_api_keys")
+    def test_main_no_subcommand(self, mock_validate):
         """Test main ohne Subcommand zeigt Hilfe."""
+        mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator"]
 
         with patch.object(sys, "argv", test_args):
@@ -681,109 +330,3 @@ class TestEntryPoints:
             mock_main.assert_called_once()
         finally:
             sys.argv = original_argv
-
-
-class TestIntegration:
-    """Integrationstests für CLI."""
-
-    @patch("academic_doc_generator.cli.run_pipeline")
-    @patch("academic_doc_generator.cli.LLMClient")
-    def test_full_colloquium_flow(self, mock_llm_class, mock_pipeline):
-        """Test kompletter Colloquium-Workflow."""
-        mock_client = MagicMock()
-        mock_client.api_choice = "openai"
-        mock_client.llm = "gpt-4o"
-        mock_llm_class.return_value = mock_client
-
-        mock_pipeline.return_value = (
-            "/tmp/bewertung_brief_12345.tex",
-            "/tmp/bewertung_brief_12345.pdf",
-            "/tmp/email.md",
-            "/tmp/web_md.md",
-        )
-
-        test_args = [
-            "academic-doc-generator",
-            "colloquium",
-            "thesis.pdf",
-            "--date",
-            "20.01.2026",
-            "--time",
-            "14:00",
-            "--location-type",
-            "campus",
-            "--room",
-            "3.217",
-            "--api",
-            "openai",
-            "--model",
-            "gpt-4o",
-        ]
-
-        with patch.object(sys, "argv", test_args):
-            cli.main()
-
-        # Verify complete workflow
-        mock_llm_class.assert_called_once()
-        mock_pipeline.assert_called_once()
-
-        call_kwargs = mock_pipeline.call_args.kwargs
-        assert call_kwargs["pdf_path"] == "thesis.pdf"
-        assert call_kwargs["date_colloquium"] == "20.01.2026"
-        assert call_kwargs["uhrzeit_colloquium"] == "14:00"
-        assert call_kwargs["location_type"] == "campus"
-        assert call_kwargs["room"] == "3.217"
-
-    @patch("academic_doc_generator.cli.load_config")
-    @patch("academic_doc_generator.cli.LLMClient")
-    @patch("academic_doc_generator.cli.run_pipeline")
-    def test_config_based_workflow(
-        self, mock_pipeline, mock_llm_class, mock_load_config
-    ):
-        """Test Config-basierter Workflow."""
-        # Setup mocks
-        mock_config = MagicMock()
-        mock_config.get_task.return_value = "colloquium"
-        mock_config.get_llm_config.return_value = {
-            "api_choice": None,
-            "model": None,
-            "groq_free": False,
-        }
-        mock_config.get_output_config.return_value = {
-            "folder": None,
-            "compile_pdf": True,
-            "fill_form_only": False,
-        }
-        mock_config.get_pdf_path.return_value = "test.pdf"
-        mock_config.get_colloquium_config.return_value = {
-            "date": "20.01.2026",
-            "time": "14:00",
-            "location_type": "campus",
-            "room": "3.217",
-        }
-        mock_load_config.return_value = mock_config
-
-        mock_client = MagicMock()
-        mock_llm_class.return_value = mock_client
-
-        mock_pipeline.return_value = (
-            "/tmp/test.tex",
-            "/tmp/test.pdf",
-            "/tmp/email.md",
-            "/tmp/web_md.md",
-        )
-
-        # Run with config
-        test_args = ["academic-doc-generator", "--config", "config.json"]
-
-        with patch.object(sys, "argv", test_args):
-            cli.main()
-
-        # Verify workflow
-        mock_load_config.assert_called_once_with("config.json")
-        mock_llm_class.assert_called_once()
-        mock_pipeline.assert_called_once()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

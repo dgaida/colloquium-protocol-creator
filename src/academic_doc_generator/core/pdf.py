@@ -1,4 +1,4 @@
-# src/academic_doc_generator/core/pdf_processing.py
+# src/academic_doc_generator/core/pdf.py
 """PDF processing utilities (Docling + pypdf) with comprehensive type annotations."""
 
 from typing import Dict, List, Tuple, Optional

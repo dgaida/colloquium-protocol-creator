@@ -3,7 +3,8 @@
 import os
 from datetime import datetime
 from typing import Dict, Optional
-from .types import LLMClientProtocol
+from ..core.types import LLMClientProtocol
+from ..core.prompts import PromptTemplate, build_prompt
 
 
 def get_initials(name: str) -> str:
@@ -40,21 +41,12 @@ def summarize_for_web(pages_text: Dict[int, str], llm_client: LLMClientProtocol)
         [pages_text.get(i, "") for i in sorted(pages_text.keys())[:10]]
     )
 
-    prompt = f"""
-You are given the first ten pages of a student's thesis or project report.
-Please provide a very concise summary (2-3 sentences) in English that is suitable for publication on a website.
-It should be easy to understand for a general audience. Do not write 'A student ...' or mention the student's name, but use passive voice instead.
-
-Text:
-{text_to_summarize}
-
-Summary:
-"""
+    prompt = build_prompt(PromptTemplate.SUMMARIZE_FOR_WEB, text=text_to_summarize)
     messages = [{"role": "user", "content": prompt}]
     return llm_client.chat_completion(messages).strip()
 
 
-def generate_web_metadata_file(
+def generate_metadata_file(
     output_folder: str,
     title: str,
     author: str,

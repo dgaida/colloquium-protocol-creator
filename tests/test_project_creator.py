@@ -74,7 +74,7 @@ class TestProjectLatexGeneration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 student_name="Max Mustermann",
-                matriculation_number="12345",
+                id_number="12345",
                 project_title="Test Project Title",
                 examiner_name="Prof. Test",
                 examiner_mail="test@example.com",
@@ -114,7 +114,7 @@ class TestProjectLatexGeneration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 student_name="Maria Musterfrau",
-                matriculation_number="67890",
+                id_number="67890",
                 project_title="Another Test Project",
                 examiner_name="Dr. Example",
                 examiner_mail="example@th-koeln.de",
@@ -144,7 +144,7 @@ class TestProjectLatexGeneration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 student_name="Test & User",
-                matriculation_number="99999",
+                id_number="99999",
                 project_title="Project with 100% Coverage & $pecial Char$",
                 examiner_name="Prof. Test",
                 examiner_mail="test@example.com",
@@ -194,7 +194,7 @@ class TestProjectLatexGeneration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 student_name="Test Student",
-                matriculation_number="11111",
+                id_number="11111",
                 project_title="Custom Project",
                 examiner_name="Prof. Custom",
                 examiner_mail="custom@th-koeln.de",
@@ -279,7 +279,7 @@ class TestProjectLLMInterface:
             {
                 "student_name": "Max Mustermann",
                 "student_first_name": "Max",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "title": "Test Project",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -292,7 +292,7 @@ class TestProjectLLMInterface:
 
         assert result["student_name"] == "Max Mustermann"
         assert result["student_first_name"] == "Max"
-        assert result["matriculation_number"] == "12345"
+        assert result["id_number"] == "12345"
         assert result["title"] == "Test Project"
         assert result["first_examiner"] == "Prof. Dr. Hans Meyer"
         assert result["first_examiner_christian"] == "Hans"
@@ -309,7 +309,7 @@ class TestProjectLLMInterface:
             {
                 "student_name": "Test Student",
                 "student_first_name": None,
-                "matriculation_number": None,
+                "id_number": None,
                 "title": None,
                 "first_examiner": None,
                 "first_examiner_christian": None,
@@ -322,7 +322,7 @@ class TestProjectLLMInterface:
 
         assert result["student_name"] == "Test Student"
         assert result["student_first_name"] is None
-        assert result["matriculation_number"] is None
+        assert result["id_number"] is None
 
     @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_json_error(self, mock_extract):
@@ -353,7 +353,7 @@ class TestProjectIntegration:
         metadata = {
             "student_name": "Test Student",
             "student_first_name": "Test",
-            "matriculation_number": "99999",
+            "id_number": "99999",
             "title": "Integration Test Project",
             "first_examiner": "Prof. Integration",
             "first_examiner_christian": "Integration",
@@ -377,7 +377,7 @@ class TestProjectIntegration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 student_name=metadata["student_name"],
-                matriculation_number=metadata["matriculation_number"],
+                id_number=metadata["id_number"],
                 project_title=metadata["title"],
                 examiner_name=metadata["first_examiner"],
                 examiner_mail=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
@@ -393,7 +393,7 @@ class TestProjectIntegration:
 
             # Verify all metadata is in the letter
             assert metadata["student_name"] in content
-            assert metadata["matriculation_number"] in content
+            assert metadata["id_number"] in content
             assert metadata["title"] in content
             assert metadata["first_examiner"] in content
             assert gender in content

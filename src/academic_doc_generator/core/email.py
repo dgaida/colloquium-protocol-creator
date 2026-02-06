@@ -1,7 +1,7 @@
 """Centralized email generation with templates."""
 
-from dataclasses import dataclass, field
-from typing import Optional, Protocol
+from dataclasses import dataclass
+from typing import Protocol
 from datetime import datetime
 
 

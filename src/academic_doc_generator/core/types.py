@@ -5,7 +5,7 @@ This module provides TypedDicts and type aliases for complex data structures
 used throughout the package, improving type safety and IDE support.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict, Literal, Optional, Tuple, Protocol, List, Dict
 
@@ -144,7 +144,7 @@ class ThesisMetadata(TypedDict, total=False):
     """
 
     author: Optional[str]
-    matriculation_number: Optional[str]
+    id_number: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     second_examiner: Optional[str]
@@ -159,7 +159,7 @@ class ProjectMetadata(TypedDict, total=False):
 
     student_name: Optional[str]
     student_first_name: Optional[str]
-    matriculation_number: Optional[str]
+    id_number: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     first_examiner_christian: Optional[str]
@@ -202,7 +202,7 @@ class ColloquiumConfig(TypedDict, total=False):
     company_name: Optional[str]  # Required if location_type="company"
     company_address: Optional[str]  # Optional for company
     zoom_link: Optional[str]  # Required if location_type="online"
-    zoom_meeting_access: Optional[str]  # Optional for online
+    zoom_code: Optional[str]  # Optional for online
 
 
 class GeminiEvaluationConfig(TypedDict, total=False):
@@ -240,7 +240,7 @@ class ColloquiumWorkflowConfig:
     company_name: Optional[str] = None
     company_address: Optional[str] = None
     zoom_link: Optional[str] = None
-    zoom_meeting_access: Optional[str] = None
+    zoom_code: Optional[str] = None
     gemini_evaluation_enabled: bool = False
     gemini_model: Optional[str] = None
 

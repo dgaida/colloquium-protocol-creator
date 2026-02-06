@@ -1,5 +1,4 @@
 from unittest.mock import MagicMock, patch
-from pathlib import Path
 from academic_doc_generator.project.orchestrator import run_project_pipeline
 from academic_doc_generator.core.types import ProjectWorkflowConfig
 
@@ -24,7 +23,7 @@ def test_run_project_pipeline_feedback_toggle(
     # Setup mocks
     mock_metadata.return_value = {
         "student_name": "Max Mustermann",
-        "matriculation_number": "123456",
+        "id_number": "123456",
         "title": "Test Title",
         "first_examiner": "Prof. Test",
         "work_type": "Praxisprojekt",

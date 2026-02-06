@@ -2,7 +2,6 @@
 """High-level pipeline for project work grading letter generation."""
 
 import os
-from typing import Optional
 from pathlib import Path
 from llm_client import LLMClient
 from ..core import pdf
@@ -17,7 +16,6 @@ from .latex import create_project_grading_letter_tex
 from ..core.latex import compile_latex_to_pdf
 from ..core.types import (
     ProjectWorkflowResult,
-    LLMClientProtocol,
     ProjectWorkflowConfig,
 )
 from ..colloquium.email_generator import EmailGenerator
@@ -68,7 +66,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
 
     student_name = metadata.get("student_name", "Unknown")
     student_first_name, student_last_name = split_student_name(student_name)
-    matriculation = metadata.get("matriculation_number", "unknown")
+    matriculation = metadata.get("id_number", "unknown")
     project_title = metadata.get("title", "Unknown")
     examiner = metadata.get("first_examiner", "Unbekannt")
     examiner_mail = (
@@ -96,7 +94,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     create_project_grading_letter_tex(
         filename=tex_path,
         student_name=student_name,
-        matriculation_number=matriculation,
+        id_number=matriculation,
         project_title=project_title,
         examiner_name=examiner,
         examiner_mail=examiner_mail,
@@ -125,7 +123,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        matriculation_number=matriculation,
+        id_number=matriculation,
         filename_prefix="bewertung_projekt_email",
     )
 
@@ -145,7 +143,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         student_email_path = mymailgen.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
-            matriculation_number=matriculation,
+            id_number=matriculation,
             filename_prefix="feedback_projekt_email",
         )
 

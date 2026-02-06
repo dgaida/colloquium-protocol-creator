@@ -85,7 +85,7 @@ class TestLLMInterfaceAdditional:
         mock_client.chat_completion.return_value = json.dumps(
             {
                 "author": "Max Mustermann",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "title": "Test Thesis",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -113,7 +113,7 @@ class TestLLMInterfaceAdditional:
         mock_client.chat_completion.return_value = json.dumps(
             {
                 "author": "John Doe",
-                "matriculation_number": "67890",
+                "id_number": "67890",
                 "title": "English Thesis",
                 "first_examiner": "Prof. Smith",
                 "first_examiner_christian": "John",

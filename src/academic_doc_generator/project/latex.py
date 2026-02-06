@@ -10,7 +10,7 @@ from ..core.utils import get_semester
 def create_project_grading_letter_tex(
     filename: str,
     student_name: str,
-    matriculation_number: str,
+    id_number: str,
     project_title: str,
     examiner_name: str,
     examiner_mail: str,
@@ -26,7 +26,7 @@ def create_project_grading_letter_tex(
     Args:
         filename: Output path for the LaTeX file.
         student_name: Full name of the student.
-        matriculation_number: Student's matriculation number.
+        id_number: Student's matriculation number.
         project_title: Title of the project work.
         examiner_name: Name of the examiner.
         examiner_mail: Email address of the examiner.
@@ -96,7 +96,7 @@ def create_project_grading_letter_tex(
 
 {gender}
 
-{student_name_safe}, Matrikelnr. {matriculation_number},
+{student_name_safe}, Matrikelnr. {id_number},
 
 hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {grade_tex} erhalten.
 

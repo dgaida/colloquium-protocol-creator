@@ -35,7 +35,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         "academic_doc_generator.colloquium.pdf_form_filler.fill_form"
     ) as mock_fill_form, patch(
         "academic_doc_generator.colloquium.orchestrator.OutlookMailGenerator"
-    ) as mock_outlook, tempfile.TemporaryDirectory() as tmpdir:
+    ), tempfile.TemporaryDirectory() as tmpdir:
 
         # Setup mocks
         mock_extract_text.return_value = {0: []}
@@ -55,7 +55,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         mock_llm_client.chat_completion.side_effect = [
             "Rewritten Comment?", # REWRITE_COMMENT
             "German",             # DETECT_LANGUAGE
-            '{"author": "Max Mustermann", "matriculation_number": "123456", "title": "Thesis Title", "first_examiner": "Prof. Dr. Müller", "first_examiner_christian": "Max", "first_examiner_family": "Müller", "second_examiner": "Prof. Schmidt", "bachelor_master": "Bachelor", "course_of_study": "Informatik"}', # EXTRACT_METADATA
+            '{"author": "Max Mustermann", "id_number": "123456", "title": "Thesis Title", "first_examiner": "Prof. Dr. Müller", "first_examiner_christian": "Max", "first_examiner_family": "Müller", "second_examiner": "Prof. Schmidt", "bachelor_master": "Bachelor", "course_of_study": "Informatik"}', # EXTRACT_METADATA
             "Concise thesis summary.", # SUMMARIZE_THESIS
             "Herr", # DETERMINE_GENDER (for registration email)
             "Herr", # DETERMINE_GENDER (for final grade email)

@@ -1,7 +1,7 @@
 # src/academic_doc_generator/colloquium/orchestrator.py
 """High-level pipeline with comprehensive type annotations for colloquium protocol generation."""
 
-from typing import Tuple, Optional
+from typing import Optional
 from pathlib import Path
 from datetime import datetime
 from llm_client import LLMClient
@@ -13,8 +13,6 @@ from .gemini_thesis_evaluator import GeminiThesisEvaluator
 from .calendar_generator import CalendarGenerator
 from .outlook_mail_generator import OutlookMailGenerator
 from ..core.types import (
-    LocationType,
-    LLMClientProtocol,
     ColloquiumWorkflowConfig,
     ColloquiumWorkflowResult,
 )
@@ -49,7 +47,6 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     llm_client = config.llm_client
     fill_form_only = config.fill_form_only
     groq_free = config.groq_free
-    location_type = config.location_type
 
     if output_folder is None:
         output_folder = str(Path(pdf_path).parent)
@@ -99,7 +96,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     print(metadata)
 
     author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("matriculation_number", "unknown")
+    matriculation = metadata.get("id_number", "unknown")
     first_examiner = metadata.get("first_examiner", "Unbekannt")
     second_examiner = metadata.get("second_examiner", "Unbekannt")
     first_examiner_mail = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
@@ -218,7 +215,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         llm_client=llm_client,
         student_first_name=student_first_name,
         student_last_name=student_last_name,
-        matriculation_number=matriculation,
+        id_number=matriculation,
         date_colloquium=config.date,
         time_colloquium=config.time,
         first_examiner=first_examiner,
@@ -227,12 +224,12 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         company_name=config.company_name,
         company_address=config.company_address,
         zoom_link=config.zoom_link,
-        zoom_meeting_access=config.zoom_meeting_access,
+        zoom_code=config.zoom_code,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        matriculation_number=matriculation,
+        id_number=matriculation,
     )
 
     # Generate final grade email template
@@ -246,7 +243,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        matriculation_number=matriculation,
+        id_number=matriculation,
         filename_prefix="bewertung_thesis_email",
     )
 

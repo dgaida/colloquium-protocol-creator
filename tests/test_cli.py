@@ -65,14 +65,14 @@ class TestCreateParser:
                 "online",
                 "--zoom-link",
                 "https://zoom.us/j/123",
-                "--zoom-meeting-access",
+                "--zoom-code",
                 "test123",
             ]
         )
 
         assert args.location_type == "online"
         assert args.zoom_link == "https://zoom.us/j/123"
-        assert args.zoom_meeting_access == "test123"
+        assert args.zoom_code == "test123"
 
     def test_parser_colloquium_company(self):
         """Test Firmen-Kolloquium Argumente."""
@@ -214,7 +214,6 @@ class TestMain:
         mock_validate.return_value = ["openai"]
         mock_path = MagicMock()
         mock_path.exists.return_value = True
-        mock_path.glob.return_value = []
         mock_path_class.return_value = mock_path
 
         test_args = ["academic-doc-generator", "--list-templates"]

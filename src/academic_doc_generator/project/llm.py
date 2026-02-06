@@ -23,7 +23,7 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, 
         dict: Dictionary containing extracted metadata with keys:
             - "student_name": Full name of the student
             - "student_first_name": First name only (for gender detection)
-            - "matriculation_number": Student's matriculation number
+            - "id_number": Student's matriculation number
             - "title": Title of the project work
             - "first_examiner": Name of the first examiner
             - "first_examiner_christian": Christian name of examiner

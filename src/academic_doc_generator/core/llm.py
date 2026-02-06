@@ -186,7 +186,7 @@ def extract_document_metadata(
         >>> metadata = extract_document_metadata(text, "German", client)
         >>> metadata['author']
         'Max Mustermann'
-        >>> metadata['matriculation_number']
+        >>> metadata['id_number']
         '123456'
     """
     # Collect first two pages of text (if available)

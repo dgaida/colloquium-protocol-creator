@@ -53,7 +53,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
     colloquium_parser.add_argument(
-        "--zoom-meeting-access", help="Zoom access code (for online)"
+        "--zoom-code", help="Zoom access code (for online)"
     )
     colloquium_parser.add_argument(
         "--api",

@@ -42,7 +42,7 @@ class TestColloquiumOrchestrator:
             "Test summary",
             {
                 "author": "Test Author",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "title": "Test Title",
                 "first_examiner": "Prof. Test",
                 "second_examiner": "Dr. Test",
@@ -110,7 +110,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -165,7 +165,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -220,7 +220,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -288,7 +288,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "id_number": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -356,7 +356,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "student_name": "Test Student",
             "student_first_name": "Test",
-            "matriculation_number": "99999",
+            "id_number": "99999",
             "title": "Test Project",
             "first_examiner": "Prof. Test",
             "first_examiner_christian": "Test",
@@ -422,7 +422,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "student_name": "Test",
             "student_first_name": "Test",
-            "matriculation_number": "12345",
+            "id_number": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",
@@ -485,7 +485,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "student_name": "Test",
             "student_first_name": "Test",
-            "matriculation_number": "12345",
+            "id_number": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",

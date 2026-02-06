@@ -33,7 +33,7 @@ Configuration for an online thesis colloquium via Zoom.
 - `colloquium.time`: Time of colloquium
 - `colloquium.location_type`: Must be `"online"`
 - `colloquium.zoom_link`: Zoom meeting URL
-- `colloquium.zoom_meeting_access`: (Optional) Zoom access code
+- `colloquium.zoom_code`: (Optional) Zoom access code
 
 ### Project Template
 
@@ -141,7 +141,7 @@ Type of task to execute. Must be one of:
 - `colloquium.company_name`: Company name (for company)
 - `colloquium.company_address`: Company address (for company, optional)
 - `colloquium.zoom_link`: Zoom URL (for online)
-- `colloquium.zoom_meeting_access`: Zoom access code (for online, optional)
+- `colloquium.zoom_code`: Zoom access code (for online, optional)
 
 #### Project Task
 - `output.signature_file`: Path to signature image (optional)

@@ -6,6 +6,7 @@ import tempfile
 from typing import Optional
 from llm_client import LLMClient
 from pypdf import PdfReader, PdfWriter
+from ..core.prompts import PromptTemplate, build_prompt
 
 
 class GeminiThesisEvaluator:
@@ -48,7 +49,7 @@ class GeminiThesisEvaluator:
 
         return temp_file.name
 
-    def _create_evaluation_prompt(self, thesis_title: str, degree: str) -> str:
+    def _create_emark_prompt(self, thesis_title: str, degree: str) -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
 
         Args:
@@ -60,61 +61,9 @@ class GeminiThesisEvaluator:
         """
         niveau = "Bachelor" if degree == "Bachelor" else "Master"
 
-        prompt = f"""Du bist ein erfahrener Professor für Informatik an der TH Köln und bewertest eine {niveau}arbeit.
-
-**Titel der Arbeit:** {thesis_title}
-
-**Deine Aufgabe:**
-
-1. **Kritische Analyse der Stärken und Schwächen:**
-   - Analysiere die gesamte Arbeit gründlich
-   - Identifiziere mindestens 5 konkrete Stärken der Arbeit
-   - Identifiziere mindestens 5 konkrete Schwächen oder Verbesserungspotenziale
-   - Beziehe dich auf spezifische Kapitel, Methoden, Argumente oder Abbildungen
-   - Bewerte das Niveau angemessen für eine {niveau}arbeit
-
-2. **Kolloquiumsfragen:**
-   - Entwickle genau 10 Fragen für das Kolloquium
-   - Die Fragen sollen das Verständnis der Studierenden prüfen
-   - Fragen sollen sich auf kritische Stellen, Designentscheidungen und Ergebnisse beziehen
-   - Niveau muss einer {niveau}arbeit angemessen sein
-   - Mischung aus technischen Details und konzeptionellem Verständnis
-
-**Wichtig:**
-- Antworte ausschließlich auf Deutsch
-- Formatiere deine Antwort als LaTeX-Text (verwende \\\\, \\textbf{{}}, \\begin{{itemize}}, etc.)
-- Escape LaTeX-Sonderzeichen korrekt (verwende \\& statt &, \\% statt %, etc.)
-- Sei konstruktiv und professionell
-- Gib konkrete Beispiele aus der Arbeit
-
-**Format der Antwort:**
-
-\\textbf{{Stärken der Arbeit:}}
-
-\\begin{{itemize}}
-\\item Stärke 1 mit konkretem Bezug
-\\item Stärke 2 mit konkretem Bezug
-\\item ...
-\\end{{itemize}}
-
-\\textbf{{Schwächen und Verbesserungspotenzial:}}
-
-\\begin{{itemize}}
-\\item Schwäche 1 mit konkretem Bezug
-\\item Schwäche 2 mit konkretem Bezug
-\\item ...
-\\end{{itemize}}
-
-\\textbf{{Vorgeschlagene Kolloquiumsfragen:}}
-
-\\begin{{enumerate}}
-\\item Frage 1
-\\item Frage 2
-\\item ...
-\\item Frage 10
-\\end{{enumerate}}
-"""
-        return prompt
+        return build_prompt(
+            PromptTemplate.THESIS_EVALUATION, niveau=niveau, title=thesis_title
+        )
 
     def evaluate_thesis(
         self,
@@ -144,7 +93,7 @@ class GeminiThesisEvaluator:
             temp_pdf = self._remove_first_page(pdf_path)
 
             # Schritt 2: Prompt erstellen
-            prompt = self._create_evaluation_prompt(thesis_title, degree)
+            prompt = self._create_emark_prompt(thesis_title, degree)
 
             # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
             print(
@@ -183,11 +132,11 @@ class GeminiThesisEvaluator:
                 os.unlink(temp_pdf)
             return None
 
-    def format_evaluation_for_latex(self, evaluation: str) -> str:
+    def format_emark_for_latex(self, emark: str) -> str:
         """Formatiert die Gemini-Bewertung für LaTeX-Einfügung.
 
         Args:
-            evaluation: Rohe Gemini-Antwort.
+            emark: Rohe Gemini-Antwort.
 
         Returns:
             LaTeX-ready formatierter Text.
@@ -196,10 +145,10 @@ class GeminiThesisEvaluator:
         # Hier können noch zusätzliche Bereinigungen erfolgen
 
         # Entferne eventuell vorhandene Markdown-Codeblöcke
-        evaluation = evaluation.replace("```latex", "").replace("```", "")
+        emark = emark.replace("```latex", "").replace("```", "")
 
         # Stelle sicher, dass Zeilenumbrüche korrekt sind
-        evaluation = evaluation.strip()
+        emark = emark.strip()
 
         # Füge Abschnittstrennungen hinzu
         formatted = f"""
@@ -213,7 +162,7 @@ class GeminiThesisEvaluator:
 
 \\vspace{{0.5cm}}
 
-{evaluation}
+{emark}
 
 \\vspace{{0.5cm}}
 \\hrule

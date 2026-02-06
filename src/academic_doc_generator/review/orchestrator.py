@@ -4,7 +4,7 @@ import os
 from typing import Optional
 from pathlib import Path
 from llm_client import LLMClient
-from ..core.pdf_processing import (
+from ..core.pdf import (
     extract_text_with_positions,
     extract_annotations_with_positions,
 )

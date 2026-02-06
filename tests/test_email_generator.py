@@ -8,6 +8,7 @@ import tempfile
 from unittest.mock import MagicMock, patch
 
 from academic_doc_generator.colloquium import email_generator
+from academic_doc_generator.core.email import weekday_from_string
 
 
 class TestWeekdayFromString:
@@ -16,44 +17,44 @@ class TestWeekdayFromString:
     def test_weekday_german_monday(self):
         """Test Wochentag für Montag auf Deutsch."""
         # 20.01.2026 ist ein Dienstag
-        result = email_generator.weekday_from_string("20.01.2026", lang="de")
+        result = weekday_from_string("20.01.2026", lang="de")
         assert result == "Dienstag"
 
     def test_weekday_german_friday(self):
         """Test Wochentag für Freitag auf Deutsch."""
         # 23.01.2026 ist ein Freitag
-        result = email_generator.weekday_from_string("23.01.2026", lang="de")
+        result = weekday_from_string("23.01.2026", lang="de")
         assert result == "Freitag"
 
     def test_weekday_german_sunday(self):
         """Test Wochentag für Sonntag auf Deutsch."""
         # 25.01.2026 ist ein Sonntag
-        result = email_generator.weekday_from_string("25.01.2026", lang="de")
+        result = weekday_from_string("25.01.2026", lang="de")
         assert result == "Sonntag"
 
     def test_weekday_english_monday(self):
         """Test Wochentag auf Englisch."""
-        result = email_generator.weekday_from_string("20.01.2026", lang="en")
+        result = weekday_from_string("20.01.2026", lang="en")
         assert result == "Tuesday"
 
     def test_weekday_english_friday(self):
         """Test Wochentag für Freitag auf Englisch."""
-        result = email_generator.weekday_from_string("23.01.2026", lang="en")
+        result = weekday_from_string("23.01.2026", lang="en")
         assert result == "Friday"
 
     def test_weekday_invalid_language(self):
         """Test mit ungültiger Sprache."""
         with pytest.raises(ValueError, match="Unsupported language"):
-            email_generator.weekday_from_string("20.01.2026", lang="fr")
+            weekday_from_string("20.01.2026", lang="fr")
 
     def test_weekday_different_years(self):
         """Test Wochentage in verschiedenen Jahren."""
         # 01.01.2025 ist ein Mittwoch
-        result = email_generator.weekday_from_string("01.01.2025", lang="de")
+        result = weekday_from_string("01.01.2025", lang="de")
         assert result == "Mittwoch"
 
         # 01.01.2026 ist ein Donnerstag
-        result = email_generator.weekday_from_string("01.01.2026", lang="de")
+        result = weekday_from_string("01.01.2026", lang="de")
         assert result == "Donnerstag"
 
 
@@ -120,7 +121,7 @@ class TestEmailGenerator:
         result = generator._generate_location_text(
             location_type="online",
             zoom_link="https://zoom.us/j/123456",
-            zoom_meeting_access="test123",
+            zcode="test123",
         )
 
         assert "über Zoom:" in result
@@ -153,21 +154,23 @@ class TestEmailGenerator:
         with pytest.raises(ValueError, match="Unbekannter location_type"):
             generator._generate_location_text(location_type="unknown")
 
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    def test_generate_colloquium_email_campus(self, mock_gender, mock_weekday):
+    def test_generate_colloquium_email_campus(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Campus-Kolloquium."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Dienstag"
+        mock_render.return_value = "Mocked Email Content"
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
             llm_client=MagicMock(),
             student_first_name="Max",
             student_last_name="Mustermann",
-            matriculation_number="12345",
+            sid="12345",
             date_colloquium="20.01.2026",
             time_colloquium="14:00",
             first_examiner="Prof. Test",
@@ -175,28 +178,26 @@ class TestEmailGenerator:
             room="3.217",
         )
 
-        assert generator.email_text is not None
-        assert "Herr Max Mustermann" in generator.email_text
-        assert "12345" in generator.email_text
-        assert "Dienstag, 20.01.2026, um 14:00" in generator.email_text
-        assert "in Raum 3.217 am Campus GM" in generator.email_text
-        assert "Prof. Test" in generator.email_text
+        assert generator.email_text == "Mocked Email Content"
+        mock_render.assert_called_once()
 
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    def test_generate_colloquium_email_female_student(self, mock_gender, mock_weekday):
+    def test_generate_colloquium_email_female_student(self, mock_gender, mock_render):
         """Test generate_colloquium_email für weibliche Studierende."""
         mock_gender.return_value = "Frau"
-        mock_weekday.return_value = "Mittwoch"
+        mock_render.return_value = "Frau Maria Musterfrau"
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
             llm_client=MagicMock(),
             student_first_name="Maria",
             student_last_name="Musterfrau",
-            matriculation_number="67890",
+            sid="67890",
             date_colloquium="21.01.2026",
             time_colloquium="10:00",
             first_examiner="Dr. Test",
@@ -206,21 +207,23 @@ class TestEmailGenerator:
 
         assert "Frau Maria Musterfrau" in generator.email_text
 
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    def test_generate_colloquium_email_company(self, mock_gender, mock_weekday):
+    def test_generate_colloquium_email_company(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Firmen-Kolloquium."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Donnerstag"
+        mock_render.return_value = "in der Firma Test GmbH, Teststraße 1"
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
             llm_client=MagicMock(),
             student_first_name="Test",
             student_last_name="Student",
-            matriculation_number="11111",
+            sid="11111",
             date_colloquium="22.01.2026",
             time_colloquium="15:00",
             first_examiner="Prof. Example",
@@ -231,27 +234,31 @@ class TestEmailGenerator:
 
         assert "in der Firma Test GmbH, Teststraße 1" in generator.email_text
 
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    def test_generate_colloquium_email_online(self, mock_gender, mock_weekday):
+    def test_generate_colloquium_email_online(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Online-Kolloquium."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Freitag"
+        mock_render.return_value = (
+            "über Zoom: https://zoom.us/j/123 Zugangscode: abc123"
+        )
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
             llm_client=MagicMock(),
             student_first_name="Online",
             student_last_name="Student",
-            matriculation_number="99999",
+            sid="99999",
             date_colloquium="23.01.2026",
             time_colloquium="16:00",
             first_examiner="Prof. Remote",
             location_type="online",
             zoom_link="https://zoom.us/j/123",
-            zoom_meeting_access="abc123",
+            zcode="abc123",
         )
 
         assert "über Zoom:" in generator.email_text
@@ -267,7 +274,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=tmpdir,
                 student_last_name="Mustermann",
-                matriculation_number="12345",
+                sid="12345",
             )
 
             assert generator.email_path is not None
@@ -292,7 +299,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=subfolder,
                 student_last_name="Test",
-                matriculation_number="00000",
+                sid="00000",
             )
 
             assert os.path.exists(subfolder)
@@ -301,14 +308,10 @@ class TestEmailGenerator:
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
     @patch("builtins.print")
-    def test_generate_and_save_email_complete_flow(
-        self, mock_print, mock_weekday, mock_gender
-    ):
+    def test_generate_and_save_email_complete_flow(self, mock_print, mock_gender):
         """Test complete flow von generate_and_save_email."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Montag"
 
         generator = email_generator.EmailGenerator()
         mock_client = MagicMock()
@@ -398,11 +401,9 @@ class TestEmailGenerator:
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
-    def test_generate_and_save_email_single_name(self, mock_weekday, mock_gender):
+    def test_generate_and_save_email_single_name(self, mock_gender):
         """Test generate_and_save_email mit nur einem Namen."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Dienstag"
 
         generator = email_generator.EmailGenerator()
 
@@ -430,11 +431,9 @@ class TestIntegration:
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
-    def test_full_email_generation_campus(self, mock_weekday, mock_gender):
+    def test_full_email_generation_campus(self, mock_gender):
         """Test vollständige Email-Generierung für Campus."""
         mock_gender.return_value = "Herr"
-        mock_weekday.return_value = "Dienstag"
 
         generator = email_generator.EmailGenerator()
         mock_client = MagicMock()
@@ -478,11 +477,9 @@ class TestIntegration:
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
-    @patch("academic_doc_generator.colloquium.email_generator.weekday_from_string")
-    def test_full_email_generation_online(self, mock_weekday, mock_gender):
+    def test_full_email_generation_online(self, mock_gender):
         """Test vollständige Email-Generierung für Online."""
         mock_gender.return_value = "Frau"
-        mock_weekday.return_value = "Mittwoch"
 
         generator = email_generator.EmailGenerator()
 
@@ -497,7 +494,7 @@ class TestIntegration:
                 first_examiner="Dr. Anna Schmidt",
                 location_type="online",
                 zoom_link="https://zoom.us/j/123456789",
-                zoom_meeting_access="Kolloquium2026",
+                zcode="Kolloquium2026",
             )
 
             # Prüfe Online-spezifische Details

@@ -1,12 +1,13 @@
-# src/academic_doc_generator/core/llm_interface.py
+# src/academic_doc_generator/core/llm.py
 """LLM interface with comprehensive type annotations for API interactions."""
 
 from typing import Dict, List, Optional, Any, Tuple
 import json
 import time
 from llm_client import LLMClient
-from . import pdf_processing, latex_generation
+from . import pdf, latex
 from .types import RewrittenComment, ThesisMetadata, LLMClientProtocol
+from .prompts import PromptTemplate, build_prompt
 
 # ============================================================================
 # Type Definitions and Protocols
@@ -21,7 +22,7 @@ from .types import RewrittenComment, ThesisMetadata, LLMClientProtocol
 
 
 def rewrite_comments(
-    context_dict: Dict[int, List[pdf_processing.AnnotationContext]],
+    context_dict: Dict[int, List[pdf.AnnotationContext]],
     llm_client: LLMClientProtocol,
     groq_free: bool = False,
     verbose: bool = False,
@@ -78,30 +79,12 @@ def rewrite_comments(
             paragraph = item["paragraph"]
             highlighted = item["highlighted"]
 
-            prompt = f"""
-You are given a PDF paragraph, a highlighted text (the exact words the reader commented on),
-and the original rough comment/annotation.
-
-Your task: Rewrite the comment into a clear, polite, and specific question or feedback that
-directly refers to the highlighted text and is understandable in the context of the paragraph.
-
-IMPORTANT:
-- Detect the language of the original comment.
-- Always produce the rewritten comment in the SAME language (usually German, sometimes English).
-- Format the summary so that it can be directly inserted into a LaTeX document.
-- Use normal LaTeX text, not markdown.
-
-Paragraph:
-{paragraph}
-
-Highlighted text:
-{highlighted}
-
-Original Comment:
-{comment}
-
-Rewritten Comment (same language as original):
-"""
+            prompt = build_prompt(
+                PromptTemplate.REWRITE_COMMENT,
+                paragraph=paragraph,
+                highlighted=highlighted,
+                comment=comment,
+            )
 
             messages = [{"role": "user", "content": prompt}]
             rewritten_raw = llm_client.chat_completion(messages)
@@ -109,9 +92,7 @@ Rewritten Comment (same language as original):
             if verbose:
                 print(f"Response: {rewritten_raw}")
 
-            rewritten_text = latex_generation.escape_for_latex(
-                rewritten_raw, preserve_latex=True
-            )
+            rewritten_text = latex.escape_for_latex(rewritten_raw, preserve_latex=True)
 
             rewritten_items.append(
                 {
@@ -129,7 +110,29 @@ Rewritten Comment (same language as original):
     return rewritten
 
 
-def detect_degree_from_filename(pdf_path: str, llm_client: LLMClient) -> str:
+def determine_gender_from_name(first_name: str, llm_client: LLMClientProtocol) -> str:
+    """Determine the formal German address (Herr/Frau) from a first name using LLM.
+
+    Args:
+        first_name: First/given name of the person.
+        llm_client: LLMClient instance for API access.
+
+    Returns:
+        str: Either "Herr" or "Frau" based on the name.
+    """
+    prompt = build_prompt(PromptTemplate.DETERMINE_GENDER, first_name=first_name)
+
+    messages = [{"role": "user", "content": prompt}]
+    result = llm_client.chat_completion(messages)
+
+    # Ensure valid output
+    if result not in ["Herr", "Frau", "Herr/Frau"]:
+        return "Herr/Frau"
+
+    return result
+
+
+def detect_degree_from_filename(pdf_path: str, llm_client: LLMClientProtocol) -> str:
     """Detect if thesis is Bachelor or Master from PDF filename.
 
     Args:
@@ -143,19 +146,7 @@ def detect_degree_from_filename(pdf_path: str, llm_client: LLMClient) -> str:
 
     filename = os.path.basename(pdf_path)
 
-    prompt = f"""
-You are given the filename of a thesis PDF. 
-Determine if this is a Bachelor thesis or a Master thesis based on the filename.
-
-Filename: {filename}
-
-Common indicators:
-- "Bachelor", "BA", "Bachelorarbeit" → Bachelor thesis
-- "Master", "MA", "Masterarbeit" → Master thesis
-
-Return ONLY one word: "Bachelor" or "Master"
-If you cannot determine it, return "Unknown"
-"""
+    prompt = build_prompt(PromptTemplate.DETECT_DEGREE, filename=filename)
 
     messages = [{"role": "user", "content": prompt}]
     response = llm_client.chat_completion(messages).strip()
@@ -193,7 +184,7 @@ def extract_document_metadata(
         >>> metadata = extract_document_metadata(text, "German", client)
         >>> metadata['author']
         'Max Mustermann'
-        >>> metadata['matriculation_number']
+        >>> metadata['sid']
         '123456'
     """
     # Collect first two pages of text (if available)
@@ -201,31 +192,9 @@ def extract_document_metadata(
         [pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]]
     )
 
-    prompt = f"""
-You are given the first pages of a thesis submitted at a University. 
-It is written in {language}. 
-Extract the following information if available:
-
-- Author full name
-- Matriculation number (Matrikelnr.)
-- Title of the thesis
-- First examiner (Erstprüfer)
-- Christian name of first examiner
-- Family name of first examiner
-- Second examiner (Zweitprüfer)
-- 'Bachelor' if it is a Bachelor thesis or 'Master' if it is a Master thesis
-- Course of study (Studiengang). Often find "Studiengang" followed by either "Informatik", "Wirtschaftsinformatik", "Medieninformatik" or "IT-Management".
-
-Return the result as a valid JSON object with keys:
-"author", "matriculation_number", "title", "first_examiner", "first_examiner_christian", "first_examiner_family", 
-"second_examiner", "bachelor_master", "course_of_study".
-
-If something is missing, use null as the value.
-Do not include any extra text.
-
-Document text:
-{sample_text}
-"""
+    prompt = build_prompt(
+        PromptTemplate.EXTRACT_METADATA, language=language, text=sample_text
+    )
 
     messages = [{"role": "user", "content": prompt}]
     content = llm_client.chat_completion(messages)
@@ -275,35 +244,14 @@ def summarize_thesis(
     """
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
-    prompt = f"""
-You are given the first ten pages of a thesis submitted to a University. 
-Please provide a concise summary in {language}. 
-
-Format the summary so that it can be directly inserted into a LaTeX document.
-
-Formatting rules:
-- Use normal LaTeX text, not markdown.
-- Use line breaks (`\\\\`) between sentences to improve readability.
-- If appropriate, structure the summary as an itemized list with `\\begin{{itemize}} ... \\end{{itemize}}`.
-- If you use itemize, then DO NOT add line breaks (`\\\\`) at the end of an item. 
-- Avoid special characters that break LaTeX (like unescaped #, $, %, &, _, {{, }}).
-
-The summary should highlight:
-- The main topic of the thesis
-- The research questions or goals
-- The methods used
-- The key results (if available in the text)
-
-Text:
-{full_text}
-
-Now provide the LaTeX-formatted summary:
-"""
+    prompt = build_prompt(
+        PromptTemplate.SUMMARIZE_THESIS, language=language, text=full_text
+    )
 
     messages = [{"role": "user", "content": prompt}]
     latex_summary_raw = llm_client.chat_completion(messages)
 
-    return latex_generation.escape_for_latex(latex_summary_raw, preserve_latex=True)
+    return latex.escape_for_latex(latex_summary_raw, preserve_latex=True)
 
 
 def detect_language(
@@ -343,13 +291,7 @@ def detect_language(
 
     sample_text = "\n".join(texts)
 
-    prompt = f"""
-Decide if the following text is written in German or English.
-Respond with exactly one word: "German" or "English".
-
-Text:
-{sample_text}
-"""
+    prompt = build_prompt(PromptTemplate.DETECT_LANGUAGE, text=sample_text)
 
     messages = [{"role": "user", "content": prompt}]
     lang = llm_client.chat_completion(messages)
@@ -366,7 +308,7 @@ def rewrite_comments_in_pdf(
     groq_free: bool = False,
     verbose: bool = False,
     pdf_processor: Any = None,  # For dependency injection in tests
-) -> Tuple[Dict[int, List[RewrittenComment]], pdf_processing.CommentStats]:
+) -> Tuple[Dict[int, List[RewrittenComment]], pdf.CommentStats]:
     """Extract and rewrite PDF comments into clear, polite questions.
 
     This function parses the given PDF, extracts annotations, finds their
@@ -404,7 +346,7 @@ def rewrite_comments_in_pdf(
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     if pdf_processor is None:
-        from . import pdf_processing as pdf_proc
+        from . import pdf as pdf_proc
 
         extract_text_with_positions = pdf_proc.extract_text_with_positions
         extract_annotations_with_positions = pdf_proc.extract_annotations_with_positions
@@ -483,7 +425,7 @@ def get_summary_and_metadata_of_pdf(
     print("Starting to get summary and metadata of the thesis.")
 
     # get plain text (for metadata detection)
-    pages_text = pdf_processing.extract_text_per_page(pdf_path)
+    pages_text = pdf.extract_text_per_page(pdf_path)
 
     # Extract metadata (mit pdf_path für Fallback)
     metadata = extract_document_metadata(

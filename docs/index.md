@@ -259,4 +259,4 @@ This project is released under the MIT License.
 
 ---
 
-**Note:** This tool aids in document template creation — it does not grade or make evaluative decisions automatically. All academic assessments remain the responsibility of the examiner.
+**Note:** This tool aids in document template creation — it does not mark or make evaluative decisions automatically. All academic assessments remain the responsibility of the examiner.

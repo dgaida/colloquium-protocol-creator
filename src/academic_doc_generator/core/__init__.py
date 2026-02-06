@@ -10,9 +10,14 @@ This package contains helpers to:
 Public API is organized in submodules.
 """
 
+from . import pdf
+from . import llm
+from . import latex
+from . import utils
+
 __all__ = [
-    "pdf_processing",
-    "llm_interface",
-    "latex_generation",
+    "pdf",
+    "llm",
+    "latex",
     "utils",
 ]

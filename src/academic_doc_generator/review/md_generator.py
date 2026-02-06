@@ -3,6 +3,7 @@
 import time
 from typing import Dict, List
 from llm_client import LLMClient
+from ..core.prompts import PromptTemplate, build_prompt
 
 
 def estimate_line_number(
@@ -134,23 +135,12 @@ def rewrite_comments_markdown(
             paragraph = item.get("paragraph", "")
             highlighted = item.get("highlighted", "")
 
-            prompt = f"""
-You are reviewing an academic paper.
-Rewrite the following rough reviewer comment into a clear, polite, and constructive
-remark addressed to the authors. Keep the meaning, but phrase it in professional
-review style. Always write it in English.
-
-Paragraph (if available):
-{paragraph}
-
-Highlighted text (if available):
-{highlighted}
-
-Original Comment:
-{comment}
-
-Rewritten comment (Markdown):
-"""
+            prompt = build_prompt(
+                PromptTemplate.REWRITE_COMMENT_MARKDOWN,
+                paragraph=paragraph,
+                highlighted=highlighted,
+                comment=comment,
+            )
 
             messages = [{"role": "user", "content": prompt}]
             rewritten_raw = llm_client.chat_completion(messages)

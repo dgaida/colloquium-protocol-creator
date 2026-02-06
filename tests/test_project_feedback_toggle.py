@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.project.orchestrator import run_project_pipeline
+from academic_doc_generator.core.types import ProjectWorkflowConfig
 
 
 @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
@@ -21,8 +22,8 @@ def test_run_project_pipeline_feedback_toggle(
 ):
     # Setup mocks
     mock_metadata.return_value = {
-        "student_name": "Max Mustermann",
-        "matriculation_number": "123456",
+        "stud_name": "Max Mustermann",
+        "sid": "123456",
         "title": "Test Title",
         "first_examiner": "Prof. Test",
         "work_type": "Praxisprojekt",
@@ -44,14 +45,15 @@ def test_run_project_pipeline_feedback_toggle(
     pdf_file.write_text("dummy")
 
     # Case 1: create_feedback_mail = True (default)
-    result = run_project_pipeline(
+    config = ProjectWorkflowConfig(
         pdf_path=pdf_file,
-        grade="1.0",
+        mark="1.0",
         output_folder=tmp_path,
         create_feedback_mail=True,
     )
+    result = run_project_pipeline(config)
 
-    assert result[3] == "student_email.md"
+    assert result.student_email_path == "student_email.md"
     mock_feedback_summary.assert_called_once()
     assert mock_outlook.create_outlook_mail.call_count == 2
 
@@ -61,14 +63,15 @@ def test_run_project_pipeline_feedback_toggle(
     mock_email_gen.save_email_to_markdown.side_effect = ["service_email.md"]
 
     # Case 2: create_feedback_mail = False
-    result = run_project_pipeline(
+    config = ProjectWorkflowConfig(
         pdf_path=pdf_file,
-        grade="1.0",
+        mark="1.0",
         output_folder=tmp_path,
         create_feedback_mail=False,
     )
+    result = run_project_pipeline(config)
 
-    assert result[3] == ""
+    assert result.student_email_path == ""
     mock_feedback_summary.assert_not_called()
     # Only 1 Outlook mail (for Prüfungsservice) should be created
     assert mock_outlook.create_outlook_mail.call_count == 1

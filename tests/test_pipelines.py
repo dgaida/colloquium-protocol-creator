@@ -4,10 +4,15 @@ Unit tests for the pipeline orchestrators and CLIs.
 
 import pytest
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 from academic_doc_generator.colloquium import orchestrator as colloquium_orchestrator
 from academic_doc_generator.project import orchestrator as project_orchestrator
 from academic_doc_generator.review import orchestrator as review_orchestrator
+from academic_doc_generator.core.types import (
+    ColloquiumWorkflowConfig,
+    ProjectWorkflowConfig,
+)
 
 # ============================================================================
 # Tests for colloquium_pipeline/orchestrator.py
@@ -17,12 +22,12 @@ from academic_doc_generator.review import orchestrator as review_orchestrator
 class TestColloquiumOrchestrator:
     """Tests for colloquium pipeline orchestrator."""
 
-    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
-    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.llm")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
     def test_run_pipeline_basic(
         self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
@@ -37,7 +42,7 @@ class TestColloquiumOrchestrator:
             "Test summary",
             {
                 "author": "Test Author",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "title": "Test Title",
                 "first_examiner": "Prof. Test",
                 "second_examiner": "Dr. Test",
@@ -61,22 +66,23 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email, web_md = colloquium_orchestrator.run_pipeline(
-                "test.pdf",
-                date_colloquium="20.01.2026",
-                uhrzeit_colloquium="14:00",
+            config = ColloquiumWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                date="20.01.2026",
+                time="14:00",
                 llm_client=mock_client,
                 groq_free=False,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=True,
                 location_type="campus",
                 room="3.217",
             )
+            result = colloquium_orchestrator.run_pipeline(config)
 
-            assert tex.endswith("bewertung_brief_12345.tex")
-            assert pdf == "/test/output.pdf"
-            assert email == "/test/email.md"
-            assert web_md == "/test/web.md"
+            assert result.tex_path.endswith("bewertung_brief_12345.tex")
+            assert result.pdf_path == "/test/output.pdf"
+            assert result.email_path == "/test/email.md"
+            assert result.metadata_path == "/test/web.md"
 
             # Verify calls
             mock_llm.rewrite_comments_in_pdf.assert_called_once()
@@ -85,12 +91,12 @@ class TestColloquiumOrchestrator:
             mock_latex.create_formal_letter_tex.assert_called_once()
             mock_latex.compile_latex_to_pdf.assert_called_once()
 
-    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
-    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.llm")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
     def test_run_pipeline_no_compile(
         self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
@@ -104,7 +110,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -124,27 +130,28 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            tex, pdf, email, web_md = colloquium_orchestrator.run_pipeline(
-                "test.pdf",
-                date_colloquium="20.01.2026",
-                uhrzeit_colloquium="14:00",
+            config = ColloquiumWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                date="20.01.2026",
+                time="14:00",
                 llm_client=mock_client,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=False,
                 location_type="campus",
                 room="3.217",
             )
+            result = colloquium_orchestrator.run_pipeline(config)
 
-            assert tex.endswith(".tex")
-            assert pdf == ""  # No PDF compilation
+            assert result.tex_path.endswith(".tex")
+            assert result.pdf_path == ""  # No PDF compilation
             mock_latex.compile_latex_to_pdf.assert_not_called()
 
-    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
-    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.llm")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
     def test_run_pipeline_many_quelle_comments(
         self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
@@ -158,7 +165,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -178,27 +185,28 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            colloquium_orchestrator.run_pipeline(
-                "test.pdf",
-                date_colloquium="20.01.2026",
-                uhrzeit_colloquium="14:00",
+            config = ColloquiumWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                date="20.01.2026",
+                time="14:00",
                 llm_client=mock_client,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=False,
                 location_type="campus",
                 room="3.217",
             )
+            colloquium_orchestrator.run_pipeline(config)
 
             # Check that summary was modified
             create_call = mock_latex.create_formal_letter_tex.call_args
             assert "Häufig fehlen Quellenangaben" in create_call.kwargs["summary"]
 
-    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
-    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.llm")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
     def test_run_pipeline_many_language_comments(
         self, mock_web, mock_pdf_proc, mock_email, mock_form, mock_latex, mock_llm
     ):
@@ -212,7 +220,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -232,28 +240,29 @@ class TestColloquiumOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            colloquium_orchestrator.run_pipeline(
-                "test.pdf",
-                date_colloquium="20.01.2026",
-                uhrzeit_colloquium="14:00",
+            config = ColloquiumWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                date="20.01.2026",
+                time="14:00",
                 llm_client=mock_client,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=False,
                 location_type="campus",
                 room="3.217",
             )
+            colloquium_orchestrator.run_pipeline(config)
 
             # Check that summary was modified
             create_call = mock_latex.create_formal_letter_tex.call_args
             assert "Viele sprachliche Fehler" in create_call.kwargs["summary"]
 
     @patch("academic_doc_generator.colloquium.orchestrator.LLMClient")
-    @patch("academic_doc_generator.colloquium.orchestrator.llm_interface")
-    @patch("academic_doc_generator.colloquium.orchestrator.latex_generation")
+    @patch("academic_doc_generator.colloquium.orchestrator.llm")
+    @patch("academic_doc_generator.colloquium.orchestrator.latex")
     @patch("academic_doc_generator.colloquium.orchestrator.pdf_form_filler")
     @patch("academic_doc_generator.colloquium.orchestrator.email_generator")
-    @patch("academic_doc_generator.colloquium.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.colloquium.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.colloquium.orchestrator.pdf")
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
     def test_run_pipeline_auto_client(
         self,
         mock_web,
@@ -279,7 +288,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -297,16 +306,17 @@ class TestColloquiumOrchestrator:
         mock_email.EmailGenerator.return_value = mock_email_gen
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            colloquium_orchestrator.run_pipeline(
-                "test.pdf",
-                date_colloquium="20.01.2026",
-                uhrzeit_colloquium="14:00",
+            config = ColloquiumWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                date="20.01.2026",
+                time="14:00",
                 llm_client=None,  # Should auto-create
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=False,
                 location_type="campus",
                 room="3.217",
             )
+            colloquium_orchestrator.run_pipeline(config)
 
             mock_client_class.assert_called_once()
 
@@ -328,8 +338,8 @@ class TestProjectOrchestrator:
     @patch("academic_doc_generator.project.orchestrator.compile_latex_to_pdf")
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     @patch("academic_doc_generator.project.orchestrator.OutlookMailGenerator")
-    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.project.orchestrator.pdf")
+    @patch("academic_doc_generator.project.orchestrator.generate_metadata_file")
     def test_run_project_pipeline_basic(
         self,
         mock_web,
@@ -344,9 +354,9 @@ class TestProjectOrchestrator:
     ):
         """Test basic project pipeline execution."""
         mock_extract.return_value = {
-            "student_name": "Test Student",
+            "stud_name": "Test Student",
             "student_first_name": "Test",
-            "matriculation_number": "99999",
+            "sid": "99999",
             "title": "Test Project",
             "first_examiner": "Prof. Test",
             "first_examiner_christian": "Test",
@@ -359,7 +369,7 @@ class TestProjectOrchestrator:
         mock_compile.return_value = "/test/output.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_final_grade_email.return_value = "Email"
+        mock_email_gen.generate_final_mark_email.return_value = "Email"
         mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
         mock_email_gen.save_email_to_markdown.side_effect = [
             "/test/email.md",
@@ -370,23 +380,18 @@ class TestProjectOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            (
-                tex,
-                pdf,
-                email,
-                email_student,
-                web_md,
-            ) = project_orchestrator.run_project_pipeline(
-                "test.pdf",
+            config = ProjectWorkflowConfig(
+                pdf_path=Path("test.pdf"),
                 llm_client=mock_client,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=True,
             )
+            result = project_orchestrator.run_project_pipeline(config)
 
-            assert tex.endswith("bewertung_projekt_99999.tex")
-            assert pdf == "/test/output.pdf"
-            assert email == "/test/email.md"
-            assert email_student == "/test/student_email.md"
+            assert result.tex_path.endswith("bewertung_projekt_99999.tex")
+            assert result.pdf_path == "/test/output.pdf"
+            assert result.service_email_path == "/test/email.md"
+            assert result.student_email_path == "/test/student_email.md"
 
             mock_extract.assert_called_once()
             mock_gender.assert_called_once_with("Test", mock_client)
@@ -401,8 +406,8 @@ class TestProjectOrchestrator:
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
-    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.project.orchestrator.pdf")
+    @patch("academic_doc_generator.project.orchestrator.generate_metadata_file")
     def test_run_project_pipeline_no_compile(
         self,
         mock_web,
@@ -415,9 +420,9 @@ class TestProjectOrchestrator:
     ):
         """Test project pipeline without compilation."""
         mock_extract.return_value = {
-            "student_name": "Test",
+            "stud_name": "Test",
             "student_first_name": "Test",
-            "matriculation_number": "12345",
+            "sid": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",
@@ -428,7 +433,7 @@ class TestProjectOrchestrator:
         mock_feedback.return_value = "Feedback"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_final_grade_email.return_value = "Email"
+        mock_email_gen.generate_final_mark_email.return_value = "Email"
         mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
         mock_email_gen.save_email_to_markdown.side_effect = [
             "/test/email.md",
@@ -439,23 +444,18 @@ class TestProjectOrchestrator:
         mock_client = MagicMock()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            (
-                tex,
-                pdf,
-                email,
-                email_student,
-                web_md,
-            ) = project_orchestrator.run_project_pipeline(
-                "test.pdf",
+            config = ProjectWorkflowConfig(
+                pdf_path=Path("test.pdf"),
                 llm_client=mock_client,
-                output_folder=tmpdir,
+                output_folder=Path(tmpdir),
                 compile_pdf=False,
             )
+            result = project_orchestrator.run_project_pipeline(config)
 
-            assert tex.endswith(".tex")
-            assert pdf == ""
-            assert email == "/test/email.md"
-            assert email_student == "/test/student_email.md"
+            assert result.tex_path.endswith(".tex")
+            assert result.pdf_path == ""
+            assert result.service_email_path == "/test/email.md"
+            assert result.student_email_path == "/test/student_email.md"
 
     @patch("academic_doc_generator.project.orchestrator.LLMClient")
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
@@ -464,8 +464,8 @@ class TestProjectOrchestrator:
     @patch(
         "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
     )
-    @patch("academic_doc_generator.project.orchestrator.pdf_processing")
-    @patch("academic_doc_generator.project.orchestrator.generate_web_metadata_file")
+    @patch("academic_doc_generator.project.orchestrator.pdf")
+    @patch("academic_doc_generator.project.orchestrator.generate_metadata_file")
     def test_run_project_pipeline_auto_client(
         self,
         mock_web,
@@ -483,9 +483,9 @@ class TestProjectOrchestrator:
         mock_client_class.return_value = mock_client
 
         mock_extract.return_value = {
-            "student_name": "Test",
+            "stud_name": "Test",
             "student_first_name": "Test",
-            "matriculation_number": "12345",
+            "sid": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",
@@ -496,9 +496,13 @@ class TestProjectOrchestrator:
         mock_feedback.return_value = "Feedback"
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            project_orchestrator.run_project_pipeline(
-                "test.pdf", llm_client=None, output_folder=tmpdir, compile_pdf=False
+            config = ProjectWorkflowConfig(
+                pdf_path=Path("test.pdf"),
+                llm_client=None,
+                output_folder=Path(tmpdir),
+                compile_pdf=False,
             )
+            project_orchestrator.run_project_pipeline(config)
 
             mock_client_class.assert_called_once()
 

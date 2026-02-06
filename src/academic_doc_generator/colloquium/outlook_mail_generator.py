@@ -50,7 +50,7 @@ class OutlookMailGenerator:
 
     def create_outlook_mail(
         self,
-        student_name: str,
+        stud_name: str,
         email_text: str,
         attachment_path: Optional[str] = None,
         verbose: bool = False,
@@ -60,7 +60,7 @@ class OutlookMailGenerator:
         """Erstellt eine neue Outlook-Mail mit vorausgefülltem Inhalt.
 
         Args:
-            student_name: Name des Studierenden (für Betreff).
+            stud_name: Name des Studierenden (für Betreff).
             email_text: Kompletter E-Mail-Text.
             attachment_path: Pfad zur Datei, die als Anhang hinzugefügt werden soll.
             verbose: Debug-Ausgaben aktivieren.
@@ -71,7 +71,7 @@ class OutlookMailGenerator:
             True wenn erfolgreich, False bei Fehler.
         """
         if subject is None:
-            subject = f"Anmeldung Kolloquium {student_name}"
+            subject = f"Anmeldung Kolloquium {stud_name}"
 
         if recipient is None:
             recipient = self.RECIPIENT_EMAIL

@@ -8,10 +8,11 @@ import tempfile
 import json
 from unittest.mock import MagicMock, patch
 from datetime import datetime
-from academic_doc_generator.project import latex_generation, llm_interface
+from academic_doc_generator.project import latex, llm
+from academic_doc_generator.core import llm as core_llm
 
 # ============================================================================
-# Tests for project_creator/latex_generation.py
+# Tests for project_creator/latex.py
 # ============================================================================
 
 
@@ -70,16 +71,16 @@ class TestProjectLatexGeneration:
             tex_path = f.name
 
         try:
-            latex_generation.create_project_grading_letter_tex(
+            latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Max Mustermann",
-                matriculation_number="12345",
-                project_title="Test Project Title",
-                examiner_name="Prof. Test",
-                examiner_mail="test@example.com",
+                s_name="Max Mustermann",
+                s_id="12345",
+                p_title="Test Project Title",
+                e_name="Prof. Test",
+                einfo="test@example.com",
                 gender="Herr",
                 work_type="Praxisprojekt",
-                grade="1.3",
+                s_mark="1.3",
             )
 
             assert os.path.exists(tex_path)
@@ -110,13 +111,13 @@ class TestProjectLatexGeneration:
             tex_path = f.name
 
         try:
-            latex_generation.create_project_grading_letter_tex(
+            latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Maria Musterfrau",
-                matriculation_number="67890",
-                project_title="Another Test Project",
-                examiner_name="Dr. Example",
-                examiner_mail="example@th-koeln.de",
+                s_name="Maria Musterfrau",
+                s_id="67890",
+                p_title="Another Test Project",
+                e_name="Dr. Example",
+                einfo="example@th-koeln.de",
                 gender="Frau",
                 work_type="Projektarbeit",
             )
@@ -140,13 +141,13 @@ class TestProjectLatexGeneration:
             tex_path = f.name
 
         try:
-            latex_generation.create_project_grading_letter_tex(
+            latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test & User",
-                matriculation_number="99999",
-                project_title="Project with 100% Coverage & $pecial Char$",
-                examiner_name="Prof. Test",
-                examiner_mail="test@example.com",
+                s_name="Test & User",
+                s_id="99999",
+                p_title="Project with 100% Coverage & $pecial Char$",
+                e_name="Prof. Test",
+                einfo="test@example.com",
                 gender="Herr",
             )
 
@@ -169,7 +170,6 @@ class TestProjectLatexGeneration:
             )
 
             # More reliable: check that dangerous unescaped chars are NOT present in wrong places
-            # The title should not have raw & or $ without escaping
             # Look for the title line
             title_marker = "Das Thema war:"
             title_start = content.find(title_marker)
@@ -190,13 +190,13 @@ class TestProjectLatexGeneration:
             tex_path = f.name
 
         try:
-            latex_generation.create_project_grading_letter_tex(
+            latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test Student",
-                matriculation_number="11111",
-                project_title="Custom Project",
-                examiner_name="Prof. Custom",
-                examiner_mail="custom@th-koeln.de",
+                s_name="Test Student",
+                s_id="11111",
+                p_title="Custom Project",
+                e_name="Prof. Custom",
+                einfo="custom@th-koeln.de",
                 gender="Herr",
                 place="Köln",
                 date="15.01.2025",
@@ -216,7 +216,7 @@ class TestProjectLatexGeneration:
 
 
 # ============================================================================
-# Tests for project_creator/llm_interface.py
+# Tests for project_creator/llm.py
 # ============================================================================
 
 
@@ -228,7 +228,7 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Herr"
 
-        result = llm_interface.determine_gender_from_name("Max", mock_client)
+        result = core_llm.determine_gender_from_name("Max", mock_client)
 
         assert result == "Herr"
         mock_client.chat_completion.assert_called_once()
@@ -242,7 +242,7 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Frau"
 
-        result = llm_interface.determine_gender_from_name("Maria", mock_client)
+        result = core_llm.determine_gender_from_name("Maria", mock_client)
 
         assert result == "Frau"
 
@@ -251,7 +251,7 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Herr/Frau"
 
-        result = llm_interface.determine_gender_from_name("Kim", mock_client)
+        result = core_llm.determine_gender_from_name("Kim", mock_client)
 
         assert result == "Herr/Frau"
 
@@ -260,12 +260,12 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Invalid"
 
-        result = llm_interface.determine_gender_from_name("Test", mock_client)
+        result = core_llm.determine_gender_from_name("Test", mock_client)
 
         # Should return fallback
         assert result == "Herr/Frau"
 
-    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_success(self, mock_extract):
         """Test successful metadata extraction."""
         mock_extract.return_value = {
@@ -276,9 +276,9 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = json.dumps(
             {
-                "student_name": "Max Mustermann",
+                "stud_name": "Max Mustermann",
                 "student_first_name": "Max",
-                "matriculation_number": "12345",
+                "sid": "12345",
                 "title": "Test Project",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -287,18 +287,18 @@ class TestProjectLLMInterface:
             }
         )
 
-        result = llm_interface.extract_project_metadata("test.pdf", mock_client)
+        result = llm.extract_project_metadata("test.pdf", mock_client)
 
-        assert result["student_name"] == "Max Mustermann"
+        assert result["stud_name"] == "Max Mustermann"
         assert result["student_first_name"] == "Max"
-        assert result["matriculation_number"] == "12345"
+        assert result["sid"] == "12345"
         assert result["title"] == "Test Project"
         assert result["first_examiner"] == "Prof. Dr. Hans Meyer"
         assert result["first_examiner_christian"] == "Hans"
         assert result["first_examiner_family"] == "Meyer"
         assert result["work_type"] == "Praxisprojekt"
 
-    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_missing_fields(self, mock_extract):
         """Test metadata extraction with missing fields."""
         mock_extract.return_value = {0: "Incomplete document"}
@@ -306,9 +306,9 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = json.dumps(
             {
-                "student_name": "Test Student",
+                "stud_name": "Test Student",
                 "student_first_name": None,
-                "matriculation_number": None,
+                "sid": None,
                 "title": None,
                 "first_examiner": None,
                 "first_examiner_christian": None,
@@ -317,13 +317,13 @@ class TestProjectLLMInterface:
             }
         )
 
-        result = llm_interface.extract_project_metadata("test.pdf", mock_client)
+        result = llm.extract_project_metadata("test.pdf", mock_client)
 
-        assert result["student_name"] == "Test Student"
+        assert result["stud_name"] == "Test Student"
         assert result["student_first_name"] is None
-        assert result["matriculation_number"] is None
+        assert result["sid"] is None
 
-    @patch("academic_doc_generator.project.llm_interface.extract_text_per_page")
+    @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_json_error(self, mock_extract):
         """Test handling of JSON parsing errors."""
         mock_extract.return_value = {0: "Test content"}
@@ -331,7 +331,7 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Not valid JSON"
 
-        result = llm_interface.extract_project_metadata("test.pdf", mock_client)
+        result = llm.extract_project_metadata("test.pdf", mock_client)
 
         assert "error" in result
         assert result["error"] == "Could not parse JSON"
@@ -350,9 +350,9 @@ class TestProjectIntegration:
         """Test the complete flow from metadata to letter."""
         # Mock metadata
         metadata = {
-            "student_name": "Test Student",
+            "stud_name": "Test Student",
             "student_first_name": "Test",
-            "matriculation_number": "99999",
+            "sid": "99999",
             "title": "Integration Test Project",
             "first_examiner": "Prof. Integration",
             "first_examiner_christian": "Integration",
@@ -364,7 +364,7 @@ class TestProjectIntegration:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Herr"
 
-        gender = llm_interface.determine_gender_from_name(
+        gender = core_llm.determine_gender_from_name(
             metadata["student_first_name"], mock_client
         )
 
@@ -373,13 +373,13 @@ class TestProjectIntegration:
             tex_path = f.name
 
         try:
-            latex_generation.create_project_grading_letter_tex(
+            latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name=metadata["student_name"],
-                matriculation_number=metadata["matriculation_number"],
-                project_title=metadata["title"],
-                examiner_name=metadata["first_examiner"],
-                examiner_mail=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
+                s_name=metadata["stud_name"],
+                s_id=metadata["sid"],
+                p_title=metadata["title"],
+                e_name=metadata["first_examiner"],
+                einfo=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
                 gender=gender,
                 work_type=metadata["work_type"],
             )
@@ -391,8 +391,8 @@ class TestProjectIntegration:
                 content = f.read()
 
             # Verify all metadata is in the letter
-            assert metadata["student_name"] in content
-            assert metadata["matriculation_number"] in content
+            assert metadata["stud_name"] in content
+            assert metadata["sid"] in content
             assert metadata["title"] in content
             assert metadata["first_examiner"] in content
             assert gender in content

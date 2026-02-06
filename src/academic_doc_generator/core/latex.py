@@ -1,23 +1,24 @@
 """LaTeX generation and helper functions."""
 
-from typing import Dict, Optional
 import os
+import re
 import subprocess
 import unicodedata
+from functools import lru_cache
+from typing import Dict, List, Optional
 
 
-def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
-    """Escape LaTeX-special characters and normalize dash-like unicode chars.
+@lru_cache(maxsize=1024)
+def escape_latex_text(text: str) -> str:
+    """Escape text for safe LaTeX insertion (no LaTeX commands preserved).
+
+    Caches results for performance on repeated strings.
 
     Args:
-        text (str): Input string (may contain Unicode dashes).
-        preserve_latex (bool, optional):
-            - True: keep LaTeX commands, replace dash-like chars with "{-}".
-            - False: escape all LaTeX specials, normalize dash-like chars to "-".
-            Defaults to True.
+        text: Input text to escape.
 
     Returns:
-        str: LaTeX-safe string.
+        LaTeX-safe string.
     """
     if text is None:
         return ""
@@ -25,25 +26,102 @@ def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
     text = unicodedata.normalize("NFKC", text)
 
     # Remove invisible chars (soft hyphen, zero-width spaces, etc.)
+    text = _remove_invisible_chars(text)
+
+    # Replace dash-like characters with plain ASCII hyphen
+    text = _normalize_dashes(text, replacement="-")
+
+    # Define all replacements including specials and sharp s
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+        "„": r"``",
+        "“": r"''",
+        "ß": r"{\ss}",
+    }
+
+    # Use regex to perform all replacements in one pass to avoid double-escaping
+    pattern = re.compile("|".join(re.escape(k) for k in replacements.keys()))
+    text = pattern.sub(lambda m: replacements[m.group(0)], text)
+
+    return text
+
+
+def escape_latex_with_commands(text: str) -> str:
+    """Escape text while preserving LaTeX commands like \\textbf{}.
+
+    Use this when the text may contain intentional LaTeX formatting.
+
+    Args:
+        text: Input text that may contain LaTeX commands.
+
+    Returns:
+        LaTeX-safe string with commands preserved.
+    """
+    if text is None:
+        return ""
+
+    text = unicodedata.normalize("NFKC", text)
+
+    # Remove invisible chars
+    text = _remove_invisible_chars(text)
+
+    # Replace dash-like characters with LaTeX-safe dash
+    text = _normalize_dashes(text, replacement="{-}")
+
+    # German sharp s (using a unique placeholder to avoid being escaped by _escape_special_chars)
+    # Actually _escape_special_chars doesn't escape backslash or braces, so it's fine.
+    text = text.replace("ß", r"{\ss}")
+
+    # Escape LaTeX specials but don't touch backslashes/braces
+    text = _escape_special_chars(text)
+
+    return text
+
+
+def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
+    """Legacy wrapper for LaTeX escaping.
+
+    Args:
+        text: Input text.
+        preserve_latex: Whether to preserve LaTeX commands.
+
+    Returns:
+        Escaped text.
+    """
+    if preserve_latex:
+        return escape_latex_with_commands(text)
+    return escape_latex_text(text)
+
+
+def _remove_invisible_chars(text: str) -> str:
+    """Remove soft hyphens, zero-width spaces, etc."""
     for ch in ("\u00ad", "\u200b", "\u200c", "\u200d", "\ufeff"):
         text = text.replace(ch, "")
+    return text
 
-    # Replace dash-like characters
-    if preserve_latex:
-        dash_replacement = "{-}"
-    else:
-        dash_replacement = "-"  # plain ASCII hyphen is fine in LaTeX
+
+def _normalize_dashes(text: str, replacement: str) -> str:
+    """Replace all Unicode dash variants with specified replacement."""
     out_chars = []
     for ch in text:
         if unicodedata.category(ch) == "Pd":  # any punctuation-dash
-            out_chars.append(dash_replacement)
-        elif ch == "ß":
-            out_chars.append(r"{\ss}")  # German sharp s
+            out_chars.append(replacement)
         else:
             out_chars.append(ch)
-    text = "".join(out_chars)
+    return "".join(out_chars)
 
-    # Escape LaTeX specials
+
+def _escape_special_chars(text: str) -> str:
+    """Escape standard LaTeX special characters except backslash and braces."""
     replacements = {
         "&": r"\&",
         "%": r"\%",
@@ -57,12 +135,6 @@ def escape_for_latex(text: str, preserve_latex: bool = True) -> str:
     }
     for k, v in replacements.items():
         text = text.replace(k, v)
-
-    if not preserve_latex:
-        # Escape braces and backslashes in plain text
-        text = text.replace("{", r"\{").replace("}", r"\}")
-        text = text.replace("\\", r"\textbackslash{}")
-
     return text
 
 
@@ -87,11 +159,11 @@ def create_formal_letter_tex(
     summary: str,
     first_examiner: str,
     second_examiner: str,
-    first_examiner_mail: str,
+    first_einfo: str,
     questions: str,
     place: str = "Gummersbach",
     date: str = r"\today",
-    gemini_evaluation: Optional[str] = None,
+    gemini_emark: Optional[str] = None,
 ):
     """Create a LaTeX file for a formal letter with TH Köln footer.
 
@@ -104,18 +176,18 @@ def create_formal_letter_tex(
         summary (str): summary of the thesis.
         first_examiner (str): name of first examiner.
         second_examiner (str): name of second examiner.
-        first_examiner_mail (str): email of first examiner.
+        first_einfo (str): email of first examiner.
         questions (str): questions from first examiner.
         place (str, optional): Place of issue. Defaults to "Gummersbach".
         date (str, optional): Date string. Defaults to LaTeX \today.
-        gemini_evaluation (str, optional): Automatische Bewertung von Gemini.
+        gemini_emark (str, optional): Automatische Bewertung von Gemini.
     """
     # Füge Gemini-Bewertung hinzu, falls vorhanden
     gemini_section = ""
-    if gemini_evaluation:
-        gemini_section = f"\n\n{gemini_evaluation}\n"
+    if gemini_emark:
+        gemini_section = f"\n\n{gemini_emark}\n"
 
-    tex_template = rf"""
+    rendered_output = rf"""
 \documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \usepackage{{fontspec}}
 \setmainfont{{Latin Modern Roman}}
@@ -128,11 +200,11 @@ def create_formal_letter_tex(
 \setkomavar{{fromname}}{{{first_examiner}}}
 \setkomavar{{fromaddress}}{{Steinmüllerallee 1\\51643 Gummersbach}}
 \setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\setkomavar{{fromemail}}{{{first_examiner_mail}}}
+\setkomavar{{fromemail}}{{{first_einfo}}}
 \setkomavar{{place}}{{{place}}}
 \setkomavar{{date}}{{{date}}}
 \setkomavar{{signature}}{{{first_examiner}}}
-\setkomavar{{subject}}{{{escape_for_latex(subject, preserve_latex=False)}}}
+\setkomavar{{subject}}{{{escape_latex_text(subject)}}}
 
 % Footer
 \setkomavar{{firstfoot}}{{%
@@ -148,14 +220,14 @@ def create_formal_letter_tex(
 
 \begin{{document}}
 
-\begin{{letter}}{{{escape_for_latex(recipient, preserve_latex=False)}}}
+\begin{{letter}}{{{escape_latex_text(recipient)}}}
 
 \opening{{Sehr geehrte Damen und Herren,}}
 
 Bewertung folgender Thesis:\\[1ex]
 
-\textbf{{Titel:}} {escape_for_latex(title, preserve_latex=False)} \\[1ex]
-\textbf{{Autor:}} {escape_for_latex(author, preserve_latex=False)} \\[2ex]
+\textbf{{Titel:}} {escape_latex_text(title)} \\[1ex]
+\textbf{{Autor:}} {escape_latex_text(author)} \\[2ex]
 
 \textbf{{Zusammenfassung der Thesis:}} \\
 
@@ -260,12 +332,12 @@ Dauer des Kolloquiums: 45 Minuten
 \end{{document}}
 """
     with open(filename, "w", encoding="utf-8") as f:
-        f.write(tex_template)
+        f.write(rendered_output)
     print(f"LaTeX file created: {filename}")
 
 
 def concatenate_comments(
-    results: Dict[int, list], language: str, verbose: bool = False
+    results: Dict[int, List[dict]], language: str, verbose: bool = False
 ) -> str:
     """Concatenate rewritten comments into a LaTeX-formatted string.
 
@@ -299,7 +371,7 @@ def concatenate_comments(
 
 
 def compile_latex_to_pdf(
-    tex_path: str, output_dir: str = None, engine: str = "lualatex"
+    tex_path: str, output_dir: Optional[str] = None, engine: str = "lualatex"
 ) -> str:
     """Compile a LaTeX file into a PDF using the specified engine.
 

@@ -105,7 +105,7 @@ Viele Grüße,
 
 
 class FinalGradeEmail:
-    """Template for submitting final valuations to the examination service."""
+    """Template for submitting final marks to the examination service."""
 
     def render(
         self,
@@ -124,13 +124,13 @@ class StudentFeedbackEmail:
     def render(
         self,
         student: EmailRecipient,
-        valuation: str,
+        mark: str,
         feedback_bulletpoints: str,
         examiner: str,
     ) -> str:
         return f"""{student.formal_salutation},
 
-ich habe Ihre Arbeit mit einer {valuation} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
+ich habe Ihre Arbeit mit einer {mark} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
 
 {feedback_bulletpoints}
 

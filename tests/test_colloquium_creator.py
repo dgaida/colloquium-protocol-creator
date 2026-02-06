@@ -332,7 +332,7 @@ class TestLatexGeneration:
                 summary="This is a test summary.",
                 first_examiner="Prof. Test",
                 second_examiner="Dr. Test2",
-                first_examiner_contact="test@example.com",
+                first_einfo="test@example.com",
                 questions="Seite 1: Test question?",
             )
 

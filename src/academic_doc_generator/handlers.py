@@ -46,7 +46,7 @@ def run_from_config(config_path: str | Path) -> None:
 
     if task == "colloquium":
         coll_config = config.get_colloquium_config()
-        gemini_config = config.get_gemini_evaluation_config()
+        gemini_config = config.get_gemini_emark_config()
 
         if coll_config is None:
             print("❌ Fehler: Kolloquium-Konfiguration fehlt")
@@ -68,8 +68,8 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            z_code=coll_config.get("z_code"),
-            gemini_evaluation_enabled=gemini_config.get("enabled", False),
+            zcode=coll_config.get("zcode"),
+            gemini_emark_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
 
@@ -87,7 +87,7 @@ def run_from_config(config_path: str | Path) -> None:
 
     elif task == "project":
         proj_config = config.get_project_config() or {}
-        valuation = proj_config.get("valuation")
+        mark = proj_config.get("mark")
 
         workflow_config = ProjectWorkflowConfig(
             pdf_path=pdf_path,
@@ -97,7 +97,7 @@ def run_from_config(config_path: str | Path) -> None:
             ),
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
-            valuation=valuation,
+            mark=mark,
             create_feedback_mail=output_config.get("create_feedback_mail", True),
         )
 
@@ -161,8 +161,8 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        z_code=args.z_code,
-        gemini_evaluation_enabled=args.gemini_eval,
+        zcode=args.zcode,
+        gemini_emark_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
 
@@ -205,7 +205,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         output_folder=Path(args.out) if args.out else None,
         compile_pdf=not args.no_compile,
         signature_file=args.signature,
-        valuation=getattr(args, "valuation", None),
+        mark=getattr(args, "mark", None),
         create_feedback_mail=args.create_feedback_mail,
     )
 

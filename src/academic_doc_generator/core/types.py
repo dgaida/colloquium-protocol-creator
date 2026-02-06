@@ -144,7 +144,7 @@ class ThesisMetadata(TypedDict, total=False):
     """
 
     author: Optional[str]
-    stud_id: Optional[str]
+    sid: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     second_examiner: Optional[str]
@@ -159,7 +159,7 @@ class ProjectMetadata(TypedDict, total=False):
 
     stud_name: Optional[str]
     student_first_name: Optional[str]
-    stud_id: Optional[str]
+    sid: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     first_examiner_christian: Optional[str]
@@ -202,11 +202,11 @@ class ColloquiumConfig(TypedDict, total=False):
     company_name: Optional[str]  # Required if location_type="company"
     company_address: Optional[str]  # Optional for company
     zoom_link: Optional[str]  # Required if location_type="online"
-    z_code: Optional[str]  # Optional for online
+    zcode: Optional[str]  # Optional for online
 
 
-class GeminiEvaluationConfig(TypedDict, total=False):
-    """Configuration for Gemini automatic evaluation."""
+class GeminiEmarkConfig(TypedDict, total=False):
+    """Configuration for Gemini automatic emark."""
 
     enabled: bool
     model: Optional[str]
@@ -240,8 +240,8 @@ class ColloquiumWorkflowConfig:
     company_name: Optional[str] = None
     company_address: Optional[str] = None
     zoom_link: Optional[str] = None
-    z_code: Optional[str] = None
-    gemini_evaluation_enabled: bool = False
+    zcode: Optional[str] = None
+    gemini_emark_enabled: bool = False
     gemini_model: Optional[str] = None
 
 
@@ -254,7 +254,7 @@ class ProjectWorkflowConfig:
     output_folder: Optional[Path] = None
     compile_pdf: bool = True
     signature_file: str = "signature.png"
-    valuation: Optional[str] = None
+    mark: Optional[str] = None
     create_feedback_mail: bool = True
 
 

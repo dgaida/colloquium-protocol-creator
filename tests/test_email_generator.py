@@ -121,7 +121,7 @@ class TestEmailGenerator:
         result = generator._generate_location_text(
             location_type="online",
             zoom_link="https://zoom.us/j/123456",
-            z_code="test123",
+            zcode="test123",
         )
 
         assert "über Zoom:" in result
@@ -170,7 +170,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Max",
             student_last_name="Mustermann",
-            stud_id="12345",
+            sid="12345",
             date_colloquium="20.01.2026",
             time_colloquium="14:00",
             first_examiner="Prof. Test",
@@ -197,7 +197,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Maria",
             student_last_name="Musterfrau",
-            stud_id="67890",
+            sid="67890",
             date_colloquium="21.01.2026",
             time_colloquium="10:00",
             first_examiner="Dr. Test",
@@ -223,7 +223,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Test",
             student_last_name="Student",
-            stud_id="11111",
+            sid="11111",
             date_colloquium="22.01.2026",
             time_colloquium="15:00",
             first_examiner="Prof. Example",
@@ -252,13 +252,13 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Online",
             student_last_name="Student",
-            stud_id="99999",
+            sid="99999",
             date_colloquium="23.01.2026",
             time_colloquium="16:00",
             first_examiner="Prof. Remote",
             location_type="online",
             zoom_link="https://zoom.us/j/123",
-            z_code="abc123",
+            zcode="abc123",
         )
 
         assert "über Zoom:" in generator.email_text
@@ -274,7 +274,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=tmpdir,
                 student_last_name="Mustermann",
-                stud_id="12345",
+                sid="12345",
             )
 
             assert generator.email_path is not None
@@ -299,7 +299,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=subfolder,
                 student_last_name="Test",
-                stud_id="00000",
+                sid="00000",
             )
 
             assert os.path.exists(subfolder)
@@ -494,7 +494,7 @@ class TestIntegration:
                 first_examiner="Dr. Anna Schmidt",
                 location_type="online",
                 zoom_link="https://zoom.us/j/123456789",
-                z_code="Kolloquium2026",
+                zcode="Kolloquium2026",
             )
 
             # Prüfe Online-spezifische Details

@@ -13,13 +13,13 @@ def create_project_grading_letter_tex(
     s_id: str,
     p_title: str,
     e_name: str,
-    e_contact: str,
+    einfo: str,
     gender: str,
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
     date: str = r"\today",
     signature_file: str = "signature.png",
-    s_valuation: Optional[str] = None,
+    s_mark: Optional[str] = None,
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
 
@@ -29,13 +29,13 @@ def create_project_grading_letter_tex(
         s_id: Student's matriculation number.
         p_title: Title of the project work.
         e_name: Name of the examiner.
-        e_contact: Email address of the examiner.
+        einfo: Email address of the examiner.
         gender: Gender indicator ("Herr" or "Frau") for formal address.
         work_type: Type of work (default: "Praxisprojekt").
         place: Place of issue (default: "Gummersbach").
         date: Date string (default: LaTeX \\today).
         signature_file: Path to signature image file (default: "signature.png").
-        s_valuation: The valuation obtained (default: None, results in a blank line).
+        s_mark: The mark obtained (default: None, results in a blank line).
     """
     semester = get_semester()
 
@@ -47,10 +47,8 @@ def create_project_grading_letter_tex(
     sein_ihr = "sein" if gender == "Herr" else "ihr"
     er_sie = "Er" if gender == "Herr" else "Sie"
 
-    # Handle valuation
-    valuation_tex = (
-        s_valuation if s_valuation is not None else r"\underline{\hspace{2cm}}"
-    )
+    # Handle mark
+    mark_tex = s_mark if s_mark is not None else r"\underline{\hspace{2cm}}"
 
     # Handle signature
     signature_path_safe = signature_file.replace("\\", "/")
@@ -61,7 +59,7 @@ def create_project_grading_letter_tex(
 % {signature_tex}
 \\fi"""
 
-    doc_body = f"""\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
+    rendered_output = f"""\\documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \\usepackage{{fontspec}}
 \\setmainfont{{Latin Modern Roman}}
 \\usepackage[ngerman]{{babel}}
@@ -73,7 +71,7 @@ def create_project_grading_letter_tex(
 \\setkomavar{{fromname}}{{{e_name}}}
 \\setkomavar{{fromaddress}}{{Steinmüllerallee 1\\\\51643 Gummersbach}}
 \\setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\\setkomavar{{fromemail}}{{{e_contact}}}
+\\setkomavar{{fromemail}}{{{einfo}}}
 \\setkomavar{{place}}{{{place}}}
 \\setkomavar{{date}}{{{date}}}
 \\setkomavar{{subject}}{{{work_type_safe} {gender} {s_name_safe}}}
@@ -100,7 +98,7 @@ def create_project_grading_letter_tex(
 
 {s_name_safe}, Matrikelnr. {s_id},
 
-hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {valuation_tex} erhalten.
+hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {mark_tex} erhalten.
 
 Das Thema war:
 
@@ -116,5 +114,5 @@ Das Thema war:
 """
 
     with open(filename, "w", encoding="utf-8") as f:
-        f.write(doc_body)
+        f.write(rendered_output)
     print(f"LaTeX file for project grading created: {filename}")

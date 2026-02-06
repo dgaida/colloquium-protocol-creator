@@ -42,7 +42,7 @@ class TestColloquiumOrchestrator:
             "Test summary",
             {
                 "author": "Test Author",
-                "stud_id": "12345",
+                "sid": "12345",
                 "title": "Test Title",
                 "first_examiner": "Prof. Test",
                 "second_examiner": "Dr. Test",
@@ -110,7 +110,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "stud_id": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -165,7 +165,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "stud_id": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -220,7 +220,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "stud_id": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -288,7 +288,7 @@ class TestColloquiumOrchestrator:
             "Summary",
             {
                 "author": "Test",
-                "stud_id": "12345",
+                "sid": "12345",
                 "first_examiner": "Prof",
                 "second_examiner": "Dr",
                 "first_examiner_christian": "A",
@@ -356,7 +356,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "stud_name": "Test Student",
             "student_first_name": "Test",
-            "stud_id": "99999",
+            "sid": "99999",
             "title": "Test Project",
             "first_examiner": "Prof. Test",
             "first_examiner_christian": "Test",
@@ -369,7 +369,7 @@ class TestProjectOrchestrator:
         mock_compile.return_value = "/test/output.pdf"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_final_valuation_email.return_value = "Email"
+        mock_email_gen.generate_final_mark_email.return_value = "Email"
         mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
         mock_email_gen.save_email_to_markdown.side_effect = [
             "/test/email.md",
@@ -422,7 +422,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "stud_name": "Test",
             "student_first_name": "Test",
-            "stud_id": "12345",
+            "sid": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",
@@ -433,7 +433,7 @@ class TestProjectOrchestrator:
         mock_feedback.return_value = "Feedback"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_final_valuation_email.return_value = "Email"
+        mock_email_gen.generate_final_mark_email.return_value = "Email"
         mock_email_gen.generate_student_feedback_email.return_value = "Student Email"
         mock_email_gen.save_email_to_markdown.side_effect = [
             "/test/email.md",
@@ -485,7 +485,7 @@ class TestProjectOrchestrator:
         mock_extract.return_value = {
             "stud_name": "Test",
             "student_first_name": "Test",
-            "stud_id": "12345",
+            "sid": "12345",
             "title": "Test",
             "first_examiner": "Prof",
             "first_examiner_christian": "A",

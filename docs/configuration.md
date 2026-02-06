@@ -83,7 +83,7 @@ You can add a `metadata` section to manually set fields if automatic extraction 
 {
   "task": "project",
   "project": {
-    "valuation": "1.3"
+    "mark": "1.3"
   },
   "output": {
     "create_feedback_mail": true

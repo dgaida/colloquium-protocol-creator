@@ -164,16 +164,16 @@ class ConfigLoader:
         """
         return self.config.get("project")
 
-    def get_gemini_evaluation_config(self) -> Dict[str, Any]:
-        """Gibt die Gemini-Evaluations-Konfiguration zurück.
+    def get_gemini_emark_config(self) -> Dict[str, Any]:
+        """Gibt die Gemini-Emarks-Konfiguration zurück.
 
         Returns:
-            Dictionary mit Gemini-Evaluations-Einstellungen:
+            Dictionary mit Gemini-Emarks-Einstellungen:
             - enabled: bool (default False)
             - model: str (default "gemini-2.0-flash-exp")
         """
         default_config = {"enabled": False, "model": "gemini-2.0-flash-exp"}
-        return self.config.get("gemini_evaluation", default_config)
+        return self.config.get("gemini_emark", default_config)
 
     def __repr__(self) -> str:
         """String-Repräsentation des ConfigLoaders.

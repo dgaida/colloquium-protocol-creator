@@ -53,7 +53,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
     colloquium_parser.add_argument(
-        "--zoom-code", dest="z_code", help="Zoom access code (for online)"
+        "--zoom-code", dest="zcode", help="Zoom access code (for online)"
     )
     colloquium_parser.add_argument(
         "--api",
@@ -65,12 +65,14 @@ def create_parser() -> argparse.ArgumentParser:
         "--groq-free", action="store_true", help="Use free-tier pacing"
     )
     colloquium_parser.add_argument(
-        "--gemini-eval", action="store_true", help="Enable automatic Gemini evaluation"
+        "--gemini-eval",
+        action="store_true",
+        help="Enable automatic Gemini emark",
     )
     colloquium_parser.add_argument(
         "--gemini-model",
         default="gemini-2.0-flash-exp",
-        help="Gemini model for evaluation",
+        help="Gemini model for emark",
     )
     colloquium_parser.add_argument("--out", help="Output folder")
     colloquium_parser.add_argument(
@@ -82,7 +84,7 @@ def create_parser() -> argparse.ArgumentParser:
         "project", help="Generate project work grading letter"
     )
     project_parser.add_argument("pdf", help="Path to the project work PDF")
-    project_parser.add_argument("--valuation", help="Grade for the project (e.g., 1.3)")
+    project_parser.add_argument("--mark", help="Grade for the project (e.g., 1.3)")
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

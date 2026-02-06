@@ -96,16 +96,16 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     print(metadata)
 
     author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("stud_id", "unknown")
+    matriculation = metadata.get("sid", "unknown")
     first_examiner = metadata.get("first_examiner", "Unbekannt")
     second_examiner = metadata.get("second_examiner", "Unbekannt")
-    first_examiner_contact = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
+    first_einfo = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
     degree = metadata.get("bachelor_master", "Bachelor")
     thesis_title = metadata.get("title", "")
 
-    # 4) Optional: Gemini evaluation
-    gemini_evaluation_text: Optional[str] = None
-    if config.gemini_evaluation_enabled:
+    # 4) Optional: Gemini emark
+    gemini_emark_text: Optional[str] = None
+    if config.gemini_emark_enabled:
         try:
             # Create separate Gemini client
             gemini_client = LLMClient(
@@ -115,17 +115,15 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
             )
 
             evaluator = GeminiThesisEvaluator(gemini_client)
-            evaluation = evaluator.evaluate_thesis(
+            emark = evaluator.evaluate_thesis(
                 pdf_path=str(pdf_path),
                 thesis_title=thesis_title,
                 degree=degree,
                 verbose=False,
             )
 
-            if evaluation:
-                gemini_evaluation_text = evaluator.format_evaluation_for_latex(
-                    evaluation
-                )
+            if emark:
+                gemini_emark_text = evaluator.format_emark_for_latex(emark)
                 print("   ✅ Gemini-Bewertung erfolgreich zur LaTeX-Datei hinzugefügt")
             else:
                 print("   ⚠️  Gemini-Bewertung fehlgeschlagen, fahre ohne fort")
@@ -150,9 +148,9 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
             summary=summary,
             first_examiner=first_examiner.title(),
             second_examiner=second_examiner.title(),
-            first_examiner_contact=first_examiner_contact,
+            first_einfo=first_einfo,
             questions=questions,
-            gemini_evaluation=gemini_evaluation_text,
+            gemini_emark=gemini_emark_text,
         )
 
         pdf_path_str = ""
@@ -215,7 +213,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         llm_client=llm_client,
         student_first_name=student_first_name,
         student_last_name=student_last_name,
-        stud_id=matriculation,
+        sid=matriculation,
         date_colloquium=config.date,
         time_colloquium=config.time,
         first_examiner=first_examiner,
@@ -224,26 +222,26 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         company_name=config.company_name,
         company_address=config.company_address,
         zoom_link=config.zoom_link,
-        z_code=config.z_code,
+        zcode=config.zcode,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        stud_id=matriculation,
+        sid=matriculation,
     )
 
-    # Generate final valuation email template
-    mymailgen.generate_final_valuation_email(
+    # Generate final mark email template
+    mymailgen.generate_final_mark_email(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        stud_identifier=matriculation,
+        sid=matriculation,
         examiner_name=first_examiner,
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        stud_id=matriculation,
+        sid=matriculation,
         filename_prefix="bewertung_thesis_email",
     )
 

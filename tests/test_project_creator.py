@@ -77,10 +77,10 @@ class TestProjectLatexGeneration:
                 s_id="12345",
                 p_title="Test Project Title",
                 e_name="Prof. Test",
-                e_contact="test@example.com",
+                einfo="test@example.com",
                 gender="Herr",
                 work_type="Praxisprojekt",
-                s_valuation="1.3",
+                s_mark="1.3",
             )
 
             assert os.path.exists(tex_path)
@@ -117,7 +117,7 @@ class TestProjectLatexGeneration:
                 s_id="67890",
                 p_title="Another Test Project",
                 e_name="Dr. Example",
-                e_contact="example@th-koeln.de",
+                einfo="example@th-koeln.de",
                 gender="Frau",
                 work_type="Projektarbeit",
             )
@@ -147,7 +147,7 @@ class TestProjectLatexGeneration:
                 s_id="99999",
                 p_title="Project with 100% Coverage & $pecial Char$",
                 e_name="Prof. Test",
-                e_contact="test@example.com",
+                einfo="test@example.com",
                 gender="Herr",
             )
 
@@ -196,7 +196,7 @@ class TestProjectLatexGeneration:
                 s_id="11111",
                 p_title="Custom Project",
                 e_name="Prof. Custom",
-                e_contact="custom@th-koeln.de",
+                einfo="custom@th-koeln.de",
                 gender="Herr",
                 place="Köln",
                 date="15.01.2025",
@@ -278,7 +278,7 @@ class TestProjectLLMInterface:
             {
                 "stud_name": "Max Mustermann",
                 "student_first_name": "Max",
-                "stud_id": "12345",
+                "sid": "12345",
                 "title": "Test Project",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -291,7 +291,7 @@ class TestProjectLLMInterface:
 
         assert result["stud_name"] == "Max Mustermann"
         assert result["student_first_name"] == "Max"
-        assert result["stud_id"] == "12345"
+        assert result["sid"] == "12345"
         assert result["title"] == "Test Project"
         assert result["first_examiner"] == "Prof. Dr. Hans Meyer"
         assert result["first_examiner_christian"] == "Hans"
@@ -308,7 +308,7 @@ class TestProjectLLMInterface:
             {
                 "stud_name": "Test Student",
                 "student_first_name": None,
-                "stud_id": None,
+                "sid": None,
                 "title": None,
                 "first_examiner": None,
                 "first_examiner_christian": None,
@@ -321,7 +321,7 @@ class TestProjectLLMInterface:
 
         assert result["stud_name"] == "Test Student"
         assert result["student_first_name"] is None
-        assert result["stud_id"] is None
+        assert result["sid"] is None
 
     @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_json_error(self, mock_extract):
@@ -352,7 +352,7 @@ class TestProjectIntegration:
         metadata = {
             "stud_name": "Test Student",
             "student_first_name": "Test",
-            "stud_id": "99999",
+            "sid": "99999",
             "title": "Integration Test Project",
             "first_examiner": "Prof. Integration",
             "first_examiner_christian": "Integration",
@@ -376,10 +376,10 @@ class TestProjectIntegration:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
                 s_name=metadata["stud_name"],
-                s_id=metadata["stud_id"],
+                s_id=metadata["sid"],
                 p_title=metadata["title"],
                 e_name=metadata["first_examiner"],
-                e_contact=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
+                einfo=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
                 gender=gender,
                 work_type=metadata["work_type"],
             )
@@ -392,7 +392,7 @@ class TestProjectIntegration:
 
             # Verify all metadata is in the letter
             assert metadata["stud_name"] in content
-            assert metadata["stud_id"] in content
+            assert metadata["sid"] in content
             assert metadata["title"] in content
             assert metadata["first_examiner"] in content
             assert gender in content

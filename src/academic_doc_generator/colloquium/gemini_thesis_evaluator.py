@@ -49,7 +49,7 @@ class GeminiThesisEvaluator:
 
         return temp_file.name
 
-    def _create_evaluation_prompt(self, thesis_title: str, degree: str) -> str:
+    def _create_emark_prompt(self, thesis_title: str, degree: str) -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
 
         Args:
@@ -93,7 +93,7 @@ class GeminiThesisEvaluator:
             temp_pdf = self._remove_first_page(pdf_path)
 
             # Schritt 2: Prompt erstellen
-            prompt = self._create_evaluation_prompt(thesis_title, degree)
+            prompt = self._create_emark_prompt(thesis_title, degree)
 
             # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
             print(
@@ -132,11 +132,11 @@ class GeminiThesisEvaluator:
                 os.unlink(temp_pdf)
             return None
 
-    def format_evaluation_for_latex(self, evaluation: str) -> str:
+    def format_emark_for_latex(self, emark: str) -> str:
         """Formatiert die Gemini-Bewertung für LaTeX-Einfügung.
 
         Args:
-            evaluation: Rohe Gemini-Antwort.
+            emark: Rohe Gemini-Antwort.
 
         Returns:
             LaTeX-ready formatierter Text.
@@ -145,10 +145,10 @@ class GeminiThesisEvaluator:
         # Hier können noch zusätzliche Bereinigungen erfolgen
 
         # Entferne eventuell vorhandene Markdown-Codeblöcke
-        evaluation = evaluation.replace("```latex", "").replace("```", "")
+        emark = emark.replace("```latex", "").replace("```", "")
 
         # Stelle sicher, dass Zeilenumbrüche korrekt sind
-        evaluation = evaluation.strip()
+        emark = emark.strip()
 
         # Füge Abschnittstrennungen hinzu
         formatted = f"""
@@ -162,7 +162,7 @@ class GeminiThesisEvaluator:
 
 \\vspace{{0.5cm}}
 
-{evaluation}
+{emark}
 
 \\vspace{{0.5cm}}
 \\hrule

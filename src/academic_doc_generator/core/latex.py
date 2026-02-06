@@ -159,11 +159,11 @@ def create_formal_letter_tex(
     summary: str,
     first_examiner: str,
     second_examiner: str,
-    first_examiner_contact: str,
+    first_einfo: str,
     questions: str,
     place: str = "Gummersbach",
     date: str = r"\today",
-    gemini_evaluation: Optional[str] = None,
+    gemini_emark: Optional[str] = None,
 ):
     """Create a LaTeX file for a formal letter with TH Köln footer.
 
@@ -176,18 +176,18 @@ def create_formal_letter_tex(
         summary (str): summary of the thesis.
         first_examiner (str): name of first examiner.
         second_examiner (str): name of second examiner.
-        first_examiner_contact (str): email of first examiner.
+        first_einfo (str): email of first examiner.
         questions (str): questions from first examiner.
         place (str, optional): Place of issue. Defaults to "Gummersbach".
         date (str, optional): Date string. Defaults to LaTeX \today.
-        gemini_evaluation (str, optional): Automatische Bewertung von Gemini.
+        gemini_emark (str, optional): Automatische Bewertung von Gemini.
     """
     # Füge Gemini-Bewertung hinzu, falls vorhanden
     gemini_section = ""
-    if gemini_evaluation:
-        gemini_section = f"\n\n{gemini_evaluation}\n"
+    if gemini_emark:
+        gemini_section = f"\n\n{gemini_emark}\n"
 
-    doc_body = rf"""
+    rendered_output = rf"""
 \documentclass[11pt,ngerman,parskip=full]{{scrlttr2}}
 \usepackage{{fontspec}}
 \setmainfont{{Latin Modern Roman}}
@@ -200,7 +200,7 @@ def create_formal_letter_tex(
 \setkomavar{{fromname}}{{{first_examiner}}}
 \setkomavar{{fromaddress}}{{Steinmüllerallee 1\\51643 Gummersbach}}
 \setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\setkomavar{{fromemail}}{{{first_examiner_contact}}}
+\setkomavar{{fromemail}}{{{first_einfo}}}
 \setkomavar{{place}}{{{place}}}
 \setkomavar{{date}}{{{date}}}
 \setkomavar{{signature}}{{{first_examiner}}}
@@ -332,7 +332,7 @@ Dauer des Kolloquiums: 45 Minuten
 \end{{document}}
 """
     with open(filename, "w", encoding="utf-8") as f:
-        f.write(doc_body)
+        f.write(rendered_output)
     print(f"LaTeX file created: {filename}")
 
 

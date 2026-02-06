@@ -72,7 +72,7 @@ class TestCreateParser:
 
         assert args.location_type == "online"
         assert args.zoom_link == "https://zoom.us/j/123"
-        assert args.z_code == "test123"
+        assert args.zcode == "test123"
 
     def test_parser_colloquium_company(self):
         """Test Firmen-Kolloquium Argumente."""

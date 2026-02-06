@@ -92,9 +92,7 @@ def rewrite_comments(
             if verbose:
                 print(f"Response: {rewritten_raw}")
 
-            rewritten_text = latex.escape_for_latex(
-                rewritten_raw, preserve_latex=True
-            )
+            rewritten_text = latex.escape_for_latex(rewritten_raw, preserve_latex=True)
 
             rewritten_items.append(
                 {
@@ -186,7 +184,7 @@ def extract_document_metadata(
         >>> metadata = extract_document_metadata(text, "German", client)
         >>> metadata['author']
         'Max Mustermann'
-        >>> metadata['id_number']
+        >>> metadata['stud_id']
         '123456'
     """
     # Collect first two pages of text (if available)

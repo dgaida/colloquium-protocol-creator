@@ -35,9 +35,7 @@ class TestPdfProcessing:
     def test_is_quelle_comment_invalid(self):
         """Test that invalid 'Quelle' comments are not detected."""
         # Too long
-        assert not pdf.is_quelle_comment(
-            "Quelle fehlt hier an dieser Stelle komplett"
-        )
+        assert not pdf.is_quelle_comment("Quelle fehlt hier an dieser Stelle komplett")
         # Doesn't contain keyword
         assert not pdf.is_quelle_comment("Why?")
         assert not pdf.is_quelle_comment("Explain this")
@@ -99,9 +97,7 @@ class TestPdfProcessing:
         rect = (5, 5, 55, 25)
 
         # Find on same page
-        page_idx, words = pdf.get_words_for_annotation_on_page(
-            pages_words, 1, rect
-        )
+        page_idx, words = pdf.get_words_for_annotation_on_page(pages_words, 1, rect)
         assert page_idx == 1
         assert len(words) == 1
         assert words[0]["text"] == "Page1"
@@ -111,9 +107,7 @@ class TestPdfProcessing:
             0: [{"text": "Page0", "bbox": (100, 100, 150, 120)}],  # No overlap
             1: [{"text": "Page1", "bbox": (10, 10, 50, 20)}],
         }
-        page_idx, words = pdf.get_words_for_annotation_on_page(
-            pages_words_mod, 0, rect
-        )
+        page_idx, words = pdf.get_words_for_annotation_on_page(pages_words_mod, 0, rect)
         assert page_idx == 1
         assert words[0]["text"] == "Page1"
 
@@ -148,9 +142,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten question"
 
-        result = llm.rewrite_comments(
-            context_dict, mock_client, groq_free=False
-        )
+        result = llm.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         # Should only have one result (the "llm" category)
         assert 1 in result
@@ -172,9 +164,7 @@ class TestLLMInterface:
 
         mock_client = MagicMock()
 
-        result = llm.rewrite_comments(
-            context_dict, mock_client, groq_free=False
-        )
+        result = llm.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         # Should be in output but not rewritten
         # assert 1 in result
@@ -201,9 +191,7 @@ class TestLLMInterface:
 
         mock_client = MagicMock()
 
-        result = llm.rewrite_comments(
-            context_dict, mock_client, groq_free=False
-        )
+        result = llm.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         assert len(result) == 0
         # assert 1 in result
@@ -227,9 +215,7 @@ class TestLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Why is this approach used?"
 
-        result = llm.rewrite_comments(
-            context_dict, mock_client, groq_free=False
-        )
+        result = llm.rewrite_comments(context_dict, mock_client, groq_free=False)
 
         assert 1 in result
         assert result[1][0]["category"] == "llm"
@@ -295,9 +281,7 @@ class TestLatexGeneration:
         """Test dash normalization."""
         # Various Unicode dashes should be normalized
         text_with_dashes = "test–dash—test"  # en-dash and em-dash
-        result = latex.escape_for_latex(
-            text_with_dashes, preserve_latex=True
-        )
+        result = latex.escape_for_latex(text_with_dashes, preserve_latex=True)
         assert "{-}" in result
 
     def test_escape_for_latex_preserve_latex_commands(self):
@@ -348,7 +332,7 @@ class TestLatexGeneration:
                 summary="This is a test summary.",
                 first_examiner="Prof. Test",
                 second_examiner="Dr. Test2",
-                first_examiner_mail="test@example.com",
+                first_examiner_contact="test@example.com",
                 questions="Seite 1: Test question?",
             )
 

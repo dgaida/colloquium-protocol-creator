@@ -73,14 +73,14 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Max Mustermann",
-                id_number="12345",
-                project_title="Test Project Title",
-                examiner_name="Prof. Test",
-                examiner_mail="test@example.com",
+                s_name="Max Mustermann",
+                s_id="12345",
+                p_title="Test Project Title",
+                e_name="Prof. Test",
+                e_contact="test@example.com",
                 gender="Herr",
                 work_type="Praxisprojekt",
-                grade="1.3",
+                s_valuation="1.3",
             )
 
             assert os.path.exists(tex_path)
@@ -113,11 +113,11 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Maria Musterfrau",
-                id_number="67890",
-                project_title="Another Test Project",
-                examiner_name="Dr. Example",
-                examiner_mail="example@th-koeln.de",
+                s_name="Maria Musterfrau",
+                s_id="67890",
+                p_title="Another Test Project",
+                e_name="Dr. Example",
+                e_contact="example@th-koeln.de",
                 gender="Frau",
                 work_type="Projektarbeit",
             )
@@ -143,11 +143,11 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test & User",
-                id_number="99999",
-                project_title="Project with 100% Coverage & $pecial Char$",
-                examiner_name="Prof. Test",
-                examiner_mail="test@example.com",
+                s_name="Test & User",
+                s_id="99999",
+                p_title="Project with 100% Coverage & $pecial Char$",
+                e_name="Prof. Test",
+                e_contact="test@example.com",
                 gender="Herr",
             )
 
@@ -170,7 +170,6 @@ class TestProjectLatexGeneration:
             )
 
             # More reliable: check that dangerous unescaped chars are NOT present in wrong places
-            # The title should not have raw & or $ without escaping
             # Look for the title line
             title_marker = "Das Thema war:"
             title_start = content.find(title_marker)
@@ -193,11 +192,11 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test Student",
-                id_number="11111",
-                project_title="Custom Project",
-                examiner_name="Prof. Custom",
-                examiner_mail="custom@th-koeln.de",
+                s_name="Test Student",
+                s_id="11111",
+                p_title="Custom Project",
+                e_name="Prof. Custom",
+                e_contact="custom@th-koeln.de",
                 gender="Herr",
                 place="Köln",
                 date="15.01.2025",
@@ -277,9 +276,9 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = json.dumps(
             {
-                "student_name": "Max Mustermann",
+                "stud_name": "Max Mustermann",
                 "student_first_name": "Max",
-                "id_number": "12345",
+                "stud_id": "12345",
                 "title": "Test Project",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -290,9 +289,9 @@ class TestProjectLLMInterface:
 
         result = llm.extract_project_metadata("test.pdf", mock_client)
 
-        assert result["student_name"] == "Max Mustermann"
+        assert result["stud_name"] == "Max Mustermann"
         assert result["student_first_name"] == "Max"
-        assert result["id_number"] == "12345"
+        assert result["stud_id"] == "12345"
         assert result["title"] == "Test Project"
         assert result["first_examiner"] == "Prof. Dr. Hans Meyer"
         assert result["first_examiner_christian"] == "Hans"
@@ -307,9 +306,9 @@ class TestProjectLLMInterface:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = json.dumps(
             {
-                "student_name": "Test Student",
+                "stud_name": "Test Student",
                 "student_first_name": None,
-                "id_number": None,
+                "stud_id": None,
                 "title": None,
                 "first_examiner": None,
                 "first_examiner_christian": None,
@@ -320,9 +319,9 @@ class TestProjectLLMInterface:
 
         result = llm.extract_project_metadata("test.pdf", mock_client)
 
-        assert result["student_name"] == "Test Student"
+        assert result["stud_name"] == "Test Student"
         assert result["student_first_name"] is None
-        assert result["id_number"] is None
+        assert result["stud_id"] is None
 
     @patch("academic_doc_generator.project.llm.extract_text_per_page")
     def test_extract_project_metadata_json_error(self, mock_extract):
@@ -351,9 +350,9 @@ class TestProjectIntegration:
         """Test the complete flow from metadata to letter."""
         # Mock metadata
         metadata = {
-            "student_name": "Test Student",
+            "stud_name": "Test Student",
             "student_first_name": "Test",
-            "id_number": "99999",
+            "stud_id": "99999",
             "title": "Integration Test Project",
             "first_examiner": "Prof. Integration",
             "first_examiner_christian": "Integration",
@@ -376,11 +375,11 @@ class TestProjectIntegration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name=metadata["student_name"],
-                id_number=metadata["id_number"],
-                project_title=metadata["title"],
-                examiner_name=metadata["first_examiner"],
-                examiner_mail=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
+                s_name=metadata["stud_name"],
+                s_id=metadata["stud_id"],
+                p_title=metadata["title"],
+                e_name=metadata["first_examiner"],
+                e_contact=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
                 gender=gender,
                 work_type=metadata["work_type"],
             )
@@ -392,8 +391,8 @@ class TestProjectIntegration:
                 content = f.read()
 
             # Verify all metadata is in the letter
-            assert metadata["student_name"] in content
-            assert metadata["id_number"] in content
+            assert metadata["stud_name"] in content
+            assert metadata["stud_id"] in content
             assert metadata["title"] in content
             assert metadata["first_examiner"] in content
             assert gender in content

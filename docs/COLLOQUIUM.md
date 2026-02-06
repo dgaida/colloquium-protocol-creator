@@ -123,7 +123,7 @@ Special markers that are **completely excluded** from processing.
 **Filename:** `bewertung_brief_<matrikelnr>.pdf`
 
 ### 3. Pre-filled Grading Form
-**Filename:** `Bewertung <Bachelor/Master>arbeit_Kolloq Inf_<student_name>.pdf`
+**Filename:** `Bewertung <Bachelor/Master>arbeit_Kolloq Inf_<stud_name>.pdf`
 
 ### 4. Email & Outlook Draft
 **Filename:** `kolloquium_anmeldung_<name>_<matrikelnr>.md`

@@ -96,10 +96,10 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     print(metadata)
 
     author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("id_number", "unknown")
+    matriculation = metadata.get("stud_id", "unknown")
     first_examiner = metadata.get("first_examiner", "Unbekannt")
     second_examiner = metadata.get("second_examiner", "Unbekannt")
-    first_examiner_mail = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
+    first_examiner_contact = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
     degree = metadata.get("bachelor_master", "Bachelor")
     thesis_title = metadata.get("title", "")
 
@@ -150,7 +150,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
             summary=summary,
             first_examiner=first_examiner.title(),
             second_examiner=second_examiner.title(),
-            first_examiner_mail=first_examiner_mail,
+            first_examiner_contact=first_examiner_contact,
             questions=questions,
             gemini_evaluation=gemini_evaluation_text,
         )
@@ -209,13 +209,13 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
 
     # 7) Generate email
     mymailgen = email_generator.EmailGenerator()
-    student_first_name, student_last_name = utils.split_student_name(author)
+    student_first_name, student_last_name = utils.split_stud_name(author)
 
     registration_email_text = mymailgen.generate_colloquium_email(
         llm_client=llm_client,
         student_first_name=student_first_name,
         student_last_name=student_last_name,
-        id_number=matriculation,
+        stud_id=matriculation,
         date_colloquium=config.date,
         time_colloquium=config.time,
         first_examiner=first_examiner,
@@ -224,26 +224,26 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         company_name=config.company_name,
         company_address=config.company_address,
         zoom_link=config.zoom_link,
-        zoom_code=config.zoom_code,
+        z_code=config.z_code,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        id_number=matriculation,
+        stud_id=matriculation,
     )
 
-    # Generate final grade email template
-    mymailgen.generate_final_grade_email(
+    # Generate final valuation email template
+    mymailgen.generate_final_valuation_email(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        student_identifier=matriculation,
+        stud_identifier=matriculation,
         examiner_name=first_examiner,
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        id_number=matriculation,
+        stud_id=matriculation,
         filename_prefix="bewertung_thesis_email",
     )
 
@@ -253,7 +253,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder=output_folder,
-            student_name=author,
+            stud_name=author,
             date_colloquium=config.date,
             time_colloquium=config.time,
             duration_minutes=45,
@@ -271,7 +271,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     outlook_gen = OutlookMailGenerator()
     try:
         outlook_success = outlook_gen.create_outlook_mail(
-            student_name=author,
+            stud_name=author,
             email_text=registration_email_text,
             attachment_path=ics_path,
             verbose=False,

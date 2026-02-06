@@ -121,7 +121,7 @@ class TestEmailGenerator:
         result = generator._generate_location_text(
             location_type="online",
             zoom_link="https://zoom.us/j/123456",
-            zoom_code="test123",
+            z_code="test123",
         )
 
         assert "über Zoom:" in result
@@ -154,7 +154,9 @@ class TestEmailGenerator:
         with pytest.raises(ValueError, match="Unbekannter location_type"):
             generator._generate_location_text(location_type="unknown")
 
-    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
@@ -168,7 +170,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Max",
             student_last_name="Mustermann",
-            id_number="12345",
+            stud_id="12345",
             date_colloquium="20.01.2026",
             time_colloquium="14:00",
             first_examiner="Prof. Test",
@@ -179,7 +181,9 @@ class TestEmailGenerator:
         assert generator.email_text == "Mocked Email Content"
         mock_render.assert_called_once()
 
-    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
@@ -193,7 +197,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Maria",
             student_last_name="Musterfrau",
-            id_number="67890",
+            stud_id="67890",
             date_colloquium="21.01.2026",
             time_colloquium="10:00",
             first_examiner="Dr. Test",
@@ -203,7 +207,9 @@ class TestEmailGenerator:
 
         assert "Frau Maria Musterfrau" in generator.email_text
 
-    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
@@ -217,7 +223,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Test",
             student_last_name="Student",
-            id_number="11111",
+            stud_id="11111",
             date_colloquium="22.01.2026",
             time_colloquium="15:00",
             first_examiner="Prof. Example",
@@ -228,27 +234,31 @@ class TestEmailGenerator:
 
         assert "in der Firma Test GmbH, Teststraße 1" in generator.email_text
 
-    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch(
+        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
+    )
     @patch(
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
     def test_generate_colloquium_email_online(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Online-Kolloquium."""
         mock_gender.return_value = "Herr"
-        mock_render.return_value = "über Zoom: https://zoom.us/j/123 Zugangscode: abc123"
+        mock_render.return_value = (
+            "über Zoom: https://zoom.us/j/123 Zugangscode: abc123"
+        )
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
             llm_client=MagicMock(),
             student_first_name="Online",
             student_last_name="Student",
-            id_number="99999",
+            stud_id="99999",
             date_colloquium="23.01.2026",
             time_colloquium="16:00",
             first_examiner="Prof. Remote",
             location_type="online",
             zoom_link="https://zoom.us/j/123",
-            zoom_code="abc123",
+            z_code="abc123",
         )
 
         assert "über Zoom:" in generator.email_text
@@ -264,7 +274,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=tmpdir,
                 student_last_name="Mustermann",
-                id_number="12345",
+                stud_id="12345",
             )
 
             assert generator.email_path is not None
@@ -289,7 +299,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=subfolder,
                 student_last_name="Test",
-                id_number="00000",
+                stud_id="00000",
             )
 
             assert os.path.exists(subfolder)
@@ -299,9 +309,7 @@ class TestEmailGenerator:
         "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
     )
     @patch("builtins.print")
-    def test_generate_and_save_email_complete_flow(
-        self, mock_print, mock_gender
-    ):
+    def test_generate_and_save_email_complete_flow(self, mock_print, mock_gender):
         """Test complete flow von generate_and_save_email."""
         mock_gender.return_value = "Herr"
 
@@ -486,7 +494,7 @@ class TestIntegration:
                 first_examiner="Dr. Anna Schmidt",
                 location_type="online",
                 zoom_link="https://zoom.us/j/123456789",
-                zoom_code="Kolloquium2026",
+                z_code="Kolloquium2026",
             )
 
             # Prüfe Online-spezifische Details

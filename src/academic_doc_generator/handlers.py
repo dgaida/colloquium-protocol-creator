@@ -58,7 +58,9 @@ def run_from_config(config_path: str | Path) -> None:
             time=coll_config["time"],
             llm_client=llm_client,
             groq_free=llm_config.get("groq_free", False),
-            output_folder=Path(output_config["folder"]) if output_config.get("folder") else None,
+            output_folder=(
+                Path(output_config["folder"]) if output_config.get("folder") else None
+            ),
             compile_pdf=output_config.get("compile_pdf", True),
             fill_form_only=output_config.get("fill_form_only", False),
             location_type=coll_config["location_type"],  # type: ignore
@@ -66,7 +68,7 @@ def run_from_config(config_path: str | Path) -> None:
             company_name=coll_config.get("company_name"),
             company_address=coll_config.get("company_address"),
             zoom_link=coll_config.get("zoom_link"),
-            zoom_code=coll_config.get("zoom_code"),
+            z_code=coll_config.get("z_code"),
             gemini_evaluation_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
         )
@@ -85,15 +87,17 @@ def run_from_config(config_path: str | Path) -> None:
 
     elif task == "project":
         proj_config = config.get_project_config() or {}
-        grade = proj_config.get("grade")
+        valuation = proj_config.get("valuation")
 
         workflow_config = ProjectWorkflowConfig(
             pdf_path=pdf_path,
             llm_client=llm_client,
-            output_folder=Path(output_config["folder"]) if output_config.get("folder") else None,
+            output_folder=(
+                Path(output_config["folder"]) if output_config.get("folder") else None
+            ),
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
-            grade=grade,
+            valuation=valuation,
             create_feedback_mail=output_config.get("create_feedback_mail", True),
         )
 
@@ -157,7 +161,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         company_name=args.company_name,
         company_address=args.company_address,
         zoom_link=args.zoom_link,
-        zoom_code=args.zoom_code,
+        z_code=args.z_code,
         gemini_evaluation_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
     )
@@ -201,7 +205,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         output_folder=Path(args.out) if args.out else None,
         compile_pdf=not args.no_compile,
         signature_file=args.signature,
-        grade=getattr(args, "grade", None),
+        valuation=getattr(args, "valuation", None),
         create_feedback_mail=args.create_feedback_mail,
     )
 

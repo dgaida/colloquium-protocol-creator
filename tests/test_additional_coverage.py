@@ -35,9 +35,7 @@ class TestLLMInterfaceAdditional:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten"
 
-        with patch(
-            "academic_doc_generator.core.llm.time.sleep"
-        ) as mock_sleep:
+        with patch("academic_doc_generator.core.llm.time.sleep") as mock_sleep:
             llm.rewrite_comments(
                 context_dict, mock_client, groq_free=True, verbose=False
             )
@@ -71,9 +69,7 @@ class TestLLMInterfaceAdditional:
 
         assert 1 in result
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_extract_document_metadata_german(self, mock_extract):
         """Test metadata extraction for German thesis."""
         mock_extract.return_value = {
@@ -85,7 +81,7 @@ class TestLLMInterfaceAdditional:
         mock_client.chat_completion.return_value = json.dumps(
             {
                 "author": "Max Mustermann",
-                "id_number": "12345",
+                "stud_id": "12345",
                 "title": "Test Thesis",
                 "first_examiner": "Prof. Dr. Hans Meyer",
                 "first_examiner_christian": "Hans",
@@ -95,16 +91,12 @@ class TestLLMInterfaceAdditional:
             }
         )
 
-        result = llm.extract_document_metadata(
-            {0: "", 1: ""}, "German", mock_client
-        )
+        result = llm.extract_document_metadata({0: "", 1: ""}, "German", mock_client)
 
         assert result["author"] == "Max Mustermann"
         assert result["bachelor_master"] == "Bachelor"
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_extract_document_metadata_english(self, mock_extract):
         """Test metadata extraction for English thesis."""
         mock_extract.return_value = {0: "Master Thesis by John Doe"}
@@ -113,7 +105,7 @@ class TestLLMInterfaceAdditional:
         mock_client.chat_completion.return_value = json.dumps(
             {
                 "author": "John Doe",
-                "id_number": "67890",
+                "stud_id": "67890",
                 "title": "English Thesis",
                 "first_examiner": "Prof. Smith",
                 "first_examiner_christian": "John",
@@ -123,15 +115,11 @@ class TestLLMInterfaceAdditional:
             }
         )
 
-        result = llm.extract_document_metadata(
-            {0: ""}, "English", mock_client
-        )
+        result = llm.extract_document_metadata({0: ""}, "English", mock_client)
 
         assert result["bachelor_master"] == "Master"
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_summarize_thesis_german(self, mock_extract):
         """Test thesis summarization in German."""
         mock_extract.return_value = {
@@ -151,9 +139,7 @@ class TestLLMInterfaceAdditional:
         assert "untersucht" in result
         assert "\\\\" in result  # LaTeX line breaks
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_summarize_thesis_english(self, mock_extract):
         """Test thesis summarization in English."""
         mock_extract.return_value = {0: "This thesis addresses topic X"}
@@ -174,9 +160,7 @@ class TestLLMInterfaceAdditional:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "German"
 
-        lang = llm.detect_language(
-            results, mock_client, groq_free=False, sample_size=5
-        )
+        lang = llm.detect_language(results, mock_client, groq_free=False, sample_size=5)
 
         assert lang == "German"
         # Verify only sample_size texts were used
@@ -241,9 +225,7 @@ class TestLLMInterfaceAdditional:
         assert stats["language"] == 2
 
     @patch("academic_doc_generator.core.llm.LLMClient")
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_get_summary_and_metadata_auto_client(
         self, mock_extract, mock_client_class
     ):
@@ -277,9 +259,7 @@ class TestLLMInterfaceAdditional:
         assert summary == "Summary text"
         assert metadata["author"] == "Test"
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     @patch("academic_doc_generator.core.llm.time.sleep")
     def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract):
         """Test get_summary_and_metadata with groq_free throttling."""
@@ -309,9 +289,7 @@ class TestLLMInterfaceAdditional:
         assert 20 in sleep_calls
         assert 2 in sleep_calls
 
-    @patch(
-        "academic_doc_generator.core.llm.pdf.extract_text_per_page"
-    )
+    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     def test_get_summary_and_metadata_verbose(self, mock_extract):
         """Test get_summary_and_metadata with verbose output."""
         mock_extract.return_value = {0: "Test"}
@@ -505,9 +483,7 @@ class TestPdfProcessingAdditional:
         rect = (5, 5, 55, 25)  # Overlaps with Page0 and Page2
 
         # Search from page 1, should fall back to page 0 (tries -1 before +1)
-        page_idx, words = pdf.get_words_for_annotation_on_page(
-            pages_words, 1, rect
-        )
+        page_idx, words = pdf.get_words_for_annotation_on_page(pages_words, 1, rect)
 
         # Implementation tries: page 1, then page 2 (+1), then page 0 (-1)
         # Since page 1 and 2 don't match, should find page 0

@@ -40,6 +40,7 @@ def weekday_from_string(date_str: str, lang: str = "de") -> str:
 @dataclass
 class EmailRecipient:
     """Represents an email recipient with formal German addressing."""
+
     first_name: str
     last_name: str
     gender: str  # "Herr", "Frau", or "Herr/Frau"
@@ -77,8 +78,8 @@ class EmailRecipient:
 
 class EmailTemplate(Protocol):
     """Protocol for email templates."""
-    def render(self, **kwargs) -> str:
-        ...
+
+    def render(self, **kwargs) -> str: ...
 
 
 class ColloquiumRegistrationEmail:
@@ -104,7 +105,7 @@ Viele Grüße,
 
 
 class FinalGradeEmail:
-    """Template for submitting final grades to the examination service."""
+    """Template for submitting final valuations to the examination service."""
 
     def render(
         self,
@@ -123,13 +124,13 @@ class StudentFeedbackEmail:
     def render(
         self,
         student: EmailRecipient,
-        grade: str,
+        valuation: str,
         feedback_bulletpoints: str,
         examiner: str,
     ) -> str:
         return f"""{student.formal_salutation},
 
-ich habe Ihre Arbeit mit einer {grade} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
+ich habe Ihre Arbeit mit einer {valuation} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
 
 {feedback_bulletpoints}
 

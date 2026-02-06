@@ -53,7 +53,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
     colloquium_parser.add_argument(
-        "--zoom-code", help="Zoom access code (for online)"
+        "--zoom-code", dest="z_code", help="Zoom access code (for online)"
     )
     colloquium_parser.add_argument(
         "--api",
@@ -82,7 +82,7 @@ def create_parser() -> argparse.ArgumentParser:
         "project", help="Generate project work grading letter"
     )
     project_parser.add_argument("pdf", help="Path to the project work PDF")
-    project_parser.add_argument("--grade", help="Grade for the project (e.g., 1.3)")
+    project_parser.add_argument("--valuation", help="Grade for the project (e.g., 1.3)")
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],
@@ -134,7 +134,10 @@ def main() -> None:
     try:
         available_apis = validate_api_keys()
         if not available_apis:
-            print("❌ No LLM APIs configured. Please set API keys or install Ollama.", file=sys.stderr)
+            print(
+                "❌ No LLM APIs configured. Please set API keys or install Ollama.",
+                file=sys.stderr,
+            )
             sys.exit(1)
     except Exception as e:
         print(f"⚠️ Warning during API validation: {e}", file=sys.stderr)

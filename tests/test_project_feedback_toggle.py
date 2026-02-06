@@ -22,8 +22,8 @@ def test_run_project_pipeline_feedback_toggle(
 ):
     # Setup mocks
     mock_metadata.return_value = {
-        "student_name": "Max Mustermann",
-        "id_number": "123456",
+        "stud_name": "Max Mustermann",
+        "stud_id": "123456",
         "title": "Test Title",
         "first_examiner": "Prof. Test",
         "work_type": "Praxisprojekt",
@@ -47,7 +47,7 @@ def test_run_project_pipeline_feedback_toggle(
     # Case 1: create_feedback_mail = True (default)
     config = ProjectWorkflowConfig(
         pdf_path=pdf_file,
-        grade="1.0",
+        valuation="1.0",
         output_folder=tmp_path,
         create_feedback_mail=True,
     )
@@ -65,7 +65,7 @@ def test_run_project_pipeline_feedback_toggle(
     # Case 2: create_feedback_mail = False
     config = ProjectWorkflowConfig(
         pdf_path=pdf_file,
-        grade="1.0",
+        valuation="1.0",
         output_folder=tmp_path,
         create_feedback_mail=False,
     )

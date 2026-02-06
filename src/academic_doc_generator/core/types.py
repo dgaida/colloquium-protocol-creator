@@ -144,7 +144,7 @@ class ThesisMetadata(TypedDict, total=False):
     """
 
     author: Optional[str]
-    id_number: Optional[str]
+    stud_id: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     second_examiner: Optional[str]
@@ -157,9 +157,9 @@ class ThesisMetadata(TypedDict, total=False):
 class ProjectMetadata(TypedDict, total=False):
     """Metadata extracted from a project work PDF."""
 
-    student_name: Optional[str]
+    stud_name: Optional[str]
     student_first_name: Optional[str]
-    id_number: Optional[str]
+    stud_id: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     first_examiner_christian: Optional[str]
@@ -202,7 +202,7 @@ class ColloquiumConfig(TypedDict, total=False):
     company_name: Optional[str]  # Required if location_type="company"
     company_address: Optional[str]  # Optional for company
     zoom_link: Optional[str]  # Required if location_type="online"
-    zoom_code: Optional[str]  # Optional for online
+    z_code: Optional[str]  # Optional for online
 
 
 class GeminiEvaluationConfig(TypedDict, total=False):
@@ -240,7 +240,7 @@ class ColloquiumWorkflowConfig:
     company_name: Optional[str] = None
     company_address: Optional[str] = None
     zoom_link: Optional[str] = None
-    zoom_code: Optional[str] = None
+    z_code: Optional[str] = None
     gemini_evaluation_enabled: bool = False
     gemini_model: Optional[str] = None
 
@@ -254,7 +254,7 @@ class ProjectWorkflowConfig:
     output_folder: Optional[Path] = None
     compile_pdf: bool = True
     signature_file: str = "signature.png"
-    grade: Optional[str] = None
+    valuation: Optional[str] = None
     create_feedback_mail: bool = True
 
 

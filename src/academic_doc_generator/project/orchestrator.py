@@ -11,7 +11,7 @@ from .llm import (
 )
 from ..core.llm import determine_gender_from_name
 from .feedback_generator import generate_feedback_summary
-from ..core.utils import split_student_name, get_semester
+from ..core.utils import split_stud_name, get_semester
 from .latex import create_project_grading_letter_tex
 from ..core.latex import compile_latex_to_pdf
 from ..core.types import (
@@ -46,7 +46,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     llm_client = config.llm_client
     compile_pdf = config.compile_pdf
     signature_file = config.signature_file
-    grade = config.grade
+    valuation_val = config.valuation
     create_feedback_mail = config.create_feedback_mail
 
     if output_folder is None:
@@ -64,12 +64,12 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     pages_text = pdf.extract_text_per_page(str(pdf_path))
     metadata = extract_project_metadata(str(pdf_path), llm_client)
 
-    student_name = metadata.get("student_name", "Unknown")
-    student_first_name, student_last_name = split_student_name(student_name)
-    matriculation = metadata.get("id_number", "unknown")
+    stud_name = metadata.get("stud_name", "Unknown")
+    student_first_name, student_last_name = split_stud_name(stud_name)
+    stud_id_val = metadata.get("stud_id", "unknown")
     project_title = metadata.get("title", "Unknown")
     examiner = metadata.get("first_examiner", "Unbekannt")
-    examiner_mail = (
+    examiner_contact = (
         f"{metadata.get('first_examiner_christian', '')}"
         f".{metadata.get('first_examiner_family', '')}@th-koeln.de"
     )
@@ -87,21 +87,21 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         print(f"Using signature found in {data_signature}")
 
     # Create output filename
-    tex_name = f"bewertung_projekt_{matriculation}.tex"
+    tex_name = f"bewertung_projekt_{stud_id_val}.tex"
     tex_path = os.path.join(output_folder, tex_name)
 
     # Generate LaTeX letter
     create_project_grading_letter_tex(
         filename=tex_path,
-        student_name=student_name,
-        id_number=matriculation,
-        project_title=project_title,
-        examiner_name=examiner,
-        examiner_mail=examiner_mail,
+        s_name=stud_name,
+        s_id=stud_id_val,
+        p_title=project_title,
+        e_name=examiner,
+        e_contact=examiner_contact,
         gender=gender,
         work_type=work_type,
         signature_file=signature_file,
-        grade=grade,
+        s_valuation=valuation_val,
     )
 
     # Compile to PDF if requested
@@ -113,17 +113,17 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
 
     # Generate email for Prüfungsservice
     mymailgen = EmailGenerator()
-    grading_email_text = mymailgen.generate_final_grade_email(
+    grading_email_text = mymailgen.generate_final_valuation_email(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        student_identifier=matriculation,
+        stud_identifier=stud_id_val,
         examiner_name=examiner,
     )
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        id_number=matriculation,
+        stud_id=stud_id_val,
         filename_prefix="bewertung_projekt_email",
     )
 
@@ -136,26 +136,26 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         student_email_text = mymailgen.generate_student_feedback_email(
             gender=gender,
             last_name=student_last_name,
-            grade=grade if grade else "[NOTE]",
+            valuation=valuation_val if valuation_val else "[NOTE]",
             feedback_bulletpoints=feedback_bullets,
             examiner_name=examiner,
         )
         student_email_path = mymailgen.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
-            id_number=matriculation,
+            stud_id=stud_id_val,
             filename_prefix="feedback_projekt_email",
         )
 
-    # Create Outlook mail drafts if grade is provided
-    if grade is not None:
+    # Create Outlook mail drafts if valuation_val is provided
+    if valuation_val is not None:
         outlook_gen = OutlookMailGenerator()
 
         # 1. Draft for Prüfungsservice
         print("\n📧 Erstelle Outlook-Mail für Prüfungsservice...")
         try:
             outlook_gen.create_outlook_mail(
-                student_name=student_name,
+                stud_name=stud_name,
                 email_text=grading_email_text,
                 attachment_path=compiled_pdf_path if compiled_pdf_path else None,
                 subject=f"Bewertung Praxisprojekt {gender} {student_first_name} {student_last_name}",
@@ -171,10 +171,10 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
                 student_email_addr = metadata.get("student_email")
                 try:
                     outlook_gen.create_outlook_mail(
-                        student_name=student_name,
+                        stud_name=stud_name,
                         email_text=student_email_text,
                         attachment_path=None,
-                        subject=f"Feedback zu Ihrem Praxisprojekt - {student_name}",
+                        subject=f"Feedback zu Ihrem Praxisprojekt - {stud_name}",
                         recipient=student_email_addr if student_email_addr else "",
                         verbose=False,
                     )
@@ -192,7 +192,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         web_md_path = generate_metadata_file(
             output_folder=output_folder,
             title=project_title,
-            author=student_name,
+            author=stud_name,
             pages_text=pages_text,
             llm_client=llm_client,
             work_type="Praxisprojekt",

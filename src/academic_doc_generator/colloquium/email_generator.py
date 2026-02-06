@@ -4,7 +4,7 @@
 from typing import Optional
 from pathlib import Path
 from ..core.llm import determine_gender_from_name
-from ..core.utils import split_student_name
+from ..core.utils import split_stud_name
 from ..core.email import (
     EmailRecipient,
     ColloquiumRegistrationEmail,
@@ -33,41 +33,22 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_code: Optional[str] = None,
+        z_code: Optional[str] = None,
     ) -> str:
-        """Generiert und speichert die Kolloquiums-Anmelde-E-Mail.
-
-        Args:
-            llm_client: LLM-Client zur Geschlechtsbestimmung.
-            output_folder: Zielordner.
-            author: Name des Studierenden.
-            matriculation: Matrikelnummer.
-            date_colloquium: Datum des Kolloquiums.
-            uhrzeit_colloquium: Uhrzeit des Kolloquiums.
-            first_examiner: Erstprüfer.
-            location_type: Art des Ortes.
-            room: Raumnummer.
-            company_name: Firmenname.
-            company_address: Firmenadresse.
-            zoom_link: Zoom-Link.
-            zoom_code: Zoom-Code.
-
-        Returns:
-            Pfad zur gespeicherten E-Mail-Datei.
-        """
+        """Generiert und speichert die Kolloquiums-Anmelde-E-Mail."""
         print("START WRITING MAIL")
 
         if author is None:
             print("Error: author is None")
             return ""
 
-        student_first_name, student_last_name = split_student_name(author)
+        student_first_name, student_last_name = split_stud_name(author)
 
         self.generate_colloquium_email(
             llm_client=llm_client,
             student_first_name=student_first_name,
             student_last_name=student_last_name,
-            id_number=matriculation,
+            stud_id=matriculation,
             date_colloquium=date_colloquium,
             time_colloquium=uhrzeit_colloquium,
             first_examiner=first_examiner,
@@ -76,13 +57,13 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_code=zoom_code,
+            z_code=z_code,
         )
 
         return self.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
-            id_number=matriculation,
+            stud_id=matriculation,
         )
 
     def _generate_location_text(
@@ -92,24 +73,9 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_code: Optional[str] = None,
+        z_code: Optional[str] = None,
     ) -> str:
-        """Generiert den Ortszusatz für die E-Mail.
-
-        Args:
-            location_type: Art des Kolloquiums ("campus", "company", "online").
-            room: Raumnummer (nur für "campus").
-            company_name: Name der Firma (nur für "company").
-            company_address: Adresse der Firma (nur für "company").
-            zoom_link: Zoom-Meeting-Link (nur für "online").
-            zoom_code: Zoom-Zugangscode (nur für "online").
-
-        Returns:
-            email_location_text.
-
-        Raises:
-            ValueError: Wenn erforderliche Parameter fehlen.
-        """
+        """Generiert den Ortszusatz für die E-Mail."""
         if location_type == "campus":
             if not room:
                 raise ValueError("Für Campus-Kolloquium wird 'room' benötigt")
@@ -129,8 +95,8 @@ class EmailGenerator:
                 raise ValueError("Für Online-Kolloquium wird 'zoom_link' benötigt")
 
             zoom_info = f"über Zoom:\n\nZoom-Link: {zoom_link}"
-            if zoom_code:
-                zoom_info += f"\nZugangscode: {zoom_code}"
+            if z_code:
+                zoom_info += f"\nZugangscode: {z_code}"
 
             return zoom_info
         else:
@@ -141,7 +107,7 @@ class EmailGenerator:
         llm_client,
         student_first_name: str,
         student_last_name: str,
-        id_number: str,
+        stud_id: str,
         date_colloquium: str,
         time_colloquium: str,
         first_examiner: str,
@@ -150,7 +116,7 @@ class EmailGenerator:
         company_name: Optional[str] = None,
         company_address: Optional[str] = None,
         zoom_link: Optional[str] = None,
-        zoom_code: Optional[str] = None,
+        z_code: Optional[str] = None,
     ) -> str:
         """Generiert den Text für die Kolloquiums-Anmelde-E-Mail."""
         gender = determine_gender_from_name(student_first_name, llm_client)
@@ -158,7 +124,7 @@ class EmailGenerator:
             first_name=student_first_name,
             last_name=student_last_name,
             gender=gender,
-            identifier=id_number
+            identifier=stud_id,
         )
 
         location_text = self._generate_location_text(
@@ -167,7 +133,7 @@ class EmailGenerator:
             company_name=company_name,
             company_address=company_address,
             zoom_link=zoom_link,
-            zoom_code=zoom_code,
+            z_code=z_code,
         )
 
         template = ColloquiumRegistrationEmail()
@@ -176,16 +142,16 @@ class EmailGenerator:
             examiner=first_examiner,
             date=date_colloquium,
             time=time_colloquium,
-            location_text=location_text
+            location_text=location_text,
         )
         return self.email_text
 
-    def generate_final_grade_email(
+    def generate_final_valuation_email(
         self,
         evaluator_client,
         first_name: str,
         last_name: str,
-        student_identifier: str,
+        stud_identifier: str,
         examiner_name: str,
     ) -> str:
         """Generiert den Text für die E-Mail zur Einreichung der Note."""
@@ -194,37 +160,34 @@ class EmailGenerator:
             first_name=first_name,
             last_name=last_name,
             gender=gender,
-            identifier=student_identifier
+            identifier=stud_identifier,
         )
 
         template = FinalGradeEmail()
-        self.email_text = template.render(
-            student=student,
-            examiner=examiner_name
-        )
+        self.email_text = template.render(student=student, examiner=examiner_name)
         return self.email_text
 
     def generate_student_feedback_email(
         self,
         gender: str,
         last_name: str,
-        grade: str,
+        valuation: str,
         feedback_bulletpoints: str,
         examiner_name: str,
     ) -> str:
         """Generiert eine Feedback-E-Mail an den Studierenden."""
         student = EmailRecipient(
-            first_name="", # Not used in feedback salutation if we have last_name and gender
+            first_name="",  # Not used in feedback salutation if we have last_name and gender
             last_name=last_name,
-            gender=gender
+            gender=gender,
         )
 
         template = StudentFeedbackEmail()
         self.email_text = template.render(
             student=student,
-            grade=grade,
+            valuation=valuation,
             feedback_bulletpoints=feedback_bulletpoints,
-            examiner=examiner_name
+            examiner=examiner_name,
         )
         return self.email_text
 
@@ -232,14 +195,14 @@ class EmailGenerator:
         self,
         output_folder: str,
         student_last_name: str,
-        id_number: str,
+        stud_id: str,
         filename_prefix: str = "kolloquium_anmeldung",
     ) -> str:
         """Speichert den E-Mail-Text in einer Markdown-Datei."""
         output_path = Path(output_folder)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        filename = f"{filename_prefix}_{student_last_name}_{id_number}.md"
+        filename = f"{filename_prefix}_{student_last_name}_{stud_id}.md"
         self.email_path = output_path / filename
 
         with open(self.email_path, "w", encoding="utf-8") as f:

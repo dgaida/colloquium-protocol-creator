@@ -144,7 +144,7 @@ class ThesisMetadata(TypedDict, total=False):
     """
 
     author: Optional[str]
-    sid: Optional[str]
+    id_number: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     second_examiner: Optional[str]
@@ -157,9 +157,9 @@ class ThesisMetadata(TypedDict, total=False):
 class ProjectMetadata(TypedDict, total=False):
     """Metadata extracted from a project work PDF."""
 
-    stud_name: Optional[str]
+    student_name: Optional[str]
     student_first_name: Optional[str]
-    sid: Optional[str]
+    id_number: Optional[str]
     title: Optional[str]
     first_examiner: Optional[str]
     first_examiner_christian: Optional[str]

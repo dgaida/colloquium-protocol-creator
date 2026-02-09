@@ -35,7 +35,7 @@ class TestCreateOutlookMail:
 
         generator = OutlookMailGenerator()
         result = generator.create_outlook_mail(
-            stud_name="Max Mustermann",
+            student_name="Max Mustermann",
             email_text="Test email text",
             attachment_path="/path/to/calendar.ics",
             verbose=False,
@@ -60,7 +60,7 @@ class TestCreateOutlookMail:
 
         generator = OutlookMailGenerator()
         result = generator.create_outlook_mail(
-            stud_name="Test Student",
+            student_name="Test Student",
             email_text="Test text",
             attachment_path=None,
             verbose=True,
@@ -84,7 +84,7 @@ class TestCreateOutlookMail:
 
         generator = OutlookMailGenerator()
         result = generator.create_outlook_mail(
-            stud_name="Linux User", email_text="Linux test", verbose=False
+            student_name="Linux User", email_text="Linux test", verbose=False
         )
 
         assert result is True
@@ -96,7 +96,7 @@ class TestCreateOutlookMail:
         mock_platform.return_value = "FreeBSD"
 
         generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(stud_name="Test", email_text="Test", verbose=False)
+        result = generator.create_outlook_mail(student_name="Test", email_text="Test", verbose=False)
 
         assert result is False
 
@@ -108,7 +108,7 @@ class TestCreateOutlookMail:
         mock_windows.side_effect = Exception("Test error")
 
         generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(stud_name="Test", email_text="Test", verbose=False)
+        result = generator.create_outlook_mail(student_name="Test", email_text="Test", verbose=False)
 
         assert result is False
 
@@ -121,7 +121,7 @@ class TestCreateOutlookMail:
         mock_windows.side_effect = Exception("Detailed error")
 
         generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(stud_name="Test", email_text="Test", verbose=True)
+        result = generator.create_outlook_mail(student_name="Test", email_text="Test", verbose=True)
 
         assert result is False
         # Prüfe dass Fehler gedruckt wurde
@@ -586,7 +586,7 @@ class TestIntegration:
         ):
             generator = OutlookMailGenerator()
             result = generator.create_outlook_mail(
-                stud_name="Mustermann, Max",
+                student_name="Mustermann, Max",
                 email_text="Lieber Prüfungsservice,\nhiermit möchte ich Herr Max Mustermann anmelden.",
                 attachment_path="/path/to/calendar.ics",
                 verbose=False,
@@ -608,7 +608,7 @@ class TestIntegration:
 
         generator = OutlookMailGenerator()
         result = generator.create_outlook_mail(
-            stud_name="Schmidt, Anna",
+            student_name="Schmidt, Anna",
             email_text="Test email für macOS",
             attachment_path="/Users/test/calendar.ics",
             verbose=False,
@@ -627,7 +627,7 @@ class TestIntegration:
 
         generator = OutlookMailGenerator()
         result = generator.create_outlook_mail(
-            stud_name="Weber, Julia",
+            student_name="Weber, Julia",
             email_text="Test email für Linux",
             attachment_path=None,
             verbose=False,
@@ -657,13 +657,13 @@ class TestEdgeCases:
             {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
         ):
             generator = OutlookMailGenerator()
-            result = generator.create_outlook_mail(stud_name="Test", email_text="", verbose=False)
+            result = generator.create_outlook_mail(student_name="Test", email_text="", verbose=False)
 
             assert result is True
             assert mock_mail.Body == ""
 
     @patch("academic_doc_generator.colloquium.outlook_mail_generator.platform.system")
-    def test_very_long_stud_name(self, mock_platform):
+    def test_very_long_student_name(self, mock_platform):
         """Test mit sehr langem Studentennamen."""
         mock_platform.return_value = "Windows"
         mock_win32com = MagicMock()
@@ -681,7 +681,7 @@ class TestEdgeCases:
         ):
             generator = OutlookMailGenerator()
             result = generator.create_outlook_mail(
-                stud_name=long_name, email_text="Test", verbose=False
+                student_name=long_name, email_text="Test", verbose=False
             )
 
             assert result is True
@@ -706,7 +706,7 @@ class TestEdgeCases:
         ):
             generator = OutlookMailGenerator()
             result = generator.create_outlook_mail(
-                stud_name="Test", email_text=special_text, verbose=False
+                student_name="Test", email_text=special_text, verbose=False
             )
 
             assert result is True

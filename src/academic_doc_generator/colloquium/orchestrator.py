@@ -184,7 +184,7 @@ def _generate_latex_outputs(
 
     questions = latex.concatenate_comments(rewritten, language)  # type: ignore[arg-type]
     author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("sid", "unknown")
+    matriculation = metadata.get("id_number", "unknown")
     degree = metadata.get("bachelor_master", "Bachelor")
 
     tex_name = f"bewertung_brief_{matriculation}.tex"
@@ -199,7 +199,7 @@ def _generate_latex_outputs(
         summary=summary,
         first_examiner=metadata.get("first_examiner", "Unbekannt").title(),
         second_examiner=metadata.get("second_examiner", "Unbekannt").title(),
-        first_einfo=f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de",
+        examiner_email=f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de",
         questions=questions,
         gemini_emark=gemini_emark_text,
     )
@@ -217,7 +217,7 @@ def _fill_grading_form(config: ColloquiumWorkflowConfig, metadata: dict, output_
     """Fill the official grading form PDF."""
     daten: dict[str, Any] = {
         "name_student": metadata.get("author", "Unknown"),
-        "MatrNr": metadata.get("sid", "unknown"),
+        "MatrNr": metadata.get("id_number", "unknown"),
     }
 
     course_map = {
@@ -262,14 +262,14 @@ def _generate_emails_and_calendar(
     """Generate registration/feedback emails and calendar entry."""
     mymailgen = email_generator.EmailGenerator()
     author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("sid", "unknown")
-    student_first_name, student_last_name = utils.split_stud_name(author)
+    id_number = metadata.get("id_number", "unknown")
+    student_first_name, student_last_name = utils.split_student_name(author)
 
     registration_email_text = mymailgen.generate_colloquium_email(
         llm_client=llm_client,
         student_first_name=student_first_name,
         student_last_name=student_last_name,
-        sid=matriculation,
+        id_number=id_number,
         date_colloquium=config.date,
         time_colloquium=config.time,
         first_examiner=metadata.get("first_examiner", "Unbekannt"),
@@ -283,7 +283,7 @@ def _generate_emails_and_calendar(
     email_path = mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        sid=matriculation,
+        id_number=id_number,
     )
 
     # Generate final mark email template
@@ -291,13 +291,13 @@ def _generate_emails_and_calendar(
         evaluator_client=llm_client,
         first_name=student_first_name,
         last_name=student_last_name,
-        sid=matriculation,
+        id_number=id_number,
         examiner_name=metadata.get("first_examiner", "Unbekannt"),
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
         student_last_name=student_last_name,
-        sid=matriculation,
+        id_number=id_number,
         filename_prefix="bewertung_thesis_email",
     )
 
@@ -307,7 +307,7 @@ def _generate_emails_and_calendar(
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder=output_folder,
-            stud_name=author,
+            student_name=author,
             date_colloquium=config.date,
             time_colloquium=config.time,
             duration_minutes=45,
@@ -332,7 +332,7 @@ def _create_outlook_draft(
     outlook_gen = OutlookMailGenerator()
     try:
         outlook_success = outlook_gen.create_outlook_mail(
-            stud_name=author,
+            student_name=author,
             email_text=registration_email_text,
             attachment_path=ics_path,
             verbose=False,

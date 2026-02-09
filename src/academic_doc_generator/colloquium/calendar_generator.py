@@ -15,7 +15,7 @@ class CalendarGenerator:
     def generate_ics(
         self,
         output_folder: str,
-        stud_name: str,
+        student_name: str,
         date_colloquium: str,
         time_colloquium: str,
         duration_minutes: int = 45,
@@ -28,7 +28,7 @@ class CalendarGenerator:
 
         Args:
             output_folder: Ausgabeordner für die ICS-Datei.
-            stud_name: Name des Studierenden.
+            student_name: Name des Studierenden.
             date_colloquium: Datum im Format "DD.MM.YYYY".
             time_colloquium: Uhrzeit im Format "HH:MM".
             duration_minutes: Dauer des Kolloquiums in Minuten (Standard: 45).
@@ -66,24 +66,24 @@ PRODID:-//TH Köln//Kolloquium//DE
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:kolloquium-{stud_name.replace(" ", "-").replace(",", "")}-{now}@th-koeln.de
+UID:kolloquium-{student_name.replace(" ", "-").replace(",", "")}-{now}@th-koeln.de
 DTSTAMP:{now}
 DTSTART:{start_str}
 DTEND:{end_str}
-SUMMARY:Kolloquium {stud_name}
+SUMMARY:Kolloquium {student_name}
 LOCATION:{location}
-DESCRIPTION:Kolloquium für {stud_name}
+DESCRIPTION:Kolloquium für {student_name}
 STATUS:CONFIRMED
 SEQUENCE:0
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
-DESCRIPTION:Erinnerung: Kolloquium {stud_name} in 30 Minuten
+DESCRIPTION:Erinnerung: Kolloquium {student_name} in 30 Minuten
 END:VALARM
 BEGIN:VALARM
 TRIGGER:-P1D
 ACTION:DISPLAY
-DESCRIPTION:Erinnerung: Kolloquium {stud_name} morgen
+DESCRIPTION:Erinnerung: Kolloquium {student_name} morgen
 END:VALARM
 END:VEVENT
 END:VCALENDAR"""
@@ -93,7 +93,7 @@ END:VCALENDAR"""
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Bereinige Dateinamen (entferne Kommas und Leerzeichen)
-        safe_name = stud_name.replace(",", "").replace(" ", "_")
+        safe_name = student_name.replace(",", "").replace(" ", "_")
         filename = f"kolloquium_{safe_name}.ics"
         self.ics_path = output_path / filename
 

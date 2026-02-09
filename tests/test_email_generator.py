@@ -165,7 +165,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Max",
             student_last_name="Mustermann",
-            sid="12345",
+            id_number="12345",
             date_colloquium="20.01.2026",
             time_colloquium="14:00",
             first_examiner="Prof. Test",
@@ -188,7 +188,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Maria",
             student_last_name="Musterfrau",
-            sid="67890",
+            id_number="67890",
             date_colloquium="21.01.2026",
             time_colloquium="10:00",
             first_examiner="Dr. Test",
@@ -210,7 +210,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Test",
             student_last_name="Student",
-            sid="11111",
+            id_number="11111",
             date_colloquium="22.01.2026",
             time_colloquium="15:00",
             first_examiner="Prof. Example",
@@ -233,7 +233,7 @@ class TestEmailGenerator:
             llm_client=MagicMock(),
             student_first_name="Online",
             student_last_name="Student",
-            sid="99999",
+            id_number="99999",
             date_colloquium="23.01.2026",
             time_colloquium="16:00",
             first_examiner="Prof. Remote",
@@ -255,7 +255,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=tmpdir,
                 student_last_name="Mustermann",
-                sid="12345",
+                id_number="12345",
             )
 
             assert generator.email_path is not None
@@ -280,7 +280,7 @@ class TestEmailGenerator:
             generator.save_email_to_markdown(
                 output_folder=subfolder,
                 student_last_name="Test",
-                sid="00000",
+                id_number="00000",
             )
 
             assert os.path.exists(subfolder)

@@ -25,7 +25,7 @@ def test_calendar_generation():
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder="./test_output",
-            stud_name="Mustermann, Max",
+            student_name="Mustermann, Max",
             date_colloquium="15.02.2026",
             time_colloquium="14:00",
             duration_minutes=45,
@@ -41,7 +41,7 @@ def test_calendar_generation():
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder="./test_output",
-            stud_name="Schmidt, Anna",
+            student_name="Schmidt, Anna",
             date_colloquium="20.03.2026",
             time_colloquium="10:00",
             duration_minutes=45,
@@ -58,7 +58,7 @@ def test_calendar_generation():
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder="./test_output",
-            stud_name="Weber, Julia",
+            student_name="Weber, Julia",
             date_colloquium="10.04.2026",
             time_colloquium="16:00",
             duration_minutes=45,
@@ -90,7 +90,7 @@ Prof. Dr. Müller"""
 
     try:
         success = outlook_gen.create_outlook_mail(
-            stud_name="Mustermann, Max",
+            student_name="Mustermann, Max",
             email_text=email_text,
             verbose=True,
         )
@@ -115,7 +115,7 @@ def test_ics_file_content():
     try:
         ics_path = calendar_gen.generate_ics(
             output_folder="./test_output",
-            stud_name="Test, Student",
+            student_name="Test, Student",
             date_colloquium="01.01.2026",
             time_colloquium="12:00",
             duration_minutes=45,

@@ -23,8 +23,8 @@ def test_run_project_pipeline_feedback_toggle(
 ):
     # Setup mocks
     mock_metadata.return_value = {
-        "stud_name": "Max Mustermann",
-        "sid": "123456",
+        "student_name": "Max Mustermann",
+        "id_number": "123456",
         "title": "Test Title",
         "first_examiner": "Prof. Test",
         "work_type": "Praxisprojekt",

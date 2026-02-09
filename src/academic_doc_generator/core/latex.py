@@ -159,7 +159,7 @@ def create_formal_letter_tex(
     summary: str,
     first_examiner: str,
     second_examiner: str,
-    first_einfo: str,
+    examiner_email: str,
     questions: str,
     place: str = "Gummersbach",
     date: str = r"\today",
@@ -176,7 +176,7 @@ def create_formal_letter_tex(
         summary: summary of the thesis.
         first_examiner: name of first examiner.
         second_examiner: name of second examiner.
-        first_einfo: email of first examiner.
+        examiner_email: email of first examiner.
         questions: questions from first examiner.
         place: Place of issue. Defaults to "Gummersbach".
         date: Date string. Defaults to LaTeX \\today.
@@ -206,7 +206,7 @@ def create_formal_letter_tex(
 \setkomavar{{fromname}}{{{first_examiner}}}
 \setkomavar{{fromaddress}}{{Steinmüllerallee 1\\51643 Gummersbach}}
 \setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\setkomavar{{fromemail}}{{{first_einfo}}}
+\setkomavar{{fromemail}}{{{examiner_email}}}
 \setkomavar{{place}}{{{place}}}
 \setkomavar{{date}}{{{date}}}
 \setkomavar{{signature}}{{{first_examiner}}}

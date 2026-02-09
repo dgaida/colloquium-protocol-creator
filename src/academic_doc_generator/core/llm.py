@@ -202,6 +202,10 @@ def extract_document_metadata(
         # ThesisMetadata is TypedDict(total=False), so {} is valid
         return {}
 
+    # Rename sid to id_number if it exists in the raw LLM response
+    if "sid" in metadata and "id_number" not in metadata:
+        metadata["id_number"] = metadata.pop("sid")  # type: ignore[misc]
+
     # Fallback: Wenn bachelor_master nicht bestimmt werden konnte, versuche es über Dateinamen
     if pdf_path and (
         not metadata.get("bachelor_master") or metadata.get("bachelor_master") is None

@@ -22,9 +22,9 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, 
 
     Returns:
         dict: Dictionary containing extracted metadata with keys:
-            - "stud_name": Full name of the student
+            - "student_name": Full name of the student
             - "student_first_name": First name only (for gender detection)
-            - "sid": Student's matriculation number
+            - "id_number": Student's matriculation number
             - "title": Title of the project work
             - "first_examiner": Name of the first examiner
             - "first_examiner_christian": Christian name of examiner
@@ -43,6 +43,12 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, 
     try:
         metadata = json.loads(content)
     except json.JSONDecodeError:
-        metadata = {"error": "Could not parse JSON", "raw": content}
+        return {"error": "Could not parse JSON", "raw": content}
+
+    # Normalize keys
+    if "stud_name" in metadata and "student_name" not in metadata:
+        metadata["student_name"] = metadata.pop("stud_name")
+    if "sid" in metadata and "id_number" not in metadata:
+        metadata["id_number"] = metadata.pop("sid")
 
     return metadata

@@ -10,46 +10,46 @@ from ..core.utils import get_semester
 
 def create_project_grading_letter_tex(
     filename: str,
-    s_name: str,
-    s_id: str,
-    p_title: str,
-    e_name: str,
-    einfo: str,
+    student_name: str,
+    id_number: str,
+    project_title: str,
+    examiner_name: str,
+    examiner_email: str,
     gender: str,
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
     date: str = r"\today",
     signature_file: str = "signature.png",
-    s_mark: Optional[str] = None,
+    grade_mark: Optional[str] = None,
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
 
     Args:
         filename: Output path for the LaTeX file.
-        s_name: Full name of the student.
-        s_id: Student's matriculation number.
-        p_title: Title of the project work.
-        e_name: Name of the examiner.
-        einfo: Email address of the examiner.
+        student_name: Full name of the student.
+        id_number: Student's matriculation number.
+        project_title: Title of the project work.
+        examiner_name: Name of the examiner.
+        examiner_email: Email address of the examiner.
         gender: Gender indicator ("Herr" or "Frau") for formal address.
         work_type: Type of work (default: "Praxisprojekt").
         place: Place of issue (default: "Gummersbach").
         date: Date string (default: LaTeX \\today).
         signature_file: Path to signature image file (default: "signature.png").
-        s_mark: The mark obtained (default: None, results in a blank line).
+        grade_mark: The mark obtained (default: None, results in a blank line).
     """
     semester = get_semester()
 
     # Escape all text inputs for LaTeX
-    s_name_safe = escape_for_latex(s_name, preserve_latex=False)
-    p_title_safe = escape_for_latex(p_title, preserve_latex=False)
+    student_name_safe = escape_for_latex(student_name, preserve_latex=False)
+    project_title_safe = escape_for_latex(project_title, preserve_latex=False)
     work_type_safe = escape_for_latex(work_type, preserve_latex=False)
 
     sein_ihr = "sein" if gender == "Herr" else "ihr"
     er_sie = "Er" if gender == "Herr" else "Sie"
 
     # Handle mark
-    mark_tex = s_mark if s_mark is not None else r"\underline{\hspace{2cm}}"
+    mark_tex = grade_mark if grade_mark is not None else r"\underline{\hspace{2cm}}"
 
     # Handle signature
     signature_path_safe = signature_file.replace("\\", "/")
@@ -69,13 +69,13 @@ def create_project_grading_letter_tex(
 \\usepackage{{graphicx}}
 
 % Sender info
-\\setkomavar{{fromname}}{{{e_name}}}
+\\setkomavar{{fromname}}{{{examiner_name}}}
 \\setkomavar{{fromaddress}}{{Steinmüllerallee 1\\\\51643 Gummersbach}}
 \\setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\\setkomavar{{fromemail}}{{{einfo}}}
+\\setkomavar{{fromemail}}{{{examiner_email}}}
 \\setkomavar{{place}}{{{place}}}
 \\setkomavar{{date}}{{{date}}}
-\\setkomavar{{subject}}{{{work_type_safe} {gender} {s_name_safe}}}
+\\setkomavar{{subject}}{{{work_type_safe} {gender} {student_name_safe}}}
 
 % Footer
 \\setkomavar{{firstfoot}}{{%
@@ -97,13 +97,13 @@ def create_project_grading_letter_tex(
 
 {gender}
 
-{s_name_safe}, Matrikelnr. {s_id},
+{student_name_safe}, Matrikelnr. {id_number},
 
 hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {mark_tex} erhalten.
 
 Das Thema war:
 
-{p_title_safe}
+{project_title_safe}
 
 \\closing{{Danke und viele Grü{{\\ss}}e,}}
 

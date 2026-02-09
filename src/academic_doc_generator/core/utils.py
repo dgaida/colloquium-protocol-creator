@@ -35,7 +35,7 @@ def get_semester(dt: Optional[datetime] = None) -> str:
             return f"WS{(year - 1) % 100}/{year % 100}"
 
 
-def split_stud_name(full_name: str) -> tuple[str, str]:
+def split_student_name(full_name: str) -> tuple[str, str]:
     """Split a student's full name into first and last name.
 
     Handles formats like "Last, First" or "First Last".

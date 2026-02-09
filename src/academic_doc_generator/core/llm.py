@@ -72,9 +72,7 @@ def rewrite_comments(
             if category != "llm":
                 continue
 
-            if (
-                groq_free
-            ):  # always wait 4 seconds for rate limit of 30 requests per minute
+            if groq_free:  # always wait 4 seconds for rate limit of 30 requests per minute
                 time.sleep(4)
 
             comment = item["comment"]
@@ -190,13 +188,9 @@ def extract_document_metadata(
         '123456'
     """
     # Collect first two pages of text (if available)
-    sample_text = "\n\n".join(
-        [pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]]
-    )
+    sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]])
 
-    prompt = build_prompt(
-        PromptTemplate.EXTRACT_METADATA, language=language, text=sample_text
-    )
+    prompt = build_prompt(PromptTemplate.EXTRACT_METADATA, language=language, text=sample_text)
 
     messages = [{"role": "user", "content": prompt}]
     content = llm_client.chat_completion(messages)
@@ -249,9 +243,7 @@ def summarize_thesis(
     """
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
-    prompt = build_prompt(
-        PromptTemplate.SUMMARIZE_THESIS, language=language, text=full_text
-    )
+    prompt = build_prompt(PromptTemplate.SUMMARIZE_THESIS, language=language, text=full_text)
 
     messages = [{"role": "user", "content": prompt}]
     latex_summary_raw = llm_client.chat_completion(messages)
@@ -358,9 +350,7 @@ def rewrite_comments_in_pdf(
         find_annotation_context = pdf_proc.find_annotation_context
     else:
         extract_text_with_positions = pdf_processor.extract_text_with_positions
-        extract_annotations_with_positions = (
-            pdf_processor.extract_annotations_with_positions
-        )
+        extract_annotations_with_positions = pdf_processor.extract_annotations_with_positions
         find_annotation_context = pdf_processor.find_annotation_context
 
     print(f"Starting to rewrite comments in the thesis {pdf_path}")
@@ -433,9 +423,7 @@ def get_summary_and_metadata_of_pdf(
     pages_text = pdf.extract_text_per_page(pdf_path)
 
     # Extract metadata (mit pdf_path für Fallback)
-    metadata = extract_document_metadata(
-        pages_text, language, llm_client, pdf_path=pdf_path
-    )
+    metadata = extract_document_metadata(pages_text, language, llm_client, pdf_path=pdf_path)
 
     if groq_free:
         print("Waiting for 20 seconds to avoid error: Too Many Requests")

@@ -11,12 +11,12 @@ from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 from ..core import pdf
 from ..core.latex import compile_latex_to_pdf
 from ..core.llm import determine_gender_from_name
+from ..core.metadata import generate_metadata_file
 from ..core.types import (
     ProjectWorkflowConfig,
     ProjectWorkflowResult,
 )
 from ..core.utils import get_semester, split_stud_name
-from ..core.metadata import generate_metadata_file
 from .feedback_generator import generate_feedback_summary
 from .latex import create_project_grading_letter_tex
 from .llm import (

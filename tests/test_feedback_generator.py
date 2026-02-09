@@ -4,16 +4,10 @@ from academic_doc_generator.project.feedback_generator import generate_feedback_
 
 
 class TestFeedbackGenerator:
-    @patch(
-        "academic_doc_generator.project.feedback_generator.extract_text_with_positions"
-    )
-    @patch(
-        "academic_doc_generator.project.feedback_generator.extract_annotations_with_positions"
-    )
+    @patch("academic_doc_generator.project.feedback_generator.extract_text_with_positions")
+    @patch("academic_doc_generator.project.feedback_generator.extract_annotations_with_positions")
     @patch("academic_doc_generator.project.feedback_generator.find_annotation_context")
-    def test_generate_feedback_summary_success(
-        self, mock_context, mock_annot, mock_text
-    ):
+    def test_generate_feedback_summary_success(self, mock_context, mock_annot, mock_text):
         mock_text.return_value = {}
         mock_annot.return_value = ({}, {"quelle": 0})
         mock_context.return_value = {
@@ -44,16 +38,10 @@ class TestFeedbackGenerator:
         assert "- Gute Analyse." in summary
         assert mock_client.chat_completion.call_count == 3
 
-    @patch(
-        "academic_doc_generator.project.feedback_generator.extract_text_with_positions"
-    )
-    @patch(
-        "academic_doc_generator.project.feedback_generator.extract_annotations_with_positions"
-    )
+    @patch("academic_doc_generator.project.feedback_generator.extract_text_with_positions")
+    @patch("academic_doc_generator.project.feedback_generator.extract_annotations_with_positions")
     @patch("academic_doc_generator.project.feedback_generator.find_annotation_context")
-    def test_generate_feedback_summary_no_comments(
-        self, mock_context, mock_annot, mock_text
-    ):
+    def test_generate_feedback_summary_no_comments(self, mock_context, mock_annot, mock_text):
         mock_text.return_value = {}
         mock_annot.return_value = ({}, {"quelle": 0})
         mock_context.return_value = {}

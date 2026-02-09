@@ -121,9 +121,7 @@ class OutlookMailGenerator:
                 return True
             else:
                 if verbose:
-                    print(
-                        "ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt"
-                    )
+                    print("ℹ️  Direktes Öffnen in Outlook nur unter Windows unterstützt")
                 return False
 
         except Exception as e:
@@ -163,13 +161,12 @@ class OutlookMailGenerator:
             mail.Body = body
 
             # Füge Anhang hinzu
-            if attachment_path:
-                if os.path.exists(attachment_path):
-                    mail.Attachments.Add(os.path.abspath(attachment_path))
-                    if verbose:
-                        print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
-                else:
-                    print(f"⚠️  Datei nicht gefunden: {attachment_path}")
+            if attachment_path and os.path.exists(attachment_path):
+                mail.Attachments.Add(os.path.abspath(attachment_path))
+                if verbose:
+                    print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
+            elif attachment_path:
+                print(f"⚠️  Datei nicht gefunden: {attachment_path}")
 
             # Mail anzeigen (nicht senden!)
             mail.Display(False)
@@ -221,16 +218,13 @@ class OutlookMailGenerator:
             """
 
             # Füge Anhang hinzu, falls vorhanden
-            if attachment_path:
-                if os.path.exists(attachment_path):
-                    escaped_path = attachment_path.replace('"', '\\"').replace(
-                        "\\", "\\\\"
-                    )
-                    applescript += f"""
-                make new attachment at newMessage with properties {{file:POSIX file "{escaped_path}"}}
-                """
-                    if verbose:
-                        print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
+            if attachment_path and os.path.exists(attachment_path):
+                escaped_path = attachment_path.replace('"', '\\"').replace("\\", "\\\\")
+                applescript += f"""
+            make new attachment at newMessage with properties {{file:POSIX file "{escaped_path}"}}
+            """
+                if verbose:
+                    print(f"✅ Datei als Anhang hinzugefügt: {attachment_path}")
 
             applescript += """
                 open newMessage

@@ -8,11 +8,11 @@ from typing import Any, Optional
 from llm_client import LLMClient
 
 from ..core import latex, llm, pdf, utils
+from ..core.metadata import generate_metadata_file
 from ..core.types import (
     ColloquiumWorkflowConfig,
     ColloquiumWorkflowResult,
 )
-from ..core.metadata import generate_metadata_file
 from . import email_generator, pdf_form_filler
 from .calendar_generator import CalendarGenerator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator

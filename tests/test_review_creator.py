@@ -85,9 +85,7 @@ class TestMdGenerator:
         # Annotation overlaps vertically with line 42
         annot_bbox = (45, 95, 115, 115)
 
-        line_num = md_generator.find_line_number_from_text(
-            words, annot_bbox, x_threshold=20.0
-        )
+        line_num = md_generator.find_line_number_from_text(words, annot_bbox, x_threshold=20.0)
 
         assert line_num == 42
 
@@ -99,9 +97,7 @@ class TestMdGenerator:
         ]
         annot_bbox = (45, 95, 115, 115)
 
-        line_num = md_generator.find_line_number_from_text(
-            words, annot_bbox, x_threshold=20.0
-        )
+        line_num = md_generator.find_line_number_from_text(words, annot_bbox, x_threshold=20.0)
 
         assert line_num == -1
 
@@ -113,9 +109,7 @@ class TestMdGenerator:
         ]
         annot_bbox = (45, 95, 115, 115)
 
-        line_num = md_generator.find_line_number_from_text(
-            words, annot_bbox, x_threshold=20.0
-        )
+        line_num = md_generator.find_line_number_from_text(words, annot_bbox, x_threshold=20.0)
 
         assert line_num == -1
 
@@ -127,9 +121,7 @@ class TestMdGenerator:
         ]
         annot_bbox = (45, 95, 115, 115)
 
-        line_num = md_generator.find_line_number_from_text(
-            words, annot_bbox, x_threshold=20.0
-        )
+        line_num = md_generator.find_line_number_from_text(words, annot_bbox, x_threshold=20.0)
 
         assert line_num == -1
 
@@ -176,9 +168,7 @@ class TestMdGenerator:
         }
 
         annotations = {
-            0: [
-                {"comment": "Check this", "rect": (45, 95, 165, 115), "category": "llm"}
-            ]
+            0: [{"comment": "Check this", "rect": (45, 95, 165, 115), "category": "llm"}]
         }
 
         page_heights = {0: 792.0}
@@ -193,9 +183,7 @@ class TestMdGenerator:
     def test_find_annotation_context_with_lines_no_rect(self):
         """Test handling of annotations without rectangles."""
         pages_words = {0: []}
-        annotations = {
-            0: [{"comment": "Test comment", "rect": None, "category": "llm"}]
-        }
+        annotations = {0: [{"comment": "Test comment", "rect": None, "category": "llm"}]}
         page_heights = {0: 792.0}
 
         result = md_generator.find_annotation_context_with_lines(
@@ -224,9 +212,7 @@ class TestMdGenerator:
             "Could you please explain the rationale behind this approach?"
         )
 
-        result = md_generator.rewrite_comments_markdown(
-            context_dict, mock_client, groq_free=False
-        )
+        result = md_generator.rewrite_comments_markdown(context_dict, mock_client, groq_free=False)
 
         assert 1 in result
         assert len(result[1]) == 1
@@ -261,9 +247,7 @@ class TestMdGenerator:
 
         mock_client = MagicMock()
 
-        result = md_generator.rewrite_comments_markdown(
-            context_dict, mock_client, groq_free=False
-        )
+        result = md_generator.rewrite_comments_markdown(context_dict, mock_client, groq_free=False)
 
         # Should not have any results since both are non-LLM
         assert 1 not in result or len(result.get(1, [])) == 0
@@ -298,9 +282,7 @@ class TestMdGenerator:
             "Rewritten second question?",
         ]
 
-        result = md_generator.rewrite_comments_markdown(
-            context_dict, mock_client, groq_free=False
-        )
+        result = md_generator.rewrite_comments_markdown(context_dict, mock_client, groq_free=False)
 
         assert 1 in result
         assert 2 in result
@@ -326,18 +308,14 @@ class TestMdGenerator:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Rewritten"
 
-        md_generator.rewrite_comments_markdown(
-            context_dict, mock_client, groq_free=True
-        )
+        md_generator.rewrite_comments_markdown(context_dict, mock_client, groq_free=True)
 
         # Should not sleep for just 1 comment (sleep happens at intervals of 5)
         mock_sleep.assert_not_called()
 
     def test_create_review_markdown_single_page(self):
         """Test creating markdown review with single page."""
-        rewritten = {
-            1: [{"rewritten": "Please clarify this point.", "line": 42, "page": 1}]
-        }
+        rewritten = {1: [{"rewritten": "Please clarify this point.", "line": 42, "page": 1}]}
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             md_path = f.name
@@ -457,13 +435,9 @@ class TestReviewIntegration:
 
         # Step 2: Rewrite comments
         mock_client = MagicMock()
-        mock_client.chat_completion.return_value = (
-            "This section requires further clarification."
-        )
+        mock_client.chat_completion.return_value = "This section requires further clarification."
 
-        rewritten = md_generator.rewrite_comments_markdown(
-            context, mock_client, groq_free=False
-        )
+        rewritten = md_generator.rewrite_comments_markdown(context, mock_client, groq_free=False)
 
         assert 1 in rewritten
         assert rewritten[1][0]["line"] == 15
@@ -478,10 +452,7 @@ class TestReviewIntegration:
             with open(md_path, encoding="utf-8") as f:
                 content = f.read()
 
-            assert (
-                "Page 1, Line 15: This section requires further clarification."
-                in content
-            )
+            assert "Page 1, Line 15: This section requires further clarification." in content
 
         finally:
             if os.path.exists(md_path):

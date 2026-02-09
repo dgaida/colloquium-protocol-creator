@@ -41,9 +41,7 @@ class CalendarGenerator:
             Pfad zur erstellten ICS-Datei.
         """
         # Parse Datum und Uhrzeit
-        dt_start = datetime.strptime(
-            f"{date_colloquium} {time_colloquium}", "%d.%m.%Y %H:%M"
-        )
+        dt_start = datetime.strptime(f"{date_colloquium} {time_colloquium}", "%d.%m.%Y %H:%M")
         dt_end = dt_start + timedelta(minutes=duration_minutes)
 
         # Formatiere für ICS (Format: YYYYMMDDTHHMMSS)

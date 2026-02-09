@@ -59,9 +59,7 @@ class TestColloquiumOrchestrator:
         mock_web.return_value = "/test/web.md"
 
         mock_email_gen = MagicMock()
-        mock_email_gen.generate_colloquium_email.return_value = (
-            "Registration Email Text"
-        )
+        mock_email_gen.generate_colloquium_email.return_value = "Registration Email Text"
         mock_email_gen.save_email_to_markdown.return_value = "/test/email.md"
         mock_email.EmailGenerator.return_value = mock_email_gen
 
@@ -334,9 +332,7 @@ class TestProjectOrchestrator:
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
     @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
-    @patch(
-        "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
-    )
+    @patch("academic_doc_generator.project.orchestrator.create_project_grading_letter_tex")
     @patch("academic_doc_generator.project.orchestrator.compile_latex_to_pdf")
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     @patch("academic_doc_generator.project.orchestrator.OutlookMailGenerator")
@@ -404,9 +400,7 @@ class TestProjectOrchestrator:
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
     @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
-    @patch(
-        "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
-    )
+    @patch("academic_doc_generator.project.orchestrator.create_project_grading_letter_tex")
     @patch("academic_doc_generator.project.orchestrator.EmailGenerator")
     @patch("academic_doc_generator.project.orchestrator.pdf")
     @patch("academic_doc_generator.project.orchestrator.generate_metadata_file")
@@ -463,9 +457,7 @@ class TestProjectOrchestrator:
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
     @patch("academic_doc_generator.project.orchestrator.determine_gender_from_name")
     @patch("academic_doc_generator.project.orchestrator.generate_feedback_summary")
-    @patch(
-        "academic_doc_generator.project.orchestrator.create_project_grading_letter_tex"
-    )
+    @patch("academic_doc_generator.project.orchestrator.create_project_grading_letter_tex")
     @patch("academic_doc_generator.project.orchestrator.pdf")
     @patch("academic_doc_generator.project.orchestrator.generate_metadata_file")
     def test_run_project_pipeline_auto_client(
@@ -518,13 +510,9 @@ class TestReviewOrchestrator:
     """Tests for review pipeline orchestrator."""
 
     @patch("academic_doc_generator.review.orchestrator.extract_text_with_positions")
-    @patch(
-        "academic_doc_generator.review.orchestrator.extract_annotations_with_positions"
-    )
+    @patch("academic_doc_generator.review.orchestrator.extract_annotations_with_positions")
     @patch("academic_doc_generator.review.orchestrator.PdfReader")
-    @patch(
-        "academic_doc_generator.review.orchestrator.find_annotation_context_with_lines"
-    )
+    @patch("academic_doc_generator.review.orchestrator.find_annotation_context_with_lines")
     @patch("academic_doc_generator.review.orchestrator.rewrite_comments_markdown")
     @patch("academic_doc_generator.review.orchestrator.create_review_markdown")
     def test_run_review_pipeline_basic(
@@ -568,13 +556,9 @@ class TestReviewOrchestrator:
 
     @patch("academic_doc_generator.review.orchestrator.LLMClient")
     @patch("academic_doc_generator.review.orchestrator.extract_text_with_positions")
-    @patch(
-        "academic_doc_generator.review.orchestrator.extract_annotations_with_positions"
-    )
+    @patch("academic_doc_generator.review.orchestrator.extract_annotations_with_positions")
     @patch("academic_doc_generator.review.orchestrator.PdfReader")
-    @patch(
-        "academic_doc_generator.review.orchestrator.find_annotation_context_with_lines"
-    )
+    @patch("academic_doc_generator.review.orchestrator.find_annotation_context_with_lines")
     @patch("academic_doc_generator.review.orchestrator.rewrite_comments_markdown")
     @patch("academic_doc_generator.review.orchestrator.create_review_markdown")
     def test_run_review_pipeline_auto_client(

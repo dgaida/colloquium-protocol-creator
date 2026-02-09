@@ -7,9 +7,7 @@ from llm_client import LLMClient
 from ..core.prompts import PromptTemplate, build_prompt
 
 
-def estimate_line_number(
-    y_coord: float, page_height: float, line_height: float = 12.0
-) -> int:
+def estimate_line_number(y_coord: float, page_height: float, line_height: float = 12.0) -> int:
     """Estimate the line number of a comment based on its y-coordinate.
 
     Args:
@@ -25,9 +23,7 @@ def estimate_line_number(
     return max(1, int(distance_from_top / line_height) + 1)
 
 
-def find_line_number_from_text(
-    words: list, annot_bbox: tuple, x_threshold: float = 20.0
-) -> int:
+def find_line_number_from_text(words: list, annot_bbox: tuple, x_threshold: float = 20.0) -> int:
     """Try to find a printed line number near the annotation by scanning
     words at the left margin of the page.
 
@@ -44,14 +40,11 @@ def find_line_number_from_text(
 
     for w in words:
         wx0, wy0, wx1, wy1 = w["bbox"]
-        # Check if word is at left margin (x position)
-        if wx0 < x_threshold:
-            # Check if word vertically overlaps with annotation
-            if wy0 <= ay1 and wy1 >= ay0:
-                # Check if text is a number
-                if w["text"].isdigit():
-                    candidate = int(w["text"])
-                    break
+        # Check if word is at left margin (x position),
+        # vertically overlaps with annotation, and is a number
+        if wx0 < x_threshold and wy0 <= ay1 and wy1 >= ay0 and w["text"].isdigit():
+            candidate = int(w["text"])
+            break
 
     return candidate if candidate is not None else -1
 
@@ -78,15 +71,11 @@ def find_annotation_context_with_lines(
                 continue
             x0, y0, x1, y1 = rect
 
-            line_number = find_line_number_from_text(
-                pages_words.get(page_num, []), rect
-            )
+            line_number = find_line_number_from_text(pages_words.get(page_num, []), rect)
 
             if line_number == -1:
                 # fallback to geometric estimation
-                line_number = estimate_line_number(
-                    y1, page_heights[page_num]
-                )  # top of rect
+                line_number = estimate_line_number(y1, page_heights[page_num])  # top of rect
 
             page_results.append(
                 {

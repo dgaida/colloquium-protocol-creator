@@ -109,27 +109,32 @@ class TestValidatePdfPath:
 
     def test_validate_pdf_path_not_found(self):
         """Test mit nicht existierender Datei."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(FileNotFoundError, match="PDF not found"):
-                validate_pdf_path(tmpdir, "nonexistent.pdf")
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            pytest.raises(FileNotFoundError, match="PDF not found"),
+        ):
+            validate_pdf_path(tmpdir, "nonexistent.pdf")
 
     def test_validate_pdf_path_invalid_extension(self):
         """Test mit ungültiger Dateiendung."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(ValueError, match="Only PDF files allowed"):
-                validate_pdf_path(tmpdir, "test.txt")
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            pytest.raises(ValueError, match="Only PDF files allowed"),
+        ):
+            validate_pdf_path(tmpdir, "test.txt")
 
     def test_validate_pdf_path_directory_traversal_dotdot(self):
         """Test Directory Traversal mit ../"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(ValueError, match="traversal"):
-                validate_pdf_path(tmpdir, "../../../etc/passwd.pdf")
+        with tempfile.TemporaryDirectory() as tmpdir, pytest.raises(ValueError, match="traversal"):
+            validate_pdf_path(tmpdir, "../../../etc/passwd.pdf")
 
     def test_validate_pdf_path_directory_traversal_absolute(self):
         """Test Directory Traversal mit absolutem Pfad."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(ValueError, match="Absolute paths not allowed"):
-                validate_pdf_path(tmpdir, "/etc/passwd.pdf")
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            pytest.raises(ValueError, match="Absolute paths not allowed"),
+        ):
+            validate_pdf_path(tmpdir, "/etc/passwd.pdf")
 
     def test_validate_pdf_path_special_chars(self):
         """Test mit Sonderzeichen im Dateinamen."""
@@ -209,9 +214,8 @@ class TestValidatePdfPath:
 
     def test_validate_pdf_path_complex_traversal_attempt(self):
         """Test komplexerer Directory Traversal Versuch."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with pytest.raises(ValueError, match="traversal"):
-                validate_pdf_path(tmpdir, "sub/../../etc/passwd.pdf")
+        with tempfile.TemporaryDirectory() as tmpdir, pytest.raises(ValueError, match="traversal"):
+            validate_pdf_path(tmpdir, "sub/../../etc/passwd.pdf")
 
 
 class TestEdgeCases:

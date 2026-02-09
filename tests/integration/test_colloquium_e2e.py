@@ -26,22 +26,14 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
     # We need to mock the PDF processing and LLM parts that would actually
     # hit an API or require a real complex PDF file.
     with (
-        patch(
-            "academic_doc_generator.core.pdf.extract_text_with_positions"
-        ) as mock_extract_text,
+        patch("academic_doc_generator.core.pdf.extract_text_with_positions") as mock_extract_text,
         patch(
             "academic_doc_generator.core.pdf.extract_annotations_with_positions"
         ) as mock_extract_annots,
-        patch(
-            "academic_doc_generator.core.pdf.find_annotation_context"
-        ) as mock_find_context,
-        patch(
-            "academic_doc_generator.core.pdf.extract_text_per_page"
-        ) as mock_extract_per_page,
+        patch("academic_doc_generator.core.pdf.find_annotation_context") as mock_find_context,
+        patch("academic_doc_generator.core.pdf.extract_text_per_page") as mock_extract_per_page,
         patch("academic_doc_generator.core.latex.compile_latex_to_pdf") as mock_compile,
-        patch(
-            "academic_doc_generator.colloquium.pdf_form_filler.fill_form"
-        ) as mock_fill_form,
+        patch("academic_doc_generator.colloquium.pdf_form_filler.fill_form") as mock_fill_form,
         patch("academic_doc_generator.colloquium.orchestrator.OutlookMailGenerator"),
         tempfile.TemporaryDirectory() as tmpdir,
     ):

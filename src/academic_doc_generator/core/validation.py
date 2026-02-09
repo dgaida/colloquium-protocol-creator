@@ -73,8 +73,8 @@ def validate_pdf_path(folder_path: str, filename: str) -> Path:
     # Verify path is within base folder (prevent traversal)
     try:
         pdf_path.relative_to(base_path)
-    except ValueError:
-        raise ValueError(f"Invalid PDF path (directory traversal): {filename}")
+    except ValueError as e:
+        raise ValueError(f"Invalid PDF path (directory traversal): {filename}") from e
 
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")

@@ -124,9 +124,7 @@ class TestCreateParser:
         """Test LLM-Optionen."""
         parser = cli.create_parser()
 
-        args = parser.parse_args(
-            ["project", "test.pdf", "--api", "openai", "--model", "gpt-4o"]
-        )
+        args = parser.parse_args(["project", "test.pdf", "--api", "openai", "--model", "gpt-4o"])
 
         assert args.api == "openai"
         assert args.model == "gpt-4o"
@@ -183,13 +181,12 @@ class TestMain:
 
         test_args = ["academic-doc-generator", "--list-templates"]
 
-        with patch.object(sys, "argv", test_args):
-            with patch("sys.stdout", new=StringIO()) as fake_out:
-                cli.main()
-                output = fake_out.getvalue()
+        with patch.object(sys, "argv", test_args), patch("sys.stdout", new=StringIO()) as fake_out:
+            cli.main()
+            output = fake_out.getvalue()
 
-                assert "config_colloquium_campus.json" in output
-                assert "config_project_template.json" in output
+            assert "config_colloquium_campus.json" in output
+            assert "config_project_template.json" in output
 
     @patch("academic_doc_generator.cli.main.Path")
     @patch("academic_doc_generator.cli.main.validate_api_keys")
@@ -277,13 +274,12 @@ class TestMain:
         mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator"]
 
-        with patch.object(sys, "argv", test_args):
-            with patch("sys.stdout", new=StringIO()) as fake_out:
-                cli.main()
-                output = fake_out.getvalue()
+        with patch.object(sys, "argv", test_args), patch("sys.stdout", new=StringIO()) as fake_out:
+            cli.main()
+            output = fake_out.getvalue()
 
-                # Sollte Hilfe-Text enthalten
-                assert "Tipp" in output or "usage" in output.lower()
+            # Sollte Hilfe-Text enthalten
+            assert "Tipp" in output or "usage" in output.lower()
 
 
 class TestEntryPoints:

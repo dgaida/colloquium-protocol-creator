@@ -165,11 +165,7 @@ class TestProjectLatexGeneration:
 
             # Check that special chars are handled (either escaped or replaced)
             # Since preserve_latex=False, we get \textbackslash{} for backslashes
-            assert (
-                "\\textbackslash" in content
-                or "\\&" in content
-                or "Test \\& User" in content
-            )
+            assert "\\textbackslash" in content or "\\&" in content or "Test \\& User" in content
 
             # More reliable: check that dangerous unescaped chars are NOT present in wrong places
             # Look for the title line
@@ -366,9 +362,7 @@ class TestProjectIntegration:
         mock_client = MagicMock()
         mock_client.chat_completion.return_value = "Herr"
 
-        gender = core_llm.determine_gender_from_name(
-            metadata["student_first_name"], mock_client
-        )
+        gender = core_llm.determine_gender_from_name(metadata["student_first_name"], mock_client)
 
         # Generate letter
         with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:

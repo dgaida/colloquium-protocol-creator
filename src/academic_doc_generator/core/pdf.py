@@ -51,9 +51,7 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         words: list[WordBox] = []
         for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
-            r = (
-                cell.rect
-            )  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+            r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
 
             words.append(
                 {
@@ -337,9 +335,7 @@ def find_annotation_context(
             highlighted_text = " ".join([w["text"] for w in hit_words]).strip()
 
             # Use the full text of the page where words were actually found
-            full_page_text = " ".join(
-                [w["text"] for w in pages_words.get(page_idx_for_words, [])]
-            )
+            full_page_text = " ".join([w["text"] for w in pages_words.get(page_idx_for_words, [])])
             paragraphs = re.split(r"\n\s*\n| {2,}", full_page_text)
 
             # Find paragraph containing the highlighted words
@@ -394,9 +390,7 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> dict[int, str]:
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         if zero_idx >= max_pages:
             break
-        words = [
-            cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)
-        ]
+        words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
         page_text = " ".join(words)
         pages_text[zero_idx] = page_text
     return pages_text

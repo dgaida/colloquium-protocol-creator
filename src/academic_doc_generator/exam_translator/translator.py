@@ -173,9 +173,7 @@ def translate_preamble_to_english(
     if verbose:
         print(f"\n{'='*60}")
         print("PREAMBLE TRANSLATED")
-        print(
-            f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}"
-        )
+        print(f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}")
         if len(translated) < len(preamble) - 500:
             print(translated)
         print(f"{'='*60}\n")
@@ -248,9 +246,7 @@ def translate_latex_exam(
     print("✂️  Teile Dokument in Abschnitte...")
 
     # Teile in Abschnitte
-    preamble, questions, postamble = split_latex_exam_into_sections(
-        latex_content, verbose
-    )
+    preamble, questions, postamble = split_latex_exam_into_sections(latex_content, verbose)
 
     print(f"   • Präambel: {len(preamble)} Zeichen")
     print(f"   • Anzahl Fragen: {len(questions)}")
@@ -258,9 +254,7 @@ def translate_latex_exam(
 
     # Übersetze Präambel
     print("\n🌍 Übersetze Präambel...")
-    translated_preamble = translate_preamble_to_english(
-        preamble, llm_client, verbose=verbose
-    )
+    translated_preamble = translate_preamble_to_english(preamble, llm_client, verbose=verbose)
 
     # Übersetze jede Frage einzeln
     print(f"\n🌍 Übersetze {len(questions)} Fragen...")
@@ -268,9 +262,7 @@ def translate_latex_exam(
 
     for i, question in enumerate(questions, start=1):
         print(f"   [{i}/{len(questions)}] Übersetze Frage {i}...")
-        translated = translate_question_to_english(
-            question, llm_client, verbose=verbose
-        )
+        translated = translate_question_to_english(question, llm_client, verbose=verbose)
         translated_questions.append(translated)
 
     # Füge alles zusammen
@@ -279,9 +271,7 @@ def translate_latex_exam(
     # Stelle sicher, dass Questions mit Newline beginnen
     questions_text = "\n\n".join(translated_questions)
 
-    translated_content = (
-        f"{translated_preamble}\n\n" f"{questions_text}\n\n" f"{postamble}"
-    )
+    translated_content = f"{translated_preamble}\n\n" f"{questions_text}\n\n" f"{postamble}"
 
     # Speichere Ergebnis
     print(f"\n💾 Speichere englische Version: {output_path}")

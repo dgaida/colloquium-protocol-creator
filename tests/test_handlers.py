@@ -260,9 +260,7 @@ class TestRunProjectDirect:
     @patch("academic_doc_generator.cli.handlers.LLMClient")
     @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
     @patch("academic_doc_generator.cli.handlers.run_project_pipeline")
-    def test_run_project_direct_success(
-        self, mock_run_project, mock_validate_pdf, mock_llm_class
-    ):
+    def test_run_project_direct_success(self, mock_run_project, mock_validate_pdf, mock_llm_class):
         """Test erfolgreiche direkte Projekt-Ausführung."""
         args = Namespace(
             pdf="/test/project.pdf",

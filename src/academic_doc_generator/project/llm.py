@@ -33,9 +33,7 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, 
     """
     # Extract text from first two pages
     pages_text = extract_text_per_page(pdf_path, max_pages=2)
-    sample_text = "\n\n".join(
-        [pages_text.get(i, "") for i in sorted(pages_text.keys())]
-    )
+    sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
     prompt = build_prompt(PromptTemplate.EXTRACT_PROJECT_METADATA, text=sample_text)
 

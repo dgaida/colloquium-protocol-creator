@@ -36,9 +36,7 @@ class ConfigLoader:
         config_files = sorted(self.folder_path.glob("config*.json"))
 
         if not config_files:
-            raise FileNotFoundError(
-                f"Keine config*.json Datei gefunden in: {folder_path}"
-            )
+            raise FileNotFoundError(f"Keine config*.json Datei gefunden in: {folder_path}")
 
         # Nehme die erste gefundene Datei
         json_path = config_files[0]
@@ -92,8 +90,7 @@ class ConfigLoader:
         loc_type = coll["location_type"]
         if loc_type not in self.VALID_LOCATION_TYPES:
             raise ValueError(
-                f"Ungültiger location_type: {loc_type}. "
-                f"Erlaubt: {self.VALID_LOCATION_TYPES}"
+                f"Ungültiger location_type: {loc_type}. " f"Erlaubt: {self.VALID_LOCATION_TYPES}"
             )
 
         # Location-spezifische Pflichtfelder

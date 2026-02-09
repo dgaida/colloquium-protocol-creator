@@ -17,9 +17,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # Global arguments
-    parser.add_argument(
-        "--config", help="Path to JSON configuration file", metavar="CONFIG"
-    )
+    parser.add_argument("--config", help="Path to JSON configuration file", metavar="CONFIG")
 
     parser.add_argument(
         "--list-templates",
@@ -35,12 +33,8 @@ def create_parser() -> argparse.ArgumentParser:
         "colloquium", help="Generate colloquium protocol letter"
     )
     colloquium_parser.add_argument("pdf", help="Path to the thesis PDF")
-    colloquium_parser.add_argument(
-        "--date", required=True, help="Colloquium date (DD.MM.YYYY)"
-    )
-    colloquium_parser.add_argument(
-        "--time", required=True, help="Colloquium time (HH:MM)"
-    )
+    colloquium_parser.add_argument("--date", required=True, help="Colloquium date (DD.MM.YYYY)")
+    colloquium_parser.add_argument("--time", required=True, help="Colloquium time (HH:MM)")
     colloquium_parser.add_argument(
         "--location-type",
         choices=["campus", "company", "online"],
@@ -49,9 +43,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     colloquium_parser.add_argument("--room", help="Room number (for campus)")
     colloquium_parser.add_argument("--company-name", help="Company name (for company)")
-    colloquium_parser.add_argument(
-        "--company-address", help="Company address (for company)"
-    )
+    colloquium_parser.add_argument("--company-address", help="Company address (for company)")
     colloquium_parser.add_argument("--zoom-link", help="Zoom meeting link (for online)")
     colloquium_parser.add_argument(
         "--zoom-code", dest="zcode", help="Zoom access code (for online)"
@@ -62,9 +54,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="LLM API to use (auto-detected if omitted)",
     )
     colloquium_parser.add_argument("--model", help="LLM model to use")
-    colloquium_parser.add_argument(
-        "--groq-free", action="store_true", help="Use free-tier pacing"
-    )
+    colloquium_parser.add_argument("--groq-free", action="store_true", help="Use free-tier pacing")
     colloquium_parser.add_argument(
         "--gemini-eval",
         action="store_true",
@@ -81,9 +71,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # --- Project Subcommand ---
-    project_parser = subparsers.add_parser(
-        "project", help="Generate project work grading letter"
-    )
+    project_parser = subparsers.add_parser("project", help="Generate project work grading letter")
     project_parser.add_argument("pdf", help="Path to the project work PDF")
     project_parser.add_argument("--mark", help="Grade for the project (e.g., 1.3)")
     project_parser.add_argument(
@@ -114,9 +102,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # --- Review Subcommand ---
-    review_parser = subparsers.add_parser(
-        "review", help="Generate peer review comments"
-    )
+    review_parser = subparsers.add_parser("review", help="Generate peer review comments")
     review_parser.add_argument("pdf", help="Path to the paper PDF")
     review_parser.add_argument(
         "--api",
@@ -124,9 +110,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="LLM API to use (auto-detected if omitted)",
     )
     review_parser.add_argument("--model", help="LLM model to use")
-    review_parser.add_argument(
-        "--groq-free", action="store_true", help="Use free-tier pacing"
-    )
+    review_parser.add_argument("--groq-free", action="store_true", help="Use free-tier pacing")
     review_parser.add_argument("--out", help="Output folder")
 
     return parser
@@ -164,9 +148,7 @@ def main() -> None:
         for tmpl in templates:
             print(f"  • {tmpl.name}")
         print("\nVerwendung:")
-        print(
-            "  academic-doc-generator --config config_templates/config_colloquium_campus.json"
-        )
+        print("  academic-doc-generator --config config_templates/config_colloquium_campus.json")
         return
 
     # Config mode

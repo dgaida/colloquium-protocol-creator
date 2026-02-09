@@ -62,9 +62,7 @@ def split_stud_name(full_name: str) -> tuple[str, str]:
     return full_name, "Name"
 
 
-def find_latest_tex(
-    folder: str, pattern: str = "bewertung_brief_*.tex"
-) -> Optional[str]:
+def find_latest_tex(folder: str, pattern: str = "bewertung_brief_*.tex") -> Optional[str]:
     """Find the most recently modified TeX file in a folder matching a pattern.
 
     This function searches for files in the given folder whose names match

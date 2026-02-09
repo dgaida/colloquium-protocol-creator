@@ -7,8 +7,6 @@ FIXED VERSION - Korrigiert die StopIteration-Fehler bei Mock-Aufrufen
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from academic_doc_generator.core import llm, pdf
 
 # ============================================================================
@@ -50,7 +48,9 @@ class TestLLMInterfaceAdditional:
         mock_llm_client.chat_completion.return_value = "Rewritten question?"
 
         # Just check it doesn't crash with verbose=True
-        result = llm.rewrite_comments(sample_context, mock_llm_client, groq_free=False, verbose=True)
+        result = llm.rewrite_comments(
+            sample_context, mock_llm_client, groq_free=False, verbose=True
+        )
 
         assert 1 in result
 

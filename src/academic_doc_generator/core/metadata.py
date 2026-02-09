@@ -60,9 +60,7 @@ def summarize_for_web(pages_text: dict[int, str], llm_client: LLMClientProtocol)
         A short English summary string.
     """
     # Use first 10 pages as in the original script
-    text_to_summarize = "\n\n".join(
-        [pages_text.get(i, "") for i in sorted(pages_text.keys())[:10]]
-    )
+    text_to_summarize = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:10]])
 
     prompt = build_prompt(PromptTemplate.SUMMARIZE_FOR_WEB, text=text_to_summarize)
     messages = [{"role": "user", "content": prompt}]

@@ -94,9 +94,7 @@ class TestEmailGenerator:
             company_address="Musterstraße 42, 51643 Gummersbach",
         )
 
-        assert (
-            result == "in der Firma Beispiel GmbH, Musterstraße 42, 51643 Gummersbach"
-        )
+        assert result == "in der Firma Beispiel GmbH, Musterstraße 42, 51643 Gummersbach"
 
     def test_generate_location_text_company_without_address(self):
         """Test _generate_location_text für Firma ohne Adresse."""
@@ -155,12 +153,8 @@ class TestEmailGenerator:
         with pytest.raises(ValueError, match="Unbekannter location_type"):
             generator._generate_location_text(location_type="unknown")
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
-    )
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_generate_colloquium_email_campus(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Campus-Kolloquium."""
         mock_gender.return_value = "Herr"
@@ -182,12 +176,8 @@ class TestEmailGenerator:
         assert generator.email_text == "Mocked Email Content"
         mock_render.assert_called_once()
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
-    )
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_generate_colloquium_email_female_student(self, mock_gender, mock_render):
         """Test generate_colloquium_email für weibliche Studierende."""
         mock_gender.return_value = "Frau"
@@ -208,12 +198,8 @@ class TestEmailGenerator:
 
         assert "Frau Maria Musterfrau" in generator.email_text
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
-    )
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_generate_colloquium_email_company(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Firmen-Kolloquium."""
         mock_gender.return_value = "Herr"
@@ -235,18 +221,12 @@ class TestEmailGenerator:
 
         assert "in der Firma Test GmbH, Teststraße 1" in generator.email_text
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render"
-    )
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.ColloquiumRegistrationEmail.render")
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_generate_colloquium_email_online(self, mock_gender, mock_render):
         """Test generate_colloquium_email für Online-Kolloquium."""
         mock_gender.return_value = "Herr"
-        mock_render.return_value = (
-            "über Zoom: https://zoom.us/j/123 Zugangscode: abc123"
-        )
+        mock_render.return_value = "über Zoom: https://zoom.us/j/123 Zugangscode: abc123"
 
         generator = email_generator.EmailGenerator()
         generator.generate_colloquium_email(
@@ -306,9 +286,7 @@ class TestEmailGenerator:
             assert os.path.exists(subfolder)
             assert os.path.exists(generator.email_path)
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     @patch("builtins.print")
     def test_generate_and_save_email_complete_flow(self, mock_print, mock_gender):
         """Test complete flow von generate_and_save_email."""
@@ -345,9 +323,7 @@ class TestEmailGenerator:
                 content = f.read()
             assert content == generator.email_text
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     @patch("builtins.print")
     def test_generate_and_save_email_author_format_firstname_lastname(
         self, mock_print, mock_gender
@@ -371,9 +347,7 @@ class TestEmailGenerator:
             )
 
             assert "Frau Maria Musterfrau" in generator.email_text
-            assert "kolloquium_anmeldung_Musterfrau_67890.md" in str(
-                generator.email_path
-            )
+            assert "kolloquium_anmeldung_Musterfrau_67890.md" in str(generator.email_path)
 
     @patch("builtins.print")
     def test_generate_and_save_email_author_none(self, mock_print):
@@ -395,13 +369,9 @@ class TestEmailGenerator:
 
             # Sollte früh abbrechen
             assert generator.email_text is None
-            assert any(
-                "Error: author" in str(call) for call in mock_print.call_args_list
-            )
+            assert any("Error: author" in str(call) for call in mock_print.call_args_list)
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_generate_and_save_email_single_name(self, mock_gender):
         """Test generate_and_save_email mit nur einem Namen."""
         mock_gender.return_value = "Herr"
@@ -429,9 +399,7 @@ class TestEmailGenerator:
 class TestIntegration:
     """Integrationstests für EmailGenerator."""
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_full_email_generation_campus(self, mock_gender):
         """Test vollständige Email-Generierung für Campus."""
         mock_gender.return_value = "Herr"
@@ -462,10 +430,7 @@ class TestIntegration:
             assert "Herr Max Mustermann (12345)" in generator.email_text
             assert "Dienstag, 20.01.2026, um 14:00" in generator.email_text
             assert "in Raum 3.217 am Campus GM" in generator.email_text
-            assert (
-                "Bitte bereiten Sie eine max. 15-minütige Präsentation"
-                in generator.email_text
-            )
+            assert "Bitte bereiten Sie eine max. 15-minütige Präsentation" in generator.email_text
             assert "Viele Grüße," in generator.email_text
             assert "Prof. Dr. Hans Meyer" in generator.email_text
 
@@ -475,9 +440,7 @@ class TestIntegration:
                 content = f.read()
             assert content == generator.email_text
 
-    @patch(
-        "academic_doc_generator.colloquium.email_generator.determine_gender_from_name"
-    )
+    @patch("academic_doc_generator.colloquium.email_generator.determine_gender_from_name")
     def test_full_email_generation_online(self, mock_gender):
         """Test vollständige Email-Generierung für Online."""
         mock_gender.return_value = "Frau"

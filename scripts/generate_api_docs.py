@@ -47,9 +47,7 @@ def generate_api_docs():
         # Calculate target markdown file path
         # Skip 'academic_doc_generator' for the folder structure to keep it cleaner
         rel_module_path = (
-            pathlib.Path(*module_parts[1:])
-            if len(module_parts) > 1
-            else pathlib.Path(".")
+            pathlib.Path(*module_parts[1:]) if len(module_parts) > 1 else pathlib.Path(".")
         )
 
         if is_index:

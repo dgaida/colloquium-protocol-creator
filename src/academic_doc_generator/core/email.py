@@ -1,12 +1,23 @@
 """Centralized email generation with templates."""
 
 from dataclasses import dataclass
-from typing import Protocol
 from datetime import datetime
+from typing import Protocol
 
 
 def weekday_from_string(date_str: str, lang: str = "de") -> str:
-    """Get the weekday name from a date string (DD.MM.YYYY)."""
+    """Get the weekday name from a date string (DD.MM.YYYY).
+
+    Args:
+        date_str: Date in format DD.MM.YYYY.
+        lang: Language for the weekday name ("de" or "en"). Defaults to "de".
+
+    Returns:
+        Name of the weekday in the specified language.
+
+    Raises:
+        ValueError: If the date format is invalid or language is unsupported.
+    """
     date = datetime.strptime(date_str, "%d.%m.%Y")
     weekday_idx = date.weekday()  # Montag = 0
 
@@ -93,6 +104,18 @@ class ColloquiumRegistrationEmail:
         time: str,
         location_text: str,
     ) -> str:
+        """Render the registration email text.
+
+        Args:
+            student: The student being registered.
+            examiner: Name of the first examiner.
+            date: Date of the colloquium (DD.MM.YYYY).
+            time: Time of the colloquium (HH:MM).
+            location_text: Formatted location description.
+
+        Returns:
+            The rendered email body as a string.
+        """
         weekday = weekday_from_string(date)
 
         return f"""Lieber Prüfungsservice,

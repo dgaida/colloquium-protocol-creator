@@ -20,9 +20,9 @@ dependencies = [
 ]
 
 [project.scripts]
-academic-doc-generator = "academic_doc_generator.cli:main"
-colloquium-protocol-creator = "academic_doc_generator.cli:colloquium_main"
-project-grading-letter = "academic_doc_generator.cli:project_main"
+academic-doc-generator = "academic_doc_generator.cli.main:main"
+colloquium-protocol-creator = "academic_doc_generator.cli.main:colloquium_main"
+project-grading-letter = "academic_doc_generator.cli.main:project_main"
 
 [project.optional-dependencies]
 dev = [
@@ -39,3 +39,31 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]  # Allow assert in tests
+
+[tool.black]
+line-length = 100
+target-version = ['py39']

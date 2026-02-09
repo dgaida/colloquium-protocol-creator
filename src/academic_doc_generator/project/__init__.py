@@ -6,8 +6,6 @@ This package creates LaTeX letters for grading project work (Praxisprojekt)
 at TH Köln, reusing infrastructure from the colloquium protocol creator.
 """
 
-from . import latex
-from . import llm
-from . import orchestrator
+from . import latex, llm, orchestrator
 
 __all__ = ["latex", "llm", "orchestrator"]

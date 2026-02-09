@@ -3,10 +3,10 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import List
+
+from ..core.validation import validate_api_keys
 from . import handlers
 from .handlers import run_from_config
-from .domain.validation import validate_api_keys
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -155,7 +155,7 @@ def main() -> None:
             print("❌ config_templates-Ordner nicht gefunden")
             sys.exit(1)
 
-        templates: List[Path] = sorted(templates_dir.glob("*.json"))
+        templates: list[Path] = sorted(templates_dir.glob("*.json"))
         if not templates:
             print("❌ Keine Config-Templates gefunden")
             sys.exit(1)

@@ -2,17 +2,19 @@
 Unit tests for the pipeline orchestrators and CLIs.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.colloquium import orchestrator as colloquium_orchestrator
-from academic_doc_generator.project import orchestrator as project_orchestrator
-from academic_doc_generator.review import orchestrator as review_orchestrator
 from academic_doc_generator.core.types import (
     ColloquiumWorkflowConfig,
     ProjectWorkflowConfig,
 )
+from academic_doc_generator.project import orchestrator as project_orchestrator
+from academic_doc_generator.review import orchestrator as review_orchestrator
 
 # ============================================================================
 # Tests for colloquium_pipeline/orchestrator.py

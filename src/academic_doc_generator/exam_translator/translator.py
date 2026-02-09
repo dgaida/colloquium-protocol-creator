@@ -3,12 +3,13 @@
 
 import re
 from pathlib import Path
-from typing import List, Tuple, Dict
+
 from llm_client import LLMClient
+
 from ..core.prompts import PromptTemplate, build_prompt
 
 
-def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
+def mask_comments(text: str) -> tuple[str, dict[str, str]]:
     """Ersetzt Zeilen, die mit % beginnen, durch Platzhalter.
 
     Args:
@@ -21,7 +22,7 @@ def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
     """
     lines = text.splitlines()
     masked_lines = []
-    comment_map: Dict[str, str] = {}
+    comment_map: dict[str, str] = {}
 
     for line in lines:
         if line.strip().startswith("%"):
@@ -34,7 +35,7 @@ def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
     return "\n".join(masked_lines), comment_map
 
 
-def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
+def unmask_comments(text: str, comment_map: dict[str, str]) -> str:
     """Stellt die ursprünglichen Kommentare aus den Platzhaltern wieder her.
 
     Args:
@@ -53,7 +54,7 @@ def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
 
 def split_latex_exam_into_sections(
     latex_content: str, verbose: bool = False
-) -> Tuple[str, List[str], str]:
+) -> tuple[str, list[str], str]:
     """Teilt ein LaTeX-Dokument in Präambel, Fragen und Postamble auf.
 
     Ignoriert auskommentierte \\begin{questions} und \\end{questions} Befehle.
@@ -241,7 +242,7 @@ def translate_latex_exam(
     print(f"\n📄 Lese LaTeX-Datei: {input_path}")
 
     # Lese Input-Datei
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(input_path, encoding="utf-8") as f:
         latex_content = f.read()
 
     print("✂️  Teile Dokument in Abschnitte...")

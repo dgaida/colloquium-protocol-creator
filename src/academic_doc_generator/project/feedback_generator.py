@@ -2,10 +2,11 @@
 """Logic for extracting and summarizing feedback from PDF annotations."""
 
 from llm_client import LLMClient
+
 from ..core.pdf import (
     extract_annotations_with_positions,
-    find_annotation_context,
     extract_text_with_positions,
+    find_annotation_context,
 )
 from ..core.prompts import PromptTemplate, build_prompt
 

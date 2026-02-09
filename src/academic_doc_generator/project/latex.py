@@ -3,6 +3,7 @@
 
 import os
 from typing import Optional
+
 from ..core.latex import escape_for_latex
 from ..core.utils import get_semester
 

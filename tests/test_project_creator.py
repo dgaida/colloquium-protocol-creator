@@ -2,14 +2,16 @@
 Unit tests for the project_creator package.
 """
 
-import pytest
+import json
 import os
 import tempfile
-import json
-from unittest.mock import MagicMock, patch
 from datetime import datetime
-from academic_doc_generator.project import latex, llm
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.core import llm as core_llm
+from academic_doc_generator.project import latex, llm
 
 # ============================================================================
 # Tests for project_creator/latex.py
@@ -85,7 +87,7 @@ class TestProjectLatexGeneration:
 
             assert os.path.exists(tex_path)
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Check basic structure
@@ -122,7 +124,7 @@ class TestProjectLatexGeneration:
                 work_type="Projektarbeit",
             )
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Check gender-specific text
@@ -151,7 +153,7 @@ class TestProjectLatexGeneration:
                 gender="Herr",
             )
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             # When preserve_latex=False, special chars are escaped differently
@@ -203,7 +205,7 @@ class TestProjectLatexGeneration:
                 signature_file="custom_sig.png",
             )
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             assert "Köln" in content
@@ -387,7 +389,7 @@ class TestProjectIntegration:
             # Verify file was created
             assert os.path.exists(tex_path)
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Verify all metadata is in the letter

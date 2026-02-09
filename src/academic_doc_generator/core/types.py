@@ -7,7 +7,7 @@ used throughout the package, improving type safety and IDE support.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict, Literal, Optional, Tuple, Protocol, List, Dict
+from typing import Literal, Optional, Protocol, TypedDict
 
 # ==============================================================================
 # Literals for constrained string values
@@ -29,7 +29,7 @@ GenderType = Literal["Herr", "Frau", "Herr/Frau"]
 # Bounding Box Types
 # ==============================================================================
 
-BBox = Tuple[float, float, float, float]
+BBox = tuple[float, float, float, float]
 """Bounding box as (x0, y0, x1, y1) in PDF coordinates (bottom-left origin)."""
 
 
@@ -51,7 +51,7 @@ class LLMClientProtocol(Protocol):
     api_choice: str
     llm: str
 
-    def chat_completion(self, messages: List[Dict[str, str]]) -> str:
+    def chat_completion(self, messages: list[dict[str, str]]) -> str:
         """Send a chat completion request.
 
         Args:
@@ -81,7 +81,7 @@ class AnnotationData(TypedDict):
     comment: str
     subtype: str
     rect: Optional[BBox]
-    quadpoints: Optional[List[float]]
+    quadpoints: Optional[list[float]]
     category: CommentCategory
 
 
@@ -284,10 +284,10 @@ class ProjectWorkflowResult:
     metadata_path: str
 
 
-ColloquiumResult = Tuple[str, str, str, str]
+ColloquiumResult = tuple[str, str, str, str]
 """Legacy result type for colloquium pipeline."""
 
-ProjectResult = Tuple[str, str, str, str, str]
+ProjectResult = tuple[str, str, str, str, str]
 """Legacy result type for project pipeline."""
 
 ReviewResult = str
@@ -297,17 +297,17 @@ ReviewResult = str
 # Type Aliases for Common Patterns
 # ==============================================================================
 
-PageWords = Dict[int, List[WordBox]]
+PageWords = dict[int, list[WordBox]]
 """Mapping of page indices (0-based) to lists of words."""
 
-PageAnnotations = Dict[int, List[AnnotationData]]
+PageAnnotations = dict[int, list[AnnotationData]]
 """Mapping of page indices (0-based) to lists of annotations."""
 
-PageContexts = Dict[int, List[AnnotationContext]]
+PageContexts = dict[int, list[AnnotationContext]]
 """Mapping of page numbers (1-based) to annotation contexts."""
 
-RewrittenComments = Dict[int, List[RewrittenComment]]
+RewrittenComments = dict[int, list[RewrittenComment]]
 """Mapping of page numbers (1-based) to rewritten comments."""
 
-PageText = Dict[int, str]
+PageText = dict[int, str]
 """Mapping of page indices (0-based) to full text content."""

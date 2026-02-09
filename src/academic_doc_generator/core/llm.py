@@ -1,13 +1,15 @@
 # src/academic_doc_generator/core/llm.py
 """LLM interface with comprehensive type annotations for API interactions."""
 
-from typing import Dict, List, Optional, Any, Tuple
 import json
 import time
+from typing import Any, Optional
+
 from llm_client import LLMClient
-from . import pdf, latex
-from .types import RewrittenComment, ThesisMetadata, LLMClientProtocol
+
+from . import latex, pdf
 from .prompts import PromptTemplate, build_prompt
+from .types import LLMClientProtocol, RewrittenComment, ThesisMetadata
 
 # ============================================================================
 # Type Definitions and Protocols
@@ -22,11 +24,11 @@ from .prompts import PromptTemplate, build_prompt
 
 
 def rewrite_comments(
-    context_dict: Dict[int, List[pdf.AnnotationContext]],
+    context_dict: dict[int, list[pdf.AnnotationContext]],
     llm_client: LLMClientProtocol,
     groq_free: bool = False,
     verbose: bool = False,
-) -> Dict[int, List[RewrittenComment]]:
+) -> dict[int, list[RewrittenComment]]:
     """Rewrite rough comments into clear, polite questions using LLMClient.
 
     Only comments categorized as "llm" are rewritten. Comments with category
@@ -54,10 +56,10 @@ def rewrite_comments(
         >>> result[1][0]['rewritten']
         'Could you explain the reasoning behind this approach?'
     """
-    rewritten: Dict[int, List[RewrittenComment]] = {}
+    rewritten: dict[int, list[RewrittenComment]] = {}
 
     for page_num, items in context_dict.items():
-        rewritten_items: List[RewrittenComment] = []
+        rewritten_items: list[RewrittenComment] = []
 
         if groq_free and (len(rewritten) + 1) % 5 == 0:
             print("Waiting for 10 seconds to avoid error from API: Too Many Requests")
@@ -161,7 +163,7 @@ def detect_degree_from_filename(pdf_path: str, llm_client: LLMClientProtocol) ->
 
 
 def extract_document_metadata(
-    pages_text: Dict[int, str],
+    pages_text: dict[int, str],
     language: str,
     llm_client: LLMClientProtocol,
     pdf_path: str = None,
@@ -214,7 +216,6 @@ def extract_document_metadata(
         print("   🔄 Versuche Bestimmung über Dateinamen...")
         degree_from_filename = detect_degree_from_filename(pdf_path, llm_client)
         if degree_from_filename:
-            from .types import DegreeType
 
             metadata["bachelor_master"] = degree_from_filename  # type: ignore[typeddict-item]
             print(f"   ✅ Aus Dateinamen bestimmt: {degree_from_filename}")
@@ -225,7 +226,7 @@ def extract_document_metadata(
 
 
 def summarize_thesis(
-    pages_text: Dict[int, str], language: str, llm_client: LLMClientProtocol
+    pages_text: dict[int, str], language: str, llm_client: LLMClientProtocol
 ) -> str:
     """Summarize the thesis from the first 10 pages in LaTeX-friendly format.
 
@@ -259,7 +260,7 @@ def summarize_thesis(
 
 
 def detect_language(
-    results: Dict[int, List[RewrittenComment]],
+    results: dict[int, list[RewrittenComment]],
     llm_client: LLMClientProtocol,
     groq_free: bool,
     sample_size: int = 3,
@@ -284,8 +285,8 @@ def detect_language(
         'German'
     """
     # Collect a few rewritten comments for language detection
-    texts: List[str] = []
-    for page, items in results.items():
+    texts: list[str] = []
+    for _page, items in results.items():
         for item in items:
             texts.append(item["rewritten"])
             if len(texts) >= sample_size:
@@ -312,7 +313,7 @@ def rewrite_comments_in_pdf(
     groq_free: bool = False,
     verbose: bool = False,
     pdf_processor: Any = None,  # For dependency injection in tests
-) -> Tuple[Dict[int, List[RewrittenComment]], pdf.CommentStats]:
+) -> tuple[dict[int, list[RewrittenComment]], pdf.CommentStats]:
     """Extract and rewrite PDF comments into clear, polite questions.
 
     This function parses the given PDF, extracts annotations, finds their
@@ -389,7 +390,7 @@ def get_summary_and_metadata_of_pdf(
     llm_client: Optional[LLMClientProtocol] = None,
     groq_free: bool = False,
     verbose: bool = False,
-) -> Tuple[str, ThesisMetadata]:
+) -> tuple[str, ThesisMetadata]:
     """Extract thesis metadata and generate a summary from the PDF.
 
     This function uses the first pages of the PDF to detect metadata such as

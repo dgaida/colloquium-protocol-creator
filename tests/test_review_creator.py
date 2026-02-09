@@ -2,10 +2,12 @@
 Unit tests for the review_creator package - FIXED VERSION
 """
 
-import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.review import md_generator
 
 # ============================================================================
@@ -345,7 +347,7 @@ class TestMdGenerator:
 
             assert os.path.exists(md_path)
 
-            with open(md_path, "r", encoding="utf-8") as f:
+            with open(md_path, encoding="utf-8") as f:
                 content = f.read()
 
             assert "# Peer Review" in content
@@ -372,7 +374,7 @@ class TestMdGenerator:
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, "r", encoding="utf-8") as f:
+            with open(md_path, encoding="utf-8") as f:
                 content = f.read()
 
             assert "Page 1, Line 10: First comment." in content
@@ -393,7 +395,7 @@ class TestMdGenerator:
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, "r", encoding="utf-8") as f:
+            with open(md_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Should still have header structure
@@ -473,7 +475,7 @@ class TestReviewIntegration:
         try:
             md_generator.create_review_markdown(rewritten, md_path)
 
-            with open(md_path, "r", encoding="utf-8") as f:
+            with open(md_path, encoding="utf-8") as f:
                 content = f.read()
 
             assert (

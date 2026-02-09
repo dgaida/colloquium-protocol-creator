@@ -5,7 +5,7 @@ import re
 import subprocess
 import unicodedata
 from functools import lru_cache
-from typing import Dict, List, Optional
+from typing import Optional
 
 
 @lru_cache(maxsize=1024)
@@ -49,7 +49,7 @@ def escape_latex_text(text: str) -> str:
     }
 
     # Use regex to perform all replacements in one pass to avoid double-escaping
-    pattern = re.compile("|".join(re.escape(k) for k in replacements.keys()))
+    pattern = re.compile("|".join(re.escape(k) for k in replacements))
     text = pattern.sub(lambda m: replacements[m.group(0)], text)
 
     return text
@@ -164,23 +164,29 @@ def create_formal_letter_tex(
     place: str = "Gummersbach",
     date: str = r"\today",
     gemini_emark: Optional[str] = None,
-):
+) -> None:
     """Create a LaTeX file for a formal letter with TH Köln footer.
 
     Args:
-        filename (str): Output path for the LaTeX file.
-        recipient (str): Recipient of the letter.
-        subject (str): Subject line.
-        title (str): Thesis title.
-        author (str): Author name and matriculation number.
-        summary (str): summary of the thesis.
-        first_examiner (str): name of first examiner.
-        second_examiner (str): name of second examiner.
-        first_einfo (str): email of first examiner.
-        questions (str): questions from first examiner.
-        place (str, optional): Place of issue. Defaults to "Gummersbach".
-        date (str, optional): Date string. Defaults to LaTeX \today.
-        gemini_emark (str, optional): Automatische Bewertung von Gemini.
+        filename: Output path for the LaTeX file.
+        recipient: Recipient of the letter.
+        subject: Subject line.
+        title: Thesis title.
+        author: Author name and matriculation number.
+        summary: summary of the thesis.
+        first_examiner: name of first examiner.
+        second_examiner: name of second examiner.
+        first_einfo: email of first examiner.
+        questions: questions from first examiner.
+        place: Place of issue. Defaults to "Gummersbach".
+        date: Date string. Defaults to LaTeX \\today.
+        gemini_emark: Optional LaTeX-formatted Gemini evaluation text.
+
+    Returns:
+        None. Writes the output to the specified filename.
+
+    Raises:
+        OSError: If the file cannot be written.
     """
     # Füge Gemini-Bewertung hinzu, falls vorhanden
     gemini_section = ""
@@ -337,7 +343,7 @@ Dauer des Kolloquiums: 45 Minuten
 
 
 def concatenate_comments(
-    results: Dict[int, List[dict]], language: str, verbose: bool = False
+    results: dict[int, list[dict]], language: str, verbose: bool = False
 ) -> str:
     """Concatenate rewritten comments into a LaTeX-formatted string.
 

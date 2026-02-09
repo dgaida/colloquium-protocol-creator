@@ -2,9 +2,10 @@
 Unit tests for src/academic_doc_generator/colloquium/pdf_form_filler.py
 """
 
-import pytest
 import tempfile
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from academic_doc_generator.colloquium import pdf_form_filler
 

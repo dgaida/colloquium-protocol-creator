@@ -3,9 +3,9 @@
 import os
 import platform
 import subprocess
-from typing import Optional
 import traceback
 import urllib.parse
+from typing import Optional
 
 
 class OutlookMailGenerator:

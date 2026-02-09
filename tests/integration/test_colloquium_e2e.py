@@ -1,9 +1,11 @@
 """End-to-end integration tests for colloquium workflow."""
 
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.colloquium.orchestrator import run_pipeline
 from academic_doc_generator.core.types import ColloquiumWorkflowConfig
 
@@ -101,7 +103,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         assert Path(result.metadata_path).exists()
 
         # Verify LaTeX content
-        with open(result.tex_path, "r", encoding="utf-8") as f:
+        with open(result.tex_path, encoding="utf-8") as f:
             content = f.read()
             assert r"\documentclass" in content
             assert "Max Mustermann" in content
@@ -109,7 +111,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
             assert "Rewritten Comment?" in content
 
         # Verify Email content
-        with open(result.email_path, "r", encoding="utf-8") as f:
+        with open(result.email_path, encoding="utf-8") as f:
             email_content = f.read()
             assert "Lieber Prüfungsservice" in email_content
             assert "Max Mustermann" in email_content
@@ -118,7 +120,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
             assert "Raum 3.217" in email_content
 
         # Verify metadata file
-        with open(result.metadata_path, "r", encoding="utf-8") as f:
+        with open(result.metadata_path, encoding="utf-8") as f:
             metadata_content = f.read()
             assert 'title: "Thesis Title"' in metadata_content
             assert 'author: "M. M."' in metadata_content

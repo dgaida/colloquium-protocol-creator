@@ -7,11 +7,12 @@ Dieses Script bietet Funktionen zum:
 - Automatischen Ausfüllen von PDF-Formularen
 """
 
-import pymupdf  # PyMuPDF
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Optional
+
+import pymupdf  # PyMuPDF
 
 
 class PDFFormHandler:
@@ -45,7 +46,7 @@ class PDFFormHandler:
                 return True
         return False
 
-    def list_form_fields(self) -> List[Dict[str, Any]]:
+    def list_form_fields(self) -> list[dict[str, Any]]:
         """
         Listet alle Formularfelder mit Details auf.
 
@@ -125,7 +126,7 @@ class PDFFormHandler:
             print()
 
     def fill_form(
-        self, field_data: Dict[str, Any], output_path: str, flatten: bool = False
+        self, field_data: dict[str, Any], output_path: str, flatten: bool = False
     ) -> bool:
         """
         Füllt das PDF-Formular mit den angegebenen Daten aus.
@@ -190,7 +191,7 @@ class PDFFormHandler:
             # Prüfe, welche Felder nicht gefunden wurden
             all_field_names = {field["name"] for field in self.list_form_fields()}
             not_found = [
-                name for name in field_data.keys() if name not in all_field_names
+                name for name in field_data if name not in all_field_names
             ]
 
             if not_found:
@@ -236,7 +237,7 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
 
 
 def fill_form(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     output_folder: str,
     degree: str,
     location_type: str = "campus",

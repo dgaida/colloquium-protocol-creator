@@ -2,14 +2,16 @@
 Unit tests for the colloquium-protocol-creator package.
 """
 
-import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock
+
+import pytest
+
 from academic_doc_generator.core import (
-    pdf,
-    llm,
     latex,
+    llm,
+    pdf,
     utils,
 )
 
@@ -338,7 +340,7 @@ class TestLatexGeneration:
 
             assert os.path.exists(tex_path)
 
-            with open(tex_path, "r", encoding="utf-8") as f:
+            with open(tex_path, encoding="utf-8") as f:
                 content = f.read()
 
             assert "Test Recipient" in content

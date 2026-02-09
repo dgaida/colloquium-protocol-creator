@@ -2,10 +2,11 @@
 Unit tests for src/academic_doc_generator/colloquium/email_generator.py
 """
 
-import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from academic_doc_generator.colloquium import email_generator
 from academic_doc_generator.core.email import weekday_from_string
@@ -285,7 +286,7 @@ class TestEmailGenerator:
             assert generator.email_path.name == expected_filename
 
             # Prüfe Inhalt
-            with open(generator.email_path, "r", encoding="utf-8") as f:
+            with open(generator.email_path, encoding="utf-8") as f:
                 content = f.read()
             assert content == "Test email content"
 
@@ -340,7 +341,7 @@ class TestEmailGenerator:
             assert "in Raum 2.208 am Campus GM" in generator.email_text
 
             # Prüfe dass Datei gespeichert wurde
-            with open(generator.email_path, "r", encoding="utf-8") as f:
+            with open(generator.email_path, encoding="utf-8") as f:
                 content = f.read()
             assert content == generator.email_text
 
@@ -470,7 +471,7 @@ class TestIntegration:
 
             # Prüfe Datei
             assert os.path.exists(generator.email_path)
-            with open(generator.email_path, "r", encoding="utf-8") as f:
+            with open(generator.email_path, encoding="utf-8") as f:
                 content = f.read()
             assert content == generator.email_text
 

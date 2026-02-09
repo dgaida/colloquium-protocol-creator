@@ -1,8 +1,9 @@
 # review_creator/md_generator.py
 
 import time
-from typing import Dict, List
+
 from llm_client import LLMClient
+
 from ..core.prompts import PromptTemplate, build_prompt
 
 
@@ -57,7 +58,7 @@ def find_line_number_from_text(
 
 def find_annotation_context_with_lines(
     pages_words: dict, annotations: dict, page_heights: dict
-) -> Dict[int, List[dict]]:
+) -> dict[int, list[dict]]:
     """Like find_annotation_context, but also attach estimated line numbers.
 
     Args:
@@ -102,11 +103,11 @@ def find_annotation_context_with_lines(
 
 
 def rewrite_comments_markdown(
-    context_dict: Dict[int, List[dict]],
+    context_dict: dict[int, list[dict]],
     llm_client: LLMClient,
     groq_free: bool = False,
     verbose: bool = False,
-) -> Dict[int, List[dict]]:
+) -> dict[int, list[dict]]:
     """Rewrite comments for peer review (Markdown output).
 
     Args:
@@ -118,7 +119,7 @@ def rewrite_comments_markdown(
     Returns:
         Dict with rewritten comments per page.
     """
-    rewritten: Dict[int, List[dict]] = {}
+    rewritten: dict[int, list[dict]] = {}
 
     for page_num, items in context_dict.items():
         rewritten_items = []
@@ -163,7 +164,7 @@ def rewrite_comments_markdown(
     return rewritten
 
 
-def create_review_markdown(rewritten: Dict[int, List[dict]], output_file: str):
+def create_review_markdown(rewritten: dict[int, list[dict]], output_file: str):
     """Create a Markdown review document from rewritten comments.
 
     Args:

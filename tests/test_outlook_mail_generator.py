@@ -2,9 +2,10 @@
 Unit tests for src/academic_doc_generator/colloquium/outlook_mail_generator.py
 """
 
-import pytest
 import subprocess
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from academic_doc_generator.colloquium.outlook_mail_generator import (
     OutlookMailGenerator,

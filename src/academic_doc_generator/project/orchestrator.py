@@ -3,23 +3,25 @@
 
 import os
 from pathlib import Path
+
 from llm_client import LLMClient
+
+from ..colloquium.email_generator import EmailGenerator
+from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 from ..core import pdf
-from ..domain.metadata import generate_metadata_file
+from ..core.latex import compile_latex_to_pdf
+from ..core.llm import determine_gender_from_name
+from ..core.types import (
+    ProjectWorkflowConfig,
+    ProjectWorkflowResult,
+)
+from ..core.utils import get_semester, split_stud_name
+from ..core.metadata import generate_metadata_file
+from .feedback_generator import generate_feedback_summary
+from .latex import create_project_grading_letter_tex
 from .llm import (
     extract_project_metadata,
 )
-from ..core.llm import determine_gender_from_name
-from .feedback_generator import generate_feedback_summary
-from ..core.utils import split_stud_name, get_semester
-from .latex import create_project_grading_letter_tex
-from ..core.latex import compile_latex_to_pdf
-from ..core.types import (
-    ProjectWorkflowResult,
-    ProjectWorkflowConfig,
-)
-from ..colloquium.email_generator import EmailGenerator
-from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 
 
 def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult:

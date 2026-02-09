@@ -1,21 +1,22 @@
 # src/academic_doc_generator/colloquium/orchestrator.py
 """High-level pipeline with comprehensive type annotations for colloquium protocol generation."""
 
-from typing import Optional, Dict, Any
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Optional
+
 from llm_client import LLMClient
-from ..core import llm, latex, utils, pdf
-from ..domain.metadata import generate_metadata_file
-from . import pdf_form_filler
-from . import email_generator
-from .gemini_thesis_evaluator import GeminiThesisEvaluator
-from .calendar_generator import CalendarGenerator
-from .outlook_mail_generator import OutlookMailGenerator
+
+from ..core import latex, llm, pdf, utils
 from ..core.types import (
     ColloquiumWorkflowConfig,
     ColloquiumWorkflowResult,
 )
+from ..core.metadata import generate_metadata_file
+from . import email_generator, pdf_form_filler
+from .calendar_generator import CalendarGenerator
+from .gemini_thesis_evaluator import GeminiThesisEvaluator
+from .outlook_mail_generator import OutlookMailGenerator
 
 # ============================================================================
 # Public Functions
@@ -42,132 +43,181 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         subprocess.CalledProcessError: If LaTeX compilation fails when `compile_pdf=True`.
         Exception: Any errors raised by the LLM API (e.g., authentication issues).
     """
-    pdf_path = config.pdf_path
-    output_folder_path = config.output_folder
+    # 1. Initialize
+    llm_client, output_folder = _initialize_pipeline(config)
+
+    # 2. Extract & Process
+    rewritten, stats, metadata, summary, language, pages_text = _extract_and_process_thesis(
+        config, llm_client
+    )
+
+    # 3. Optional: Gemini emark
+    gemini_emark_text = _get_gemini_emark(config, metadata)
+
+    # 4. Generate LaTeX Output
+    tex_path, pdf_path_str = _generate_latex_outputs(
+        config, rewritten, metadata, summary, language, output_folder, gemini_emark_text
+    )
+
+    # 5. Fill PDF form
+    _fill_grading_form(config, metadata, output_folder)
+
+    # 6. Generate Emails and Calendar
+    registration_email_text, email_path, ics_path = _generate_emails_and_calendar(
+        config, metadata, llm_client, output_folder
+    )
+
+    # 7. Create Outlook mail draft
+    _create_outlook_draft(metadata, registration_email_text, ics_path, email_path)
+
+    # 8. Generate web metadata
+    web_md_path = _generate_web_metadata(config, metadata, pages_text, llm_client, output_folder)
+
+    return ColloquiumWorkflowResult(
+        tex_path=tex_path,
+        pdf_path=pdf_path_str,
+        email_path=email_path,
+        metadata_path=web_md_path,
+    )
+
+
+def _initialize_pipeline(config: ColloquiumWorkflowConfig) -> tuple[LLMClient, str]:
+    """Initialize pipeline with validated configuration."""
+    output_folder = (
+        str(config.output_folder) if config.output_folder else str(config.pdf_path.parent)
+    )
+
     llm_client = config.llm_client
-    fill_form_only = config.fill_form_only
-    groq_free = config.groq_free
-
-    if output_folder_path is None:
-        output_folder = str(Path(pdf_path).parent)
-    else:
-        output_folder = str(output_folder_path)
-
-    # Create LLMClient if not provided
     if llm_client is None:
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
-    if not fill_form_only:
-        # 1) rewrite comments
-        rewritten, stats = llm.rewrite_comments_in_pdf(
-            str(pdf_path), llm_client, groq_free=groq_free
-        )
+    return llm_client, output_folder
 
-        # 2) detect language
-        language = llm.detect_language(rewritten, llm_client, groq_free)
+
+def _extract_and_process_thesis(config: ColloquiumWorkflowConfig, llm_client: LLMClient):
+    """Extract information from thesis PDF and process it with LLM."""
+    pdf_path_str = str(config.pdf_path)
+
+    if not config.fill_form_only:
+        # rewrite comments
+        rewritten, stats = llm.rewrite_comments_in_pdf(
+            pdf_path_str, llm_client, groq_free=config.groq_free
+        )
+        # detect language
+        language = llm.detect_language(rewritten, llm_client, config.groq_free)
     else:
-        # TODO: Could determine this dynamically from first pages
-        # For now, manually set as determining from rewritten text is overkill
+        rewritten, stats = {}, {"quelle": 0, "language": 0, "ignore": 0}
         language = "German"
 
-    # 3) summary & metadata
-    pages_text = pdf.extract_text_per_page(str(pdf_path))
+    # summary & metadata
+    pages_text = pdf.extract_text_per_page(pdf_path_str)
     summary, metadata = llm.get_summary_and_metadata_of_pdf(
-        str(pdf_path), language, llm_client, groq_free
+        pdf_path_str, language, llm_client, config.groq_free
     )
 
-    if not fill_form_only:
+    if not config.fill_form_only:
         # Apply stats-based modifications to summary
         if stats["quelle"] > 4:
-            if summary.strip()[-1] == "}":
-                summary = summary + "Häufig fehlen Quellenangaben."
-            else:
-                summary = summary + "\\\\Häufig fehlen Quellenangaben."
+            summary += (
+                "Häufig fehlen Quellenangaben."
+                if summary.strip()[-1] == "}"
+                else "\\\\Häufig fehlen Quellenangaben."
+            )
             print("Häufig fehlen Quellenangaben")
 
         if stats["language"] > 5:
-            if summary.strip()[-1] == "}":
-                summary = summary + "Viele sprachliche Fehler."
-            else:
-                summary = summary + "\\\\Viele sprachliche Fehler."
+            summary += (
+                "Viele sprachliche Fehler."
+                if summary.strip()[-1] == "}"
+                else "\\\\Viele sprachliche Fehler."
+            )
             print("Viele sprachliche Fehler")
 
     print(metadata)
+    return rewritten, stats, metadata, summary, language, pages_text
 
-    author = metadata.get("author", "Unknown")
-    matriculation = metadata.get("sid", "unknown")
-    first_examiner = metadata.get("first_examiner", "Unbekannt")
-    second_examiner = metadata.get("second_examiner", "Unbekannt")
-    first_einfo = f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de"
-    degree = metadata.get("bachelor_master", "Bachelor")
-    thesis_title = metadata.get("title", "")
 
-    # 4) Optional: Gemini emark
-    gemini_emark_text: Optional[str] = None
-    if config.gemini_emark_enabled:
-        try:
-            # Create separate Gemini client
-            gemini_client = LLMClient(
-                api_choice="gemini",
-                llm=config.gemini_model or "gemini-2.0-flash-exp",
-                max_tokens=4096,
-            )
+def _get_gemini_emark(config: ColloquiumWorkflowConfig, metadata: dict) -> Optional[str]:
+    """Generate an automatic grade evaluation using Gemini if enabled."""
+    if not config.gemini_emark_enabled:
+        return None
 
-            evaluator = GeminiThesisEvaluator(gemini_client)
-            emark = evaluator.evaluate_thesis(
-                pdf_path=str(pdf_path),
-                thesis_title=thesis_title,
-                degree=degree,
-                verbose=False,
-            )
-
-            if emark:
-                gemini_emark_text = evaluator.format_emark_for_latex(emark)
-                print("   ✅ Gemini-Bewertung erfolgreich zur LaTeX-Datei hinzugefügt")
-            else:
-                print("   ⚠️  Gemini-Bewertung fehlgeschlagen, fahre ohne fort")
-
-        except Exception as e:
-            print(f"   ⚠️  Fehler bei Gemini-Bewertung: {e}")
-            print("   → Fahre ohne automatische Bewertung fort")
-
-    if not fill_form_only:
-        # 5) concatenate comments and escape/format as needed
-        questions = latex.concatenate_comments(rewritten, language)  # type: ignore[arg-type]
-
-        tex_name = f"bewertung_brief_{matriculation}.tex"
-        tex_path = str(Path(output_folder) / tex_name)
-
-        latex.create_formal_letter_tex(
-            filename=tex_path,
-            recipient="Prüfungsausschuss der TH Köln",
-            subject=f"Bewertung {degree} von {author.title()}",
-            title=thesis_title,
-            author=f"{author.title()}, Matr.-Nr. {matriculation}",
-            summary=summary,
-            first_examiner=first_examiner.title(),
-            second_examiner=second_examiner.title(),
-            first_einfo=first_einfo,
-            questions=questions,
-            gemini_emark=gemini_emark_text,
+    try:
+        gemini_client = LLMClient(
+            api_choice="gemini",
+            llm=config.gemini_model or "gemini-2.0-flash-exp",
+            max_tokens=4096,
+        )
+        evaluator = GeminiThesisEvaluator(gemini_client)
+        emark = evaluator.evaluate_thesis(
+            pdf_path=str(config.pdf_path),
+            thesis_title=metadata.get("title", ""),
+            degree=metadata.get("bachelor_master", "Bachelor"),
+            verbose=False,
         )
 
-        pdf_path_str = ""
-        if config.compile_pdf:
-            pdf_path_str = latex.compile_latex_to_pdf(
-                tex_path, output_dir=output_folder
-            )
-            if pdf_path_str:
-                print(f"✅ PDF compiled: {pdf_path_str}")
-    else:
-        tex_path = ""
-        pdf_path_str = ""
+        if emark:
+            print("   ✅ Gemini-Bewertung erfolgreich zur LaTeX-Datei hinzugefügt")
+            return evaluator.format_emark_for_latex(emark)
 
-    # 6) Fill PDF form
-    daten: Dict[str, Any] = {
-        "name_student": author,
-        "MatrNr": matriculation,
+        print("   ⚠️  Gemini-Bewertung fehlgeschlagen, fahre ohne fort")
+    except Exception as e:
+        print(f"   ⚠️  Fehler bei Gemini-Bewertung: {e}")
+        print("   → Fahre ohne automatische Bewertung fort")
+
+    return None
+
+
+def _generate_latex_outputs(
+    config: ColloquiumWorkflowConfig,
+    rewritten: dict,
+    metadata: dict,
+    summary: str,
+    language: str,
+    output_folder: str,
+    gemini_emark_text: Optional[str],
+) -> tuple[str, str]:
+    """Generate LaTeX source and compile to PDF."""
+    if config.fill_form_only:
+        return "", ""
+
+    questions = latex.concatenate_comments(rewritten, language)  # type: ignore[arg-type]
+    author = metadata.get("author", "Unknown")
+    matriculation = metadata.get("sid", "unknown")
+    degree = metadata.get("bachelor_master", "Bachelor")
+
+    tex_name = f"bewertung_brief_{matriculation}.tex"
+    tex_path = str(Path(output_folder) / tex_name)
+
+    latex.create_formal_letter_tex(
+        filename=tex_path,
+        recipient="Prüfungsausschuss der TH Köln",
+        subject=f"Bewertung {degree} von {author.title()}",
+        title=metadata.get("title", ""),
+        author=f"{author.title()}, Matr.-Nr. {matriculation}",
+        summary=summary,
+        first_examiner=metadata.get("first_examiner", "Unbekannt").title(),
+        second_examiner=metadata.get("second_examiner", "Unbekannt").title(),
+        first_einfo=f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de",
+        questions=questions,
+        gemini_emark=gemini_emark_text,
+    )
+
+    pdf_path_str = ""
+    if config.compile_pdf:
+        pdf_path_str = latex.compile_latex_to_pdf(tex_path, output_dir=output_folder)
+        if pdf_path_str:
+            print(f"✅ PDF compiled: {pdf_path_str}")
+
+    return tex_path, pdf_path_str
+
+
+def _fill_grading_form(config: ColloquiumWorkflowConfig, metadata: dict, output_folder: str):
+    """Fill the official grading form PDF."""
+    daten: dict[str, Any] = {
+        "name_student": metadata.get("author", "Unknown"),
+        "MatrNr": metadata.get("sid", "unknown"),
     }
 
     course_map = {
@@ -199,14 +249,20 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
     pdf_form_filler.fill_form(
         daten,
         output_folder,
-        degree,
+        metadata.get("bachelor_master", "Bachelor"),
         location_type=config.location_type,
         room=config.room,
         company_name=config.company_name,
     )
 
-    # 7) Generate email
+
+def _generate_emails_and_calendar(
+    config: ColloquiumWorkflowConfig, metadata: dict, llm_client: LLMClient, output_folder: str
+) -> tuple[str, str, Optional[str]]:
+    """Generate registration/feedback emails and calendar entry."""
     mymailgen = email_generator.EmailGenerator()
+    author = metadata.get("author", "Unknown")
+    matriculation = metadata.get("sid", "unknown")
     student_first_name, student_last_name = utils.split_stud_name(author)
 
     registration_email_text = mymailgen.generate_colloquium_email(
@@ -216,7 +272,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         sid=matriculation,
         date_colloquium=config.date,
         time_colloquium=config.time,
-        first_examiner=first_examiner,
+        first_examiner=metadata.get("first_examiner", "Unbekannt"),
         location_type=config.location_type,
         room=config.room,
         company_name=config.company_name,
@@ -236,7 +292,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         first_name=student_first_name,
         last_name=student_last_name,
         sid=matriculation,
-        examiner_name=first_examiner,
+        examiner_name=metadata.get("first_examiner", "Unbekannt"),
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,
@@ -245,7 +301,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         filename_prefix="bewertung_thesis_email",
     )
 
-    # 8) Generate ICS calendar file
+    # Calendar
     print("\n📅 Erstelle Kalender-Datei...")
     calendar_gen = CalendarGenerator()
     try:
@@ -264,8 +320,15 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         print(f"⚠️  Fehler beim Erstellen der Kalender-Datei: {e}")
         ics_path = None
 
-    # 9) Create Outlook mail draft
+    return registration_email_text, email_path, ics_path
+
+
+def _create_outlook_draft(
+    metadata: dict, registration_email_text: str, ics_path: Optional[str], email_path: str
+):
+    """Create a draft email in Outlook if possible."""
     print("\n📧 Erstelle Outlook-Mail...")
+    author = metadata.get("author", "Unknown")
     outlook_gen = OutlookMailGenerator()
     try:
         outlook_success = outlook_gen.create_outlook_mail(
@@ -288,29 +351,31 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         print(f"⚠️  Fehler beim Erstellen der Outlook-Mail: {e}")
         print(f"   Bitte öffne die Datei manuell: {email_path}")
 
-    # 10) Generate web metadata
+
+def _generate_web_metadata(
+    config: ColloquiumWorkflowConfig,
+    metadata: dict,
+    pages_text: dict,
+    llm_client: LLMClient,
+    output_folder: str,
+) -> str:
+    """Generate Jekyll-compatible metadata for the website."""
     print("\n🌐 Erstelle Web-Metadaten...")
     try:
         dt_colloquium = datetime.strptime(config.date, "%d.%m.%Y")
         semester_name = utils.get_semester(dt_colloquium)
         web_md_path = generate_metadata_file(
             output_folder=output_folder,
-            title=thesis_title,
-            author=author,
+            title=metadata.get("title", ""),
+            author=metadata.get("author", "Unknown"),
             pages_text=pages_text,
             llm_client=llm_client,
-            work_type=f"{degree}thesis",
+            work_type=f"{metadata.get('bachelor_master', 'Bachelor')}thesis",
             semester=semester_name,
             date_str=dt_colloquium.strftime("%Y-%m-%d"),
         )
         print(f"✅ Web-Metadaten erstellt: {web_md_path}")
+        return web_md_path
     except Exception as e:
         print(f"⚠️  Fehler beim Erstellen der Web-Metadaten: {e}")
-        web_md_path = ""
-
-    return ColloquiumWorkflowResult(
-        tex_path=tex_path,
-        pdf_path=pdf_path_str,
-        email_path=email_path,
-        metadata_path=web_md_path,
-    )
+        return ""

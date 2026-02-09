@@ -1,15 +1,17 @@
 """CLI command handlers for different tasks."""
 
-import sys
 import argparse
+import sys
 from pathlib import Path
+
 from llm_client import LLMClient
-from .config_loader import ConfigLoader, load_config
-from .colloquium.orchestrator import run_pipeline
-from .project.orchestrator import run_project_pipeline
-from .review.orchestrator import run_review_pipeline
-from .core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
-from .domain.validation import validate_pdf_path
+
+from ..colloquium.orchestrator import run_pipeline
+from ..config_loader import ConfigLoader, load_config
+from ..core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
+from ..core.validation import validate_pdf_path
+from ..project.orchestrator import run_project_pipeline
+from ..review.orchestrator import run_review_pipeline
 
 
 def run_from_config(config_path: str | Path) -> ConfigLoader:

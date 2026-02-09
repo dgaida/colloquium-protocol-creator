@@ -1,16 +1,17 @@
 # colloquium_pipeline/email_generator.py
 """Modul zur Generierung von Anmelde-E-Mails für Kolloquien."""
 
-from typing import Optional
 from pathlib import Path
-from ..core.llm import determine_gender_from_name
-from ..core.utils import split_stud_name
+from typing import Optional
+
 from ..core.email import (
-    EmailRecipient,
     ColloquiumRegistrationEmail,
+    EmailRecipient,
     FinalGradeEmail,
     StudentFeedbackEmail,
 )
+from ..core.llm import determine_gender_from_name
+from ..core.utils import split_stud_name
 
 
 class EmailGenerator:

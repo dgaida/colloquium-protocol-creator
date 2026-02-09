@@ -1,5 +1,7 @@
-import pytest
 import time
+
+import pytest
+
 from academic_doc_generator.core.latex import (
     escape_latex_text,
     escape_latex_with_commands,

@@ -1,20 +1,22 @@
 # review_pipeline/orchestrator.py
 
 import os
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
 from llm_client import LLMClient
+from pypdf import PdfReader
+
 from ..core.pdf import (
-    extract_text_with_positions,
     extract_annotations_with_positions,
+    extract_text_with_positions,
 )
+from ..core.types import LLMClientProtocol, ReviewResult
 from .md_generator import (
+    create_review_markdown,
     find_annotation_context_with_lines,
     rewrite_comments_markdown,
-    create_review_markdown,
 )
-from pypdf import PdfReader
-from ..core.types import ReviewResult, LLMClientProtocol
 
 
 def run_review_pipeline(

@@ -1,6 +1,7 @@
 import os
 import subprocess
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from academic_doc_generator.core.latex import compile_latex_to_pdf
 
 

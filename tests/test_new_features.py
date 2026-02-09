@@ -124,7 +124,7 @@ def test_ics_file_content():
         )
 
         print(f"\n📄 Inhalt von {ics_path}:\n")
-        with open(ics_path, "r", encoding="utf-8") as f:
+        with open(ics_path, encoding="utf-8") as f:
             print(f.read())
 
     except Exception as e:

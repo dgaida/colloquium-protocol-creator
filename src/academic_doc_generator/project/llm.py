@@ -2,13 +2,14 @@
 """LLM interface for extracting project work metadata."""
 
 import json
-from typing import Dict
+
 from llm_client import LLMClient
+
 from ..core.pdf import extract_text_per_page
 from ..core.prompts import PromptTemplate, build_prompt
 
 
-def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, str]:
+def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, str]:
     """Extract metadata from a project work PDF (title page).
 
     This function reads the first two pages of the PDF and uses an LLM to

@@ -1,6 +1,8 @@
-from academic_doc_generator import cli, handlers
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+from academic_doc_generator import cli
+from academic_doc_generator.cli import handlers
 
 
 def test_cli_exports_run_from_config():
@@ -8,10 +10,10 @@ def test_cli_exports_run_from_config():
     assert cli.run_from_config is handlers.run_from_config
 
 
-@patch("academic_doc_generator.handlers.load_config")
-@patch("academic_doc_generator.handlers.LLMClient")
-@patch("academic_doc_generator.handlers.validate_pdf_path")
-@patch("academic_doc_generator.handlers.run_review_pipeline")
+@patch("academic_doc_generator.cli.handlers.load_config")
+@patch("academic_doc_generator.cli.handlers.LLMClient")
+@patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+@patch("academic_doc_generator.cli.handlers.run_review_pipeline")
 def test_run_from_config_returns_config(
     mock_run_review, mock_validate_pdf, mock_llm_class, mock_load_config
 ):

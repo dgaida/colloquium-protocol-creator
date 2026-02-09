@@ -4,9 +4,11 @@ Additional unit tests to increase coverage for llm and pdf.
 FIXED VERSION - Korrigiert die StopIteration-Fehler bei Mock-Aufrufen
 """
 
-import pytest
 import json
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.core import llm, pdf
 
 # ============================================================================
@@ -17,7 +19,7 @@ from academic_doc_generator.core import llm, pdf
 class TestLLMInterfaceAdditional:
     """Additional tests for LLM interface to increase coverage."""
 
-    def test_rewrite_comments_with_groq_free_throttle(self):
+    def test_rewrite_comments_with_groq_free_throttle(self, mock_llm_client):
         """Test rewrite_comments with groq_free throttling at intervals."""
         # Create context with 10 pages to trigger throttling
         context_dict = {
@@ -32,13 +34,10 @@ class TestLLMInterfaceAdditional:
             for i in range(1, 11)
         }
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "Rewritten"
+        mock_llm_client.chat_completion.return_value = "Rewritten"
 
         with patch("academic_doc_generator.core.llm.time.sleep") as mock_sleep:
-            llm.rewrite_comments(
-                context_dict, mock_client, groq_free=True, verbose=False
-            )
+            llm.rewrite_comments(context_dict, mock_llm_client, groq_free=True, verbose=False)
 
             # Should sleep for groq_free: 4s per request + 10s every 5 pages
             assert mock_sleep.call_count > 0
@@ -46,39 +45,24 @@ class TestLLMInterfaceAdditional:
             sleep_calls = [call.args[0] for call in mock_sleep.call_args_list]
             assert 10 in sleep_calls
 
-    def test_rewrite_comments_verbose_output(self):
+    def test_rewrite_comments_verbose_output(self, sample_context, mock_llm_client):
         """Test rewrite_comments with verbose flag."""
-        context_dict = {
-            1: [
-                {
-                    "comment": "Test?",
-                    "highlighted": "text",
-                    "paragraph": "para",
-                    "category": "llm",
-                }
-            ]
-        }
-
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "Rewritten question?"
+        mock_llm_client.chat_completion.return_value = "Rewritten question?"
 
         # Just check it doesn't crash with verbose=True
-        result = llm.rewrite_comments(
-            context_dict, mock_client, groq_free=False, verbose=True
-        )
+        result = llm.rewrite_comments(sample_context, mock_llm_client, groq_free=False, verbose=True)
 
         assert 1 in result
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_extract_document_metadata_german(self, mock_extract):
+    def test_extract_document_metadata_german(self, mock_extract, mock_llm_client):
         """Test metadata extraction for German thesis."""
         mock_extract.return_value = {
             0: "Bachelorarbeit von Max Mustermann, Matrikelnr. 12345",
             1: "Erstprüfer: Prof. Dr. Hans Meyer",
         }
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = json.dumps(
+        mock_llm_client.chat_completion.return_value = json.dumps(
             {
                 "author": "Max Mustermann",
                 "sid": "12345",
@@ -91,18 +75,17 @@ class TestLLMInterfaceAdditional:
             }
         )
 
-        result = llm.extract_document_metadata({0: "", 1: ""}, "German", mock_client)
+        result = llm.extract_document_metadata({0: "", 1: ""}, "German", mock_llm_client)
 
         assert result["author"] == "Max Mustermann"
         assert result["bachelor_master"] == "Bachelor"
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_extract_document_metadata_english(self, mock_extract):
+    def test_extract_document_metadata_english(self, mock_extract, mock_llm_client):
         """Test metadata extraction for English thesis."""
         mock_extract.return_value = {0: "Master Thesis by John Doe"}
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = json.dumps(
+        mock_llm_client.chat_completion.return_value = json.dumps(
             {
                 "author": "John Doe",
                 "sid": "67890",
@@ -115,86 +98,74 @@ class TestLLMInterfaceAdditional:
             }
         )
 
-        result = llm.extract_document_metadata({0: ""}, "English", mock_client)
+        result = llm.extract_document_metadata({0: ""}, "English", mock_llm_client)
 
         assert result["bachelor_master"] == "Master"
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_summarize_thesis_german(self, mock_extract):
+    def test_summarize_thesis_german(self, mock_extract, mock_llm_client):
         """Test thesis summarization in German."""
         mock_extract.return_value = {
             0: "Diese Arbeit behandelt das Thema X",
             1: "Die Forschungsfrage lautet Y",
         }
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = (
+        mock_llm_client.chat_completion.return_value = (
             "Diese Arbeit untersucht X.\\\\\n"
             "Die Hauptergebnisse sind Y.\\\\\n"
             "Es wurde die Methode Z verwendet."
         )
 
-        result = llm.summarize_thesis({0: "", 1: ""}, "German", mock_client)
+        result = llm.summarize_thesis({0: "", 1: ""}, "German", mock_llm_client)
 
         assert "untersucht" in result
         assert "\\\\" in result  # LaTeX line breaks
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_summarize_thesis_english(self, mock_extract):
+    def test_summarize_thesis_english(self, mock_extract, mock_llm_client):
         """Test thesis summarization in English."""
         mock_extract.return_value = {0: "This thesis addresses topic X"}
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = (
+        mock_llm_client.chat_completion.return_value = (
             "This thesis investigates X.\\\\\nThe main findings are Y."
         )
 
-        result = llm.summarize_thesis({0: ""}, "English", mock_client)
+        result = llm.summarize_thesis({0: ""}, "English", mock_llm_client)
 
         assert "investigates" in result
 
-    def test_detect_language_sample_size(self):
+    def test_detect_language_sample_size(self, mock_llm_client):
         """Test language detection with custom sample size."""
         results = {1: [{"rewritten": "Warum?"} for _ in range(10)]}
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "German"
+        mock_llm_client.chat_completion.return_value = "German"
 
-        lang = llm.detect_language(results, mock_client, groq_free=False, sample_size=5)
+        lang = llm.detect_language(results, mock_llm_client, groq_free=False, sample_size=5)
 
         assert lang == "German"
         # Verify only sample_size texts were used
-        call_args = mock_client.chat_completion.call_args[0][0]
+        call_args = mock_llm_client.chat_completion.call_args[0][0]
         prompt_text = call_args[0]["content"]
         assert prompt_text.count("Warum?") <= 5
 
     @patch("academic_doc_generator.core.llm.time.sleep")
-    def test_detect_language_groq_free(self, mock_sleep):
+    def test_detect_language_groq_free(self, mock_sleep, mock_llm_client):
         """Test language detection with groq_free throttling."""
         results = {1: [{"rewritten": "Test"}]}
 
-        mock_client = MagicMock()
-        mock_client.chat_completion.return_value = "German"
+        mock_llm_client.chat_completion.return_value = "German"
 
-        llm.detect_language(results, mock_client, groq_free=True)
+        llm.detect_language(results, mock_llm_client, groq_free=True)
 
         mock_sleep.assert_called_once_with(2)
 
     @patch("academic_doc_generator.core.llm.LLMClient")
-    def test_rewrite_comments_in_pdf_auto_client(self, mock_client_class):
+    def test_rewrite_comments_in_pdf_auto_client(self, mock_client_class, mock_pdf_processor):
         """Test rewrite_comments_in_pdf with automatic client creation."""
         mock_client = MagicMock()
         mock_client.api_choice = "openai"
         mock_client.llm = "gpt-4o"
         mock_client_class.return_value = mock_client
-
-        mock_pdf_processor = MagicMock()
-        mock_pdf_processor.extract_text_with_positions.return_value = {}
-        mock_pdf_processor.extract_annotations_with_positions.return_value = (
-            {},
-            {"quelle": 0, "language": 0, "ignore": 0},
-        )
-        mock_pdf_processor.find_annotation_context.return_value = {}
 
         result, stats = llm.rewrite_comments_in_pdf(
             "test.pdf", llm_client=None, pdf_processor=mock_pdf_processor
@@ -202,21 +173,16 @@ class TestLLMInterfaceAdditional:
 
         mock_client_class.assert_called_once()
 
-    def test_rewrite_comments_in_pdf_verbose(self):
+    def test_rewrite_comments_in_pdf_verbose(self, mock_pdf_processor, mock_llm_client):
         """Test rewrite_comments_in_pdf with verbose output."""
-        mock_client = MagicMock()
-
-        mock_pdf_processor = MagicMock()
-        mock_pdf_processor.extract_text_with_positions.return_value = {}
         mock_pdf_processor.extract_annotations_with_positions.return_value = (
             {},
             {"quelle": 1, "language": 2, "ignore": 0},
         )
-        mock_pdf_processor.find_annotation_context.return_value = {}
 
         result, stats = llm.rewrite_comments_in_pdf(
             "test.pdf",
-            llm_client=mock_client,
+            llm_client=mock_llm_client,
             verbose=True,
             pdf_processor=mock_pdf_processor,
         )
@@ -226,9 +192,7 @@ class TestLLMInterfaceAdditional:
 
     @patch("academic_doc_generator.core.llm.LLMClient")
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_get_summary_and_metadata_auto_client(
-        self, mock_extract, mock_client_class
-    ):
+    def test_get_summary_and_metadata_auto_client(self, mock_extract, mock_client_class):
         """Test get_summary_and_metadata with automatic client creation."""
         mock_client = MagicMock()
         mock_client.api_choice = "openai"
@@ -261,11 +225,9 @@ class TestLLMInterfaceAdditional:
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
     @patch("academic_doc_generator.core.llm.time.sleep")
-    def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract):
+    def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract, mock_llm_client):
         """Test get_summary_and_metadata with groq_free throttling."""
         mock_extract.return_value = {0: "Test"}
-
-        mock_client = MagicMock()
 
         # FIXED: Verwende Funktion statt Liste
         call_count = [0]
@@ -277,10 +239,10 @@ class TestLLMInterfaceAdditional:
             else:
                 return "Summary"
 
-        mock_client.chat_completion.side_effect = mock_completion
+        mock_llm_client.chat_completion.side_effect = mock_completion
 
         llm.get_summary_and_metadata_of_pdf(
-            "test.pdf", "German", llm_client=mock_client, groq_free=True
+            "test.pdf", "German", llm_client=mock_llm_client, groq_free=True
         )
 
         # Should sleep 20s after metadata and 2s after summary
@@ -290,11 +252,9 @@ class TestLLMInterfaceAdditional:
         assert 2 in sleep_calls
 
     @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_get_summary_and_metadata_verbose(self, mock_extract):
+    def test_get_summary_and_metadata_verbose(self, mock_extract, mock_llm_client):
         """Test get_summary_and_metadata with verbose output."""
         mock_extract.return_value = {0: "Test"}
-
-        mock_client = MagicMock()
 
         # FIXED: Verwende Funktion statt Liste
         call_count = [0]
@@ -306,10 +266,10 @@ class TestLLMInterfaceAdditional:
             else:
                 return "Test summary"
 
-        mock_client.chat_completion.side_effect = mock_completion
+        mock_llm_client.chat_completion.side_effect = mock_completion
 
         summary, metadata = llm.get_summary_and_metadata_of_pdf(
-            "test.pdf", "German", llm_client=mock_client, verbose=True
+            "test.pdf", "German", llm_client=mock_llm_client, verbose=True
         )
 
         assert summary == "Test summary"
@@ -393,9 +353,7 @@ class TestPdfProcessingAdditional:
         pages_words = {0: [{"text": "Test", "bbox": (10, 10, 50, 20)}]}
 
         annotations = {
-            0: [
-                {"comment": "Test", "rect": None, "quadpoints": None, "category": "llm"}
-            ]
+            0: [{"comment": "Test", "rect": None, "quadpoints": None, "category": "llm"}]
         }
 
         result = pdf.find_annotation_context(pages_words, annotations)
@@ -489,7 +447,3 @@ class TestPdfProcessingAdditional:
         # Since page 1 and 2 don't match, should find page 0
         assert page_idx in [0, 2]
         assert len(words) > 0
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

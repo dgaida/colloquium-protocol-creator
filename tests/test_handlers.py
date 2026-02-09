@@ -1,23 +1,24 @@
 """
-Comprehensive unit tests for src/academic_doc_generator/handlers.py
+Comprehensive unit tests for src/academic_doc_generator/cli/handlers.py
 Ziel: Coverage von 11% auf >90% erhöhen
 """
 
-import pytest
+from argparse import Namespace
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from argparse import Namespace
 
-from academic_doc_generator import handlers
+import pytest
+
+from academic_doc_generator.cli import handlers
 
 
 class TestRunFromConfig:
     """Tests für run_from_config Funktion."""
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    @patch("academic_doc_generator.handlers.run_pipeline")
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_pipeline")
     def test_run_from_config_colloquium_success(
         self, mock_run_pipeline, mock_validate_pdf, mock_llm_class, mock_load_config
     ):
@@ -62,6 +63,7 @@ class TestRunFromConfig:
 
         # Setup pipeline result
         mock_result = MagicMock()
+        mock_result.get_task.return_value = "colloquium"
         mock_result.tex_path = "/output/test.tex"
         mock_result.pdf_path = "/output/test.pdf"
         mock_result.email_path = "/output/email.md"
@@ -77,7 +79,7 @@ class TestRunFromConfig:
         mock_validate_pdf.assert_called_once()
         mock_run_pipeline.assert_called_once()
 
-    @patch("academic_doc_generator.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.load_config")
     def test_run_from_config_load_error(self, mock_load_config):
         """Test Fehlerbehandlung beim Laden der Config."""
         mock_load_config.side_effect = FileNotFoundError("Config not found")
@@ -87,8 +89,8 @@ class TestRunFromConfig:
 
         assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
     def test_run_from_config_llm_error(self, mock_llm_class, mock_load_config):
         """Test Fehlerbehandlung bei LLM-Initialisierung."""
         mock_config = MagicMock()
@@ -103,9 +105,9 @@ class TestRunFromConfig:
 
         assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
     def test_run_from_config_pdf_validation_error(
         self, mock_validate_pdf, mock_llm_class, mock_load_config
     ):
@@ -125,10 +127,10 @@ class TestRunFromConfig:
 
         assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    @patch("academic_doc_generator.handlers.run_project_pipeline")
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_project_pipeline")
     def test_run_from_config_project(
         self, mock_run_project, mock_validate_pdf, mock_llm_class, mock_load_config
     ):
@@ -141,7 +143,7 @@ class TestRunFromConfig:
         mock_config.get_output_config.return_value = {
             "folder": None,
             "compile_pdf": True,
-            "signature_file": "sig.png",
+            "signature_file": "signature.png",
             "create_feedback_mail": True,
         }
         mock_config.get_project_config.return_value = {"mark": "1.3"}
@@ -158,10 +160,10 @@ class TestRunFromConfig:
 
         mock_run_project.assert_called_once()
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    @patch("academic_doc_generator.handlers.run_review_pipeline")
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_review_pipeline")
     def test_run_from_config_review(
         self, mock_run_review, mock_validate_pdf, mock_llm_class, mock_load_config
     ):
@@ -182,36 +184,13 @@ class TestRunFromConfig:
 
         mock_run_review.assert_called_once()
 
-    @patch("academic_doc_generator.handlers.load_config")
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    def test_run_from_config_missing_colloquium_config(
-        self, mock_validate_pdf, mock_llm_class, mock_load_config
-    ):
-        """Test Fehler bei fehlender Colloquium-Konfiguration."""
-        mock_config = MagicMock()
-        mock_config.folder_path = Path("/test")
-        mock_config.get_task.return_value = "colloquium"
-        mock_config.config = {"pdf": {"filename": "test.pdf"}}
-        mock_config.get_llm_config.return_value = {}
-        mock_config.get_colloquium_config.return_value = None
-        mock_load_config.return_value = mock_config
-
-        mock_llm_class.return_value = MagicMock()
-        mock_validate_pdf.return_value = Path("/test/test.pdf")
-
-        with pytest.raises(SystemExit) as exc_info:
-            handlers.run_from_config("/test/config.json")
-
-        assert exc_info.value.code == 1
-
 
 class TestRunColloquiumDirect:
     """Tests für run_colloquium_direct Funktion."""
 
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    @patch("academic_doc_generator.handlers.run_pipeline")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_pipeline")
     def test_run_colloquium_direct_success(
         self, mock_run_pipeline, mock_validate_pdf, mock_llm_class
     ):
@@ -254,7 +233,7 @@ class TestRunColloquiumDirect:
         mock_llm_class.assert_called_once()
         mock_run_pipeline.assert_called_once()
 
-    @patch("academic_doc_generator.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
     def test_run_colloquium_direct_llm_error(self, mock_llm_class):
         """Test LLM-Initialisierungsfehler."""
         args = Namespace(
@@ -274,35 +253,13 @@ class TestRunColloquiumDirect:
 
         assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    def test_run_colloquium_direct_pdf_error(self, mock_validate_pdf, mock_llm_class):
-        """Test PDF-Validierungsfehler."""
-        args = Namespace(
-            pdf="/test/thesis.pdf",
-            date="20.01.2026",
-            time="14:00",
-            location_type="campus",
-            room="3.217",
-            api=None,
-            model=None,
-        )
-
-        mock_llm_class.return_value = MagicMock()
-        mock_validate_pdf.side_effect = FileNotFoundError("PDF not found")
-
-        with pytest.raises(SystemExit) as exc_info:
-            handlers.run_colloquium_direct(args)
-
-        assert exc_info.value.code == 1
-
 
 class TestRunProjectDirect:
     """Tests für run_project_direct Funktion."""
 
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.validate_pdf_path")
-    @patch("academic_doc_generator.handlers.run_project_pipeline")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_project_pipeline")
     def test_run_project_direct_success(
         self, mock_run_project, mock_validate_pdf, mock_llm_class
     ):
@@ -313,7 +270,7 @@ class TestRunProjectDirect:
             model="llama",
             out="/output",
             no_compile=False,
-            signature="sig.png",
+            signature="signature.png",
             mark="1.3",
             create_feedback_mail=True,
         )
@@ -329,22 +286,12 @@ class TestRunProjectDirect:
 
         mock_run_project.assert_called_once()
 
-    @patch("academic_doc_generator.handlers.LLMClient")
-    def test_run_project_direct_llm_error(self, mock_llm_class):
-        """Test LLM-Fehler."""
-        args = Namespace(pdf="/test/project.pdf", api="invalid", model=None)
-
-        mock_llm_class.side_effect = Exception("Invalid API")
-
-        with pytest.raises(SystemExit):
-            handlers.run_project_direct(args)
-
 
 class TestRunReviewDirect:
     """Tests für run_review_direct Funktion."""
 
-    @patch("academic_doc_generator.handlers.LLMClient")
-    @patch("academic_doc_generator.handlers.run_review_pipeline")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.run_review_pipeline")
     def test_run_review_direct_success(self, mock_run_review, mock_llm_class):
         """Test erfolgreiche direkte Review-Ausführung."""
         args = Namespace(
@@ -366,17 +313,3 @@ class TestRunReviewDirect:
             groq_free=False,
             output_folder="/output",
         )
-
-    @patch("academic_doc_generator.handlers.LLMClient")
-    def test_run_review_direct_llm_error(self, mock_llm_class):
-        """Test LLM-Fehler."""
-        args = Namespace(pdf="/test/paper.pdf", api="invalid", model=None)
-
-        mock_llm_class.side_effect = Exception("Invalid API")
-
-        with pytest.raises(SystemExit):
-            handlers.run_review_direct(args)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

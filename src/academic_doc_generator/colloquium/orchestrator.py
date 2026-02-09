@@ -172,7 +172,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
 
     course_map = {
         "Informatik": "KontrollInformatik",
-        "Wirtschaftsinformatik": "ControlWI",
+        "Wirtschaftsinformatik": "KontrollWI",
         "Medieninformatik": "KontrollMedien",
         "IT-Management": "KontrollITM",
     }

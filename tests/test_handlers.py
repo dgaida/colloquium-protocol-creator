@@ -4,17 +4,11 @@ Ziel: Coverage von 11% auf >90% erhöhen
 """
 
 import pytest
-import sys
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 from argparse import Namespace
 
 from academic_doc_generator import handlers
-from academic_doc_generator.core.types import (
-    ColloquiumWorkflowConfig,
-    ProjectWorkflowConfig,
-)
 
 
 class TestRunFromConfig:

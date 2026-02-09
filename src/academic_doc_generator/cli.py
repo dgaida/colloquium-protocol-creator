@@ -171,7 +171,7 @@ def main() -> None:
 
     # Config mode
     if args.config:
-        handlers.run_from_config(args.config)
+        run_from_config(args.config)
         return
 
     # Subcommand mode

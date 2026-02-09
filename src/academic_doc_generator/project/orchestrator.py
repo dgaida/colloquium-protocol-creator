@@ -42,17 +42,17 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         Exception: Any errors raised by the LLM API (e.g., authentication issues).
     """
     pdf_path = config.pdf_path
-    output_folder = config.output_folder
+    output_folder_path = config.output_folder
     llm_client = config.llm_client
     compile_pdf = config.compile_pdf
     signature_file = config.signature_file
     mark_result = config.mark
     create_feedback_mail = config.create_feedback_mail
 
-    if output_folder is None:
+    if output_folder_path is None:
         output_folder = str(Path(pdf_path).parent)
     else:
-        output_folder = str(output_folder)
+        output_folder = str(output_folder_path)
 
     # Create LLMClient if not provided
     if llm_client is None:

@@ -202,7 +202,9 @@ def extract_document_metadata(
     try:
         metadata: ThesisMetadata = json.loads(content)
     except json.JSONDecodeError:
-        metadata = {"error": "Could not parse JSON", "raw": content}
+        # Return empty metadata or handle error as needed
+        # ThesisMetadata is TypedDict(total=False), so {} is valid
+        return {}
 
     # Fallback: Wenn bachelor_master nicht bestimmt werden konnte, versuche es über Dateinamen
     if pdf_path and (
@@ -212,7 +214,9 @@ def extract_document_metadata(
         print("   🔄 Versuche Bestimmung über Dateinamen...")
         degree_from_filename = detect_degree_from_filename(pdf_path, llm_client)
         if degree_from_filename:
-            metadata["bachelor_master"] = degree_from_filename
+            from .types import DegreeType
+
+            metadata["bachelor_master"] = degree_from_filename  # type: ignore[typeddict-item]
             print(f"   ✅ Aus Dateinamen bestimmt: {degree_from_filename}")
         else:
             print("   ❌ Konnte Bachelor/Master auch nicht aus Dateinamen bestimmen")

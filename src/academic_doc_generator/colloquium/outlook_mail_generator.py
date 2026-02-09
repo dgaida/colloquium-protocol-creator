@@ -116,7 +116,7 @@ class OutlookMailGenerator:
 
             if system == "Windows":
                 # Öffne ICS-Datei mit Standard-Anwendung (Outlook)
-                os.startfile(ics_file_path)
+                os.startfile(ics_file_path)  # type: ignore[attr-defined]
                 print("✅ ICS-Datei in Outlook geöffnet")
                 return True
             else:

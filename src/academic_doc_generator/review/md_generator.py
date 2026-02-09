@@ -118,7 +118,7 @@ def rewrite_comments_markdown(
     Returns:
         Dict with rewritten comments per page.
     """
-    rewritten = {}
+    rewritten: Dict[int, List[dict]] = {}
 
     for page_num, items in context_dict.items():
         rewritten_items = []

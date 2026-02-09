@@ -34,28 +34,31 @@ def run_review_pipeline(
     Returns:
         Path to the generated markdown file.
     """
+    pdf_path_str = str(pdf_path)
     if output_folder is None:
-        output_folder = os.path.dirname(pdf_path)
+        output_folder_str = os.path.dirname(pdf_path_str)
+    else:
+        output_folder_str = str(output_folder)
 
     # Create LLMClient if not provided
     if llm_client is None:
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
-    pages_words = extract_text_with_positions(pdf_path)
-    annotations, stats = extract_annotations_with_positions(pdf_path, False)
+    pages_words = extract_text_with_positions(pdf_path_str)
+    annotations, stats = extract_annotations_with_positions(pdf_path_str, False)
 
     # Page heights (you can get this via PdfReader too)
-    reader = PdfReader(pdf_path)
+    reader = PdfReader(pdf_path_str)
     page_heights = {i: float(p.mediabox.top) for i, p in enumerate(reader.pages)}
 
     context = find_annotation_context_with_lines(pages_words, annotations, page_heights)
     rewritten = rewrite_comments_markdown(context, llm_client, groq_free=groq_free)
 
-    fileid = os.path.splitext(os.path.basename(pdf_path))[0]
+    fileid = os.path.splitext(os.path.basename(pdf_path_str))[0]
     print(fileid)
 
-    md_path = os.path.join(output_folder, f"review_comments_{fileid}.md")
+    md_path = os.path.join(output_folder_str, f"review_comments_{fileid}.md")
     create_review_markdown(rewritten, md_path)
 
     return md_path

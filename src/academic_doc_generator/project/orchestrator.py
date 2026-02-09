@@ -95,11 +95,10 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     # Generate LaTeX letter
     create_project_grading_letter_tex(
         filename=tex_path,
-        student_name=student_name,
-        id_number=id_number,
-        project_title=project_title,
-        examiner_name=examiner_name,
-        examiner_email=examiner_email,
+        author=f"{student_name}, Matrikelnr. {id_number}",
+        title=project_title,
+        examiner=examiner_name,
+        contact=examiner_email,
         gender=gender,
         work_type=work_type,
         signature_file=signature_file,

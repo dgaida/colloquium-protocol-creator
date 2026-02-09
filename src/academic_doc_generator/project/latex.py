@@ -10,11 +10,10 @@ from ..core.utils import get_semester
 
 def create_project_grading_letter_tex(
     filename: str,
-    student_name: str,
-    id_number: str,
-    project_title: str,
-    examiner_name: str,
-    examiner_email: str,
+    author: str,
+    title: str,
+    examiner: str,
+    contact: str,
     gender: str,
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
@@ -26,11 +25,10 @@ def create_project_grading_letter_tex(
 
     Args:
         filename: Output path for the LaTeX file.
-        student_name: Full name of the student.
-        id_number: Student's matriculation number.
-        project_title: Title of the project work.
-        examiner_name: Name of the examiner.
-        examiner_email: Email address of the examiner.
+        author: Author info (name and ID).
+        title: Title of the project work.
+        examiner: Name of the examiner.
+        contact: Contact address of the examiner.
         gender: Gender indicator ("Herr" or "Frau") for formal address.
         work_type: Type of work (default: "Praxisprojekt").
         place: Place of issue (default: "Gummersbach").
@@ -41,8 +39,8 @@ def create_project_grading_letter_tex(
     semester = get_semester()
 
     # Escape all text inputs for LaTeX
-    student_name_safe = escape_for_latex(student_name, preserve_latex=False)
-    project_title_safe = escape_for_latex(project_title, preserve_latex=False)
+    author_safe = escape_for_latex(author, preserve_latex=False)
+    title_safe = escape_for_latex(title, preserve_latex=False)
     work_type_safe = escape_for_latex(work_type, preserve_latex=False)
 
     sein_ihr = "sein" if gender == "Herr" else "ihr"
@@ -69,13 +67,13 @@ def create_project_grading_letter_tex(
 \\usepackage{{graphicx}}
 
 % Sender info
-\\setkomavar{{fromname}}{{{examiner_name}}}
+\\setkomavar{{fromname}}{{{examiner}}}
 \\setkomavar{{fromaddress}}{{Steinmüllerallee 1\\\\51643 Gummersbach}}
 \\setkomavar{{fromphone}}{{+49 2261-8196-6204}}
-\\setkomavar{{fromemail}}{{{examiner_email}}}
+\\setkomavar{{fromemail}}{{{contact}}}
 \\setkomavar{{place}}{{{place}}}
 \\setkomavar{{date}}{{{date}}}
-\\setkomavar{{subject}}{{{work_type_safe} {gender} {student_name_safe}}}
+\\setkomavar{{subject}}{{{work_type_safe} {gender} {author_safe}}}
 
 % Footer
 \\setkomavar{{firstfoot}}{{%
@@ -97,13 +95,13 @@ def create_project_grading_letter_tex(
 
 {gender}
 
-{student_name_safe}, Matrikelnr. {id_number},
+{author_safe},
 
 hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {mark_tex} erhalten.
 
 Das Thema war:
 
-{project_title_safe}
+{title_safe}
 
 \\closing{{Danke und viele Grü{{\\ss}}e,}}
 

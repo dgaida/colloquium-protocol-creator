@@ -75,11 +75,10 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Max Mustermann",
-                id_number="12345",
-                project_title="Test Project Title",
-                examiner_name="Prof. Test",
-                examiner_email="test@example.com",
+                author="Max Mustermann, Matrikelnr. 12345",
+                title="Test Project Title",
+                examiner="Prof. Test",
+                contact="test@example.com",
                 gender="Herr",
                 work_type="Praxisprojekt",
                 grade_mark="1.3",
@@ -115,11 +114,10 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Maria Musterfrau",
-                id_number="67890",
-                project_title="Another Test Project",
-                examiner_name="Dr. Example",
-                examiner_email="example@th-koeln.de",
+                author="Maria Musterfrau, Matrikelnr. 67890",
+                title="Another Test Project",
+                examiner="Dr. Example",
+                contact="example@th-koeln.de",
                 gender="Frau",
                 work_type="Projektarbeit",
             )
@@ -145,11 +143,10 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test & User",
-                id_number="99999",
-                project_title="Project with 100% Coverage & $pecial Char$",
-                examiner_name="Prof. Test",
-                examiner_email="test@example.com",
+                author="Test & User, Matrikelnr. 99999",
+                title="Project with 100% Coverage & $pecial Char$",
+                examiner="Prof. Test",
+                contact="test@example.com",
                 gender="Herr",
             )
 
@@ -190,11 +187,10 @@ class TestProjectLatexGeneration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name="Test Student",
-                id_number="11111",
-                project_title="Custom Project",
-                examiner_name="Prof. Custom",
-                examiner_email="custom@th-koeln.de",
+                author="Test Student, Matrikelnr. 11111",
+                title="Custom Project",
+                examiner="Prof. Custom",
+                contact="custom@th-koeln.de",
                 gender="Herr",
                 place="Köln",
                 date="15.01.2025",
@@ -371,11 +367,10 @@ class TestProjectIntegration:
         try:
             latex.create_project_grading_letter_tex(
                 filename=tex_path,
-                student_name=metadata["student_name"],
-                id_number=metadata["id_number"],
-                project_title=metadata["title"],
-                examiner_name=metadata["first_examiner"],
-                examiner_email=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
+                author=f"{metadata['student_name']}, Matrikelnr. {metadata['id_number']}",
+                title=metadata["title"],
+                examiner=metadata["first_examiner"],
+                contact=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
                 gender=gender,
                 work_type=metadata["work_type"],
             )

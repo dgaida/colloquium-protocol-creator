@@ -184,7 +184,7 @@ def extract_document_metadata(
         >>> metadata = extract_document_metadata(text, "German", client)
         >>> metadata['author']
         'Max Mustermann'
-        >>> metadata['sid']
+        >>> metadata['id_number']
         '123456'
     """
     # Collect first two pages of text (if available)
@@ -196,15 +196,17 @@ def extract_document_metadata(
     content = llm_client.chat_completion(messages)
 
     try:
-        metadata: ThesisMetadata = json.loads(content)
+        raw_metadata: dict[str, Any] = json.loads(content)
     except json.JSONDecodeError:
         # Return empty metadata or handle error as needed
         # ThesisMetadata is TypedDict(total=False), so {} is valid
         return {}
 
     # Rename sid to id_number if it exists in the raw LLM response
-    if "sid" in metadata and "id_number" not in metadata:
-        metadata["id_number"] = metadata.pop("sid")  # type: ignore[misc]
+    if "sid" in raw_metadata and "id_number" not in raw_metadata:
+        raw_metadata["id_number"] = raw_metadata.pop("sid")
+
+    metadata: ThesisMetadata = raw_metadata  # type: ignore[assignment]
 
     # Fallback: Wenn bachelor_master nicht bestimmt werden konnte, versuche es über Dateinamen
     if pdf_path and (

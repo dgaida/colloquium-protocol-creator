@@ -155,7 +155,7 @@ class TestCreateParser:
 class TestMain:
     """Tests für main Funktion."""
 
-    @patch("academic_doc_generator.cli.handlers.run_from_config")
+    @patch("academic_doc_generator.cli.run_from_config")
     @patch("academic_doc_generator.cli.validate_api_keys")
     def test_main_with_config(self, mock_validate, mock_run_config):
         """Test main mit Config-Argument."""

@@ -12,7 +12,7 @@ from .core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
 from .domain.validation import validate_pdf_path
 
 
-def run_from_config(config_path: str | Path) -> None:
+def run_from_config(config_path: str | Path) -> ConfigLoader:
     """Execute a task based on a configuration file."""
     try:
         config: ConfigLoader = load_config(str(config_path))
@@ -39,7 +39,7 @@ def run_from_config(config_path: str | Path) -> None:
     # Validate PDF path
     try:
         pdf_filename = config.config["pdf"]["filename"]
-        pdf_path = validate_pdf_path(config.folder_path, pdf_filename)
+        pdf_path = validate_pdf_path(str(config.folder_path), pdf_filename)
     except (KeyError, ValueError, FileNotFoundError) as e:
         print(f"❌ Fehler beim Validieren des PDF-Pfads: {e}")
         sys.exit(1)
@@ -52,7 +52,7 @@ def run_from_config(config_path: str | Path) -> None:
             print("❌ Fehler: Kolloquium-Konfiguration fehlt")
             sys.exit(1)
 
-        workflow_config = ColloquiumWorkflowConfig(
+        coll_workflow_config = ColloquiumWorkflowConfig(
             pdf_path=pdf_path,
             date=coll_config["date"],
             time=coll_config["time"],
@@ -73,23 +73,23 @@ def run_from_config(config_path: str | Path) -> None:
             gemini_model=gemini_config.get("model"),
         )
 
-        result = run_pipeline(workflow_config)
+        coll_result = run_pipeline(coll_workflow_config)
 
         print("\n✓ Kolloquium-Pipeline abgeschlossen:")
-        if result.tex_path:
-            print(f"  • LaTeX: {result.tex_path}")
-        if result.pdf_path:
-            print(f"  • PDF: {result.pdf_path}")
-        if result.email_path:
-            print(f"  • E-Mail: {result.email_path}")
-        if result.metadata_path:
-            print(f"  • Web-Metadaten: {result.metadata_path}")
+        if coll_result.tex_path:
+            print(f"  • LaTeX: {coll_result.tex_path}")
+        if coll_result.pdf_path:
+            print(f"  • PDF: {coll_result.pdf_path}")
+        if coll_result.email_path:
+            print(f"  • E-Mail: {coll_result.email_path}")
+        if coll_result.metadata_path:
+            print(f"  • Web-Metadaten: {coll_result.metadata_path}")
 
     elif task == "project":
         proj_config = config.get_project_config() or {}
         mark = proj_config.get("mark")
 
-        workflow_config = ProjectWorkflowConfig(
+        proj_workflow_config = ProjectWorkflowConfig(
             pdf_path=pdf_path,
             llm_client=llm_client,
             output_folder=(
@@ -101,18 +101,18 @@ def run_from_config(config_path: str | Path) -> None:
             create_feedback_mail=output_config.get("create_feedback_mail", True),
         )
 
-        result = run_project_pipeline(workflow_config)
+        proj_result = run_project_pipeline(proj_workflow_config)
 
         print("\n✓ Projektarbeits-Pipeline abgeschlossen:")
-        print(f"  • LaTeX: {result.tex_path}")
-        if result.pdf_path:
-            print(f"  • PDF: {result.pdf_path}")
-        if result.service_email_path:
-            print(f"  • E-Mail (Prüfungsservice): {result.service_email_path}")
-        if result.student_email_path:
-            print(f"  • E-Mail (Student): {result.student_email_path}")
-        if result.metadata_path:
-            print(f"  • Web-Metadaten: {result.metadata_path}")
+        print(f"  • LaTeX: {proj_result.tex_path}")
+        if proj_result.pdf_path:
+            print(f"  • PDF: {proj_result.pdf_path}")
+        if proj_result.service_email_path:
+            print(f"  • E-Mail (Prüfungsservice): {proj_result.service_email_path}")
+        if proj_result.student_email_path:
+            print(f"  • E-Mail (Student): {proj_result.student_email_path}")
+        if proj_result.metadata_path:
+            print(f"  • Web-Metadaten: {proj_result.metadata_path}")
 
     elif task == "review":
         md_path = run_review_pipeline(
@@ -124,6 +124,8 @@ def run_from_config(config_path: str | Path) -> None:
 
         print("\n✓ Review-Pipeline abgeschlossen:")
         print(f"  • Markdown: {md_path}")
+
+    return config
 
 
 def run_colloquium_direct(args: argparse.Namespace) -> None:

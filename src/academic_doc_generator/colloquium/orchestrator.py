@@ -1,7 +1,7 @@
 # src/academic_doc_generator/colloquium/orchestrator.py
 """High-level pipeline with comprehensive type annotations for colloquium protocol generation."""
 
-from typing import Optional
+from typing import Optional, Dict, Any
 from pathlib import Path
 from datetime import datetime
 from llm_client import LLMClient
@@ -43,15 +43,15 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         Exception: Any errors raised by the LLM API (e.g., authentication issues).
     """
     pdf_path = config.pdf_path
-    output_folder = config.output_folder
+    output_folder_path = config.output_folder
     llm_client = config.llm_client
     fill_form_only = config.fill_form_only
     groq_free = config.groq_free
 
-    if output_folder is None:
+    if output_folder_path is None:
         output_folder = str(Path(pdf_path).parent)
     else:
-        output_folder = str(output_folder)
+        output_folder = str(output_folder_path)
 
     # Create LLMClient if not provided
     if llm_client is None:
@@ -134,7 +134,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
 
     if not fill_form_only:
         # 5) concatenate comments and escape/format as needed
-        questions = latex.concatenate_comments(rewritten, language)
+        questions = latex.concatenate_comments(rewritten, language)  # type: ignore[arg-type]
 
         tex_name = f"bewertung_brief_{matriculation}.tex"
         tex_path = str(Path(output_folder) / tex_name)
@@ -165,7 +165,7 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
         pdf_path_str = ""
 
     # 6) Fill PDF form
-    daten = {
+    daten: Dict[str, Any] = {
         "name_student": author,
         "MatrNr": matriculation,
     }

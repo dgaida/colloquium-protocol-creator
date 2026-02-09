@@ -8,7 +8,7 @@ Dieses Script bietet Funktionen zum:
 """
 
 import pymupdf  # PyMuPDF
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from pathlib import Path
 import os
 from datetime import datetime, timedelta
@@ -45,7 +45,7 @@ class PDFFormHandler:
                 return True
         return False
 
-    def list_form_fields(self) -> List[Dict[str, any]]:
+    def list_form_fields(self) -> List[Dict[str, Any]]:
         """
         Listet alle Formularfelder mit Details auf.
 
@@ -125,7 +125,7 @@ class PDFFormHandler:
             print()
 
     def fill_form(
-        self, field_data: Dict[str, any], output_path: str, flatten: bool = False
+        self, field_data: Dict[str, Any], output_path: str, flatten: bool = False
     ) -> bool:
         """
         Füllt das PDF-Formular mit den angegebenen Daten aus.
@@ -236,7 +236,7 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
 
 
 def fill_form(
-    data: Dict[str, any],
+    data: Dict[str, Any],
     output_folder: str,
     degree: str,
     location_type: str = "campus",

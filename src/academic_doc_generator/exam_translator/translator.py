@@ -21,7 +21,7 @@ def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
     """
     lines = text.splitlines()
     masked_lines = []
-    comment_map = {}
+    comment_map: Dict[str, str] = {}
 
     for line in lines:
         if line.strip().startswith("%"):

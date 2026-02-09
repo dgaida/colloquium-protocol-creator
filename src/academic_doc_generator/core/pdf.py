@@ -330,7 +330,7 @@ def find_annotation_context(
 
             # Words under the annotation (with neighbor-page fallback)
             page_idx_for_words, hit_words = get_words_for_annotation_on_page(
-                pages_words, page_num, annot_bbox
+                pages_words, page_num, annot_bbox  # type: ignore[arg-type]
             )
             highlighted_text = " ".join([w["text"] for w in hit_words]).strip()
 

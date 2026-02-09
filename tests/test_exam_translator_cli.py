@@ -69,9 +69,7 @@ class TestExamTranslatorMain:
 
     @patch("academic_doc_generator.exam_translator.cli.LLMClient")
     @patch("academic_doc_generator.exam_translator.cli.translate_latex_exam")
-    def test_exam_translator_main_with_api_choice(
-        self, mock_translate, mock_llm_class
-    ):
+    def test_exam_translator_main_with_api_choice(self, mock_translate, mock_llm_class):
         """Test mit API-Wahl."""
         with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
             f.write("\\documentclass{exam}")
@@ -169,7 +167,9 @@ class TestExamTranslatorMain:
                         "academic_doc_generator.exam_translator.cli.translate_latex_exam"
                     ) as mock_translate:
                         mock_llm.return_value = MagicMock()
-                        mock_translate.return_value = pdf_file.replace(".pdf", "_engl.pdf")
+                        mock_translate.return_value = pdf_file.replace(
+                            ".pdf", "_engl.pdf"
+                        )
 
                         with patch("sys.stdout", new=StringIO()) as fake_out:
                             cli.exam_translator_main()
@@ -256,9 +256,7 @@ class TestExamTranslatorMain:
 
     @patch("academic_doc_generator.exam_translator.cli.LLMClient")
     @patch("academic_doc_generator.exam_translator.cli.translate_latex_exam")
-    def test_exam_translator_main_success_output(
-        self, mock_translate, mock_llm_class
-    ):
+    def test_exam_translator_main_success_output(self, mock_translate, mock_llm_class):
         """Test erfolgreiche Übersetzung mit Output-Überprüfung."""
         with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
             f.write("\\documentclass{exam}")

@@ -276,9 +276,7 @@ class TestRunColloquiumDirect:
 
     @patch("academic_doc_generator.handlers.LLMClient")
     @patch("academic_doc_generator.handlers.validate_pdf_path")
-    def test_run_colloquium_direct_pdf_error(
-        self, mock_validate_pdf, mock_llm_class
-    ):
+    def test_run_colloquium_direct_pdf_error(self, mock_validate_pdf, mock_llm_class):
         """Test PDF-Validierungsfehler."""
         args = Namespace(
             pdf="/test/thesis.pdf",
@@ -347,9 +345,7 @@ class TestRunReviewDirect:
 
     @patch("academic_doc_generator.handlers.LLMClient")
     @patch("academic_doc_generator.handlers.run_review_pipeline")
-    def test_run_review_direct_success(
-        self, mock_run_review, mock_llm_class
-    ):
+    def test_run_review_direct_success(self, mock_run_review, mock_llm_class):
         """Test erfolgreiche direkte Review-Ausführung."""
         args = Namespace(
             pdf="/test/paper.pdf",

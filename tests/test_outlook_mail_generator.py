@@ -96,7 +96,9 @@ class TestCreateOutlookMail:
         mock_platform.return_value = "FreeBSD"
 
         generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(student_name="Test", email_text="Test", verbose=False)
+        result = generator.create_outlook_mail(
+            student_name="Test", email_text="Test", verbose=False
+        )
 
         assert result is False
 
@@ -108,7 +110,9 @@ class TestCreateOutlookMail:
         mock_windows.side_effect = Exception("Test error")
 
         generator = OutlookMailGenerator()
-        result = generator.create_outlook_mail(student_name="Test", email_text="Test", verbose=False)
+        result = generator.create_outlook_mail(
+            student_name="Test", email_text="Test", verbose=False
+        )
 
         assert result is False
 
@@ -657,7 +661,9 @@ class TestEdgeCases:
             {"win32com": mock_win32com, "win32com.client": mock_win32com_client},
         ):
             generator = OutlookMailGenerator()
-            result = generator.create_outlook_mail(student_name="Test", email_text="", verbose=False)
+            result = generator.create_outlook_mail(
+                student_name="Test", email_text="", verbose=False
+            )
 
             assert result is True
             assert mock_mail.Body == ""

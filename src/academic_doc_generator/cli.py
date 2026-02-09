@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import List
 from . import handlers
+from .handlers import run_from_config
 from .domain.validation import validate_api_keys
 
 

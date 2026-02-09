@@ -12,7 +12,7 @@ from .core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
 from .domain.validation import validate_pdf_path
 
 
-def run_from_config(config_path: str | Path) -> None:
+def run_from_config(config_path: str | Path) -> ConfigLoader:
     """Execute a task based on a configuration file."""
     try:
         config: ConfigLoader = load_config(str(config_path))
@@ -124,6 +124,8 @@ def run_from_config(config_path: str | Path) -> None:
 
         print("\n✓ Review-Pipeline abgeschlossen:")
         print(f"  • Markdown: {md_path}")
+
+    return config
 
 
 def run_colloquium_direct(args: argparse.Namespace) -> None:

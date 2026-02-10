@@ -146,8 +146,8 @@ semester: "{semester}"
         try:
             os.makedirs(web_metadata_folder, exist_ok=True)
             shutil.copy2(md_path, os.path.join(web_metadata_folder, md_filename))
-            print(f"✅ Web-Metadaten zusätzlich kopiert nach: {web_metadata_folder}")
+            print(f"✅ Web metadata also copied to: {web_metadata_folder}")
         except Exception as e:
-            print(f"⚠️  Fehler beim Kopieren der Web-Metadaten: {e}")
+            print(f"⚠️  Error copying web metadata: {e}")
 
     return md_path

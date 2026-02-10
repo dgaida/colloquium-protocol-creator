@@ -1,4 +1,4 @@
-from academic_doc_generator.cli import create_parser
+from academic_doc_generator.cli.main import create_parser
 
 
 def test_project_parser_feedback_toggle():

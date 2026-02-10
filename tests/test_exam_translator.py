@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock, patch
+
 from academic_doc_generator.exam_translator.translator import (
+    mask_comments,
     split_latex_exam_into_sections,
     translate_latex_exam,
-    mask_comments,
     unmask_comments,
 )
 
@@ -40,7 +41,7 @@ def test_split_latex_exam_ignores_commented_question():
 
     assert len(questions) == 2
     assert "Active Q1" in questions[0]
-    assert "% \question Commented Q2" in questions[0]
+    assert r"% \question Commented Q2" in questions[0]
     assert "Active Q3" in questions[1]
     assert r"\end{document}" in postamble
 
@@ -129,40 +130,34 @@ def test_translate_exam_preserves_comments(mock_llm_class):
 
     mock_llm.chat_completion.side_effect = side_effect
 
-    with patch("builtins.open", MagicMock()):
-        with patch("pathlib.Path.exists", return_value=True):
-            with patch(
-                "academic_doc_generator.exam_translator.translator.split_latex_exam_into_sections"
-            ) as mock_split:
-                mock_split.return_value = (
-                    r"\documentclass{exam}"
-                    + "\n"
-                    + r"% Preamble Comment"
-                    + "\n"
-                    + r"\begin{questions}",
-                    [r"\question German Question" + "\n" + r"% Question Comment"],
-                    r"\end{questions}" + "\n" + r"\end{document}",
-                )
+    with (
+        patch("builtins.open", MagicMock()),
+        patch("pathlib.Path.exists", return_value=True),
+        patch(
+            "academic_doc_generator.exam_translator.translator.split_latex_exam_into_sections"
+        ) as mock_split,
+    ):
+        mock_split.return_value = (
+            r"\documentclass{exam}" + "\n" + r"% Preamble Comment" + "\n" + r"\begin{questions}",
+            [r"\question German Question" + "\n" + r"% Question Comment"],
+            r"\end{questions}" + "\n" + r"\end{document}",
+        )
 
-                # Mocking file writing
-                output_file = "test_engl.tex"
-                with patch(
-                    "academic_doc_generator.exam_translator.translator.open",
-                    create=True,
-                ) as mock_open:
-                    mock_open.return_value.__enter__.return_value = MagicMock()
+        # Mocking file writing
+        output_file = "test_engl.tex"
+        with patch(
+            "academic_doc_generator.exam_translator.translator.open",
+            create=True,
+        ) as mock_open:
+            mock_open.return_value.__enter__.return_value = MagicMock()
 
-                    translate_latex_exam(
-                        "test.tex", llm_client=mock_llm, output_path=output_file
-                    )
+            translate_latex_exam("test.tex", llm_client=mock_llm, output_path=output_file)
 
-                    # Get the written content
-                    args, kwargs = (
-                        mock_open.return_value.__enter__.return_value.write.call_args
-                    )
-                    written_content = args[0]
+            # Get the written content
+            args, kwargs = mock_open.return_value.__enter__.return_value.write.call_args
+            written_content = args[0]
 
-                    assert "% Preamble Comment" in written_content
-                    assert "% Question Comment" in written_content
-                    assert "Translated Preamble" in written_content
-                    assert "Translated Question" in written_content
+            assert "% Preamble Comment" in written_content
+            assert "% Question Comment" in written_content
+            assert "Translated Preamble" in written_content
+            assert "Translated Question" in written_content

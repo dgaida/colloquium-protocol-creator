@@ -2,10 +2,11 @@
 """Logic for extracting and summarizing feedback from PDF annotations."""
 
 from llm_client import LLMClient
+
 from ..core.pdf import (
     extract_annotations_with_positions,
-    find_annotation_context,
     extract_text_with_positions,
+    find_annotation_context,
 )
 from ..core.prompts import PromptTemplate, build_prompt
 
@@ -22,9 +23,7 @@ def generate_feedback_summary(pdf_path: str, llm_client: LLMClient) -> str:
     """
     # 1. Extract annotations and text
     pages_words = extract_text_with_positions(pdf_path)
-    annotations, _stats = extract_annotations_with_positions(
-        pdf_path, ignore_source=True
-    )
+    annotations, _stats = extract_annotations_with_positions(pdf_path, ignore_source=True)
 
     # 2. Get context for each annotation
     context_dict = find_annotation_context(pages_words, annotations)
@@ -55,9 +54,7 @@ def generate_feedback_summary(pdf_path: str, llm_client: LLMClient) -> str:
     # 4. Summarize feedbacks into 3-4 bullet points (German)
     all_feedbacks_text = "\n".join([f"- {fb}" for fb in rewritten_feedbacks])
 
-    summary_prompt = build_prompt(
-        PromptTemplate.SUMMARIZE_FEEDBACKS, text=all_feedbacks_text
-    )
+    summary_prompt = build_prompt(PromptTemplate.SUMMARIZE_FEEDBACKS, text=all_feedbacks_text)
     summary_messages = [{"role": "user", "content": summary_prompt}]
     summary = llm_client.chat_completion(summary_messages)
 

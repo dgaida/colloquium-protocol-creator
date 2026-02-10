@@ -1,9 +1,11 @@
 """End-to-end integration tests for colloquium workflow."""
 
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from academic_doc_generator.colloquium.orchestrator import run_pipeline
 from academic_doc_generator.core.types import ColloquiumWorkflowConfig
 
@@ -24,22 +26,14 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
     # We need to mock the PDF processing and LLM parts that would actually
     # hit an API or require a real complex PDF file.
     with (
-        patch(
-            "academic_doc_generator.core.pdf.extract_text_with_positions"
-        ) as mock_extract_text,
+        patch("academic_doc_generator.core.pdf.extract_text_with_positions") as mock_extract_text,
         patch(
             "academic_doc_generator.core.pdf.extract_annotations_with_positions"
         ) as mock_extract_annots,
-        patch(
-            "academic_doc_generator.core.pdf.find_annotation_context"
-        ) as mock_find_context,
-        patch(
-            "academic_doc_generator.core.pdf.extract_text_per_page"
-        ) as mock_extract_per_page,
+        patch("academic_doc_generator.core.pdf.find_annotation_context") as mock_find_context,
+        patch("academic_doc_generator.core.pdf.extract_text_per_page") as mock_extract_per_page,
         patch("academic_doc_generator.core.latex.compile_latex_to_pdf") as mock_compile,
-        patch(
-            "academic_doc_generator.colloquium.pdf_form_filler.fill_form"
-        ) as mock_fill_form,
+        patch("academic_doc_generator.colloquium.pdf_form_filler.fill_form") as mock_fill_form,
         patch("academic_doc_generator.colloquium.orchestrator.OutlookMailGenerator"),
         tempfile.TemporaryDirectory() as tmpdir,
     ):
@@ -74,7 +68,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         mock_llm_client.chat_completion.side_effect = [
             "Rewritten Comment?",  # REWRITE_COMMENT
             "German",  # DETECT_LANGUAGE
-            '{"author": "Max Mustermann", "sid": "123456", "title": "Thesis Title", "first_examiner": "Prof. Dr. Müller", "first_examiner_christian": "Max", "first_examiner_family": "Müller", "second_examiner": "Prof. Schmidt", "bachelor_master": "Bachelor", "course_of_study": "Informatik"}',  # EXTRACT_METADATA
+            '{"author": "Max Mustermann", "id_number": "123456", "title": "Thesis Title", "first_examiner": "Prof. Dr. Müller", "first_examiner_christian": "Max", "first_examiner_family": "Müller", "second_examiner": "Prof. Schmidt", "bachelor_master": "Bachelor", "course_of_study": "Informatik"}',  # EXTRACT_METADATA
             "Concise thesis summary.",  # SUMMARIZE_THESIS
             "Herr",  # DETERMINE_GENDER (for registration email)
             "Herr",  # DETERMINE_GENDER (for final mark email)
@@ -101,7 +95,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         assert Path(result.metadata_path).exists()
 
         # Verify LaTeX content
-        with open(result.tex_path, "r", encoding="utf-8") as f:
+        with open(result.tex_path, encoding="utf-8") as f:
             content = f.read()
             assert r"\documentclass" in content
             assert "Max Mustermann" in content
@@ -109,7 +103,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
             assert "Rewritten Comment?" in content
 
         # Verify Email content
-        with open(result.email_path, "r", encoding="utf-8") as f:
+        with open(result.email_path, encoding="utf-8") as f:
             email_content = f.read()
             assert "Lieber Prüfungsservice" in email_content
             assert "Max Mustermann" in email_content
@@ -118,7 +112,7 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
             assert "Raum 3.217" in email_content
 
         # Verify metadata file
-        with open(result.metadata_path, "r", encoding="utf-8") as f:
+        with open(result.metadata_path, encoding="utf-8") as f:
             metadata_content = f.read()
             assert 'title: "Thesis Title"' in metadata_content
             assert 'author: "M. M."' in metadata_content

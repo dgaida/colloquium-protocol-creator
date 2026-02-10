@@ -7,7 +7,7 @@ for different tasks (colloquium, project, review).
 import json
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 
 
 class ConfigLoader:
@@ -36,14 +36,12 @@ class ConfigLoader:
         config_files = sorted(self.folder_path.glob("config*.json"))
 
         if not config_files:
-            raise FileNotFoundError(
-                f"Keine config*.json Datei gefunden in: {folder_path}"
-            )
+            raise FileNotFoundError(f"Keine config*.json Datei gefunden in: {folder_path}")
 
         # Nehme die erste gefundene Datei
         json_path = config_files[0]
 
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             self.config = json.load(f)
 
         self._validate_config()
@@ -92,8 +90,7 @@ class ConfigLoader:
         loc_type = coll["location_type"]
         if loc_type not in self.VALID_LOCATION_TYPES:
             raise ValueError(
-                f"Ungültiger location_type: {loc_type}. "
-                f"Erlaubt: {self.VALID_LOCATION_TYPES}"
+                f"Ungültiger location_type: {loc_type}. " f"Erlaubt: {self.VALID_LOCATION_TYPES}"
             )
 
         # Location-spezifische Pflichtfelder
@@ -132,7 +129,7 @@ class ConfigLoader:
         """
         return self.config["task"]
 
-    def get_llm_config(self) -> Dict[str, Any]:
+    def get_llm_config(self) -> dict[str, Any]:
         """Gibt die LLM-Konfiguration zurück.
 
         Returns:
@@ -140,7 +137,7 @@ class ConfigLoader:
         """
         return self.config.get("llm", {})
 
-    def get_output_config(self) -> Dict[str, Any]:
+    def get_output_config(self) -> dict[str, Any]:
         """Gibt die Output-Konfiguration zurück.
 
         Returns:
@@ -148,7 +145,7 @@ class ConfigLoader:
         """
         return self.config.get("output", {})
 
-    def get_colloquium_config(self) -> Optional[Dict[str, Any]]:
+    def get_colloquium_config(self) -> Optional[dict[str, Any]]:
         """Gibt die Kolloquiums-Konfiguration zurück.
 
         Returns:
@@ -156,7 +153,7 @@ class ConfigLoader:
         """
         return self.config.get("colloquium")
 
-    def get_project_config(self) -> Optional[Dict[str, Any]]:
+    def get_project_config(self) -> Optional[dict[str, Any]]:
         """Gibt die Projekt-Konfiguration zurück.
 
         Returns:
@@ -164,7 +161,7 @@ class ConfigLoader:
         """
         return self.config.get("project")
 
-    def get_gemini_emark_config(self) -> Dict[str, Any]:
+    def get_gemini_emark_config(self) -> dict[str, Any]:
         """Gibt die Gemini-Emarks-Konfiguration zurück.
 
         Returns:

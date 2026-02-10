@@ -1,16 +1,17 @@
 # colloquium_pipeline/email_generator.py
 """Modul zur Generierung von Anmelde-E-Mails für Kolloquien."""
 
-from typing import Optional
 from pathlib import Path
-from ..core.llm import determine_gender_from_name
-from ..core.utils import split_stud_name
+from typing import Optional
+
 from ..core.email import (
-    EmailRecipient,
     ColloquiumRegistrationEmail,
+    EmailRecipient,
     FinalGradeEmail,
     StudentFeedbackEmail,
 )
+from ..core.llm import determine_gender_from_name
+from ..core.utils import split_student_name
 
 
 class EmailGenerator:
@@ -42,13 +43,13 @@ class EmailGenerator:
             print("Error: author is None")
             return ""
 
-        student_first_name, student_last_name = split_stud_name(author)
+        student_first_name, student_last_name = split_student_name(author)
 
         self.generate_colloquium_email(
             llm_client=llm_client,
             student_first_name=student_first_name,
             student_last_name=student_last_name,
-            sid=matriculation,
+            id_number=matriculation,
             date_colloquium=date_colloquium,
             time_colloquium=uhrzeit_colloquium,
             first_examiner=first_examiner,
@@ -63,7 +64,7 @@ class EmailGenerator:
         return self.save_email_to_markdown(
             output_folder=output_folder,
             student_last_name=student_last_name,
-            sid=matriculation,
+            id_number=matriculation,
         )
 
     def _generate_location_text(
@@ -107,7 +108,7 @@ class EmailGenerator:
         llm_client,
         student_first_name: str,
         student_last_name: str,
-        sid: str,
+        id_number: str,
         date_colloquium: str,
         time_colloquium: str,
         first_examiner: str,
@@ -124,7 +125,7 @@ class EmailGenerator:
             first_name=student_first_name,
             last_name=student_last_name,
             gender=gender,
-            identifier=sid,
+            identifier=id_number,
         )
 
         location_text = self._generate_location_text(
@@ -151,7 +152,7 @@ class EmailGenerator:
         evaluator_client,
         first_name: str,
         last_name: str,
-        sid: str,
+        id_number: str,
         examiner_name: str,
     ) -> str:
         """Generiert den Text für die E-Mail zur Einreichung der Note."""
@@ -160,7 +161,7 @@ class EmailGenerator:
             first_name=first_name,
             last_name=last_name,
             gender=gender,
-            identifier=sid,
+            identifier=id_number,
         )
 
         template = FinalGradeEmail()
@@ -195,14 +196,14 @@ class EmailGenerator:
         self,
         output_folder: str,
         student_last_name: str,
-        sid: str,
+        id_number: str,
         filename_prefix: str = "kolloquium_anmeldung",
     ) -> str:
         """Speichert den E-Mail-Text in einer Markdown-Datei."""
         output_path = Path(output_folder)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        filename = f"{filename_prefix}_{student_last_name}_{sid}.md"
+        filename = f"{filename_prefix}_{student_last_name}_{id_number}.md"
         self.email_path = output_path / filename
 
         with open(self.email_path, "w", encoding="utf-8") as f:

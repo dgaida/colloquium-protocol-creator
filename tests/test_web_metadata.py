@@ -1,11 +1,12 @@
 """
-Unit tests for src/academic_doc_generator/domain/metadata.py
+Unit tests for src/academic_doc_generator/core/metadata.py
 """
 
 import os
 import tempfile
 from unittest.mock import MagicMock
-from academic_doc_generator.domain import metadata
+
+from academic_doc_generator.core import metadata
 
 
 def test_get_initials():
@@ -47,7 +48,7 @@ def test_generate_metadata_file():
         assert os.path.exists(md_path)
         assert md_path.endswith("2025_ws2425_ba_mamu.md")
 
-        with open(md_path, "r", encoding="utf-8") as f:
+        with open(md_path, encoding="utf-8") as f:
             content = f.read()
 
         assert 'title: "Test Thesis"' in content

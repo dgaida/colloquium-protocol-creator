@@ -2,10 +2,9 @@
 
 import os
 from pathlib import Path
-from typing import List
 
 
-def validate_api_keys() -> List[str]:
+def validate_api_keys() -> list[str]:
     """Check which LLM APIs are configured.
 
     Returns:
@@ -48,17 +47,34 @@ def validate_pdf_path(folder_path: str, filename: str) -> Path:
         Absolute path to PDF file.
 
     Raises:
-        ValueError: If path attempts directory traversal.
+        ValueError: If path attempts directory traversal or contains invalid characters.
         FileNotFoundError: If PDF does not exist.
+
+    Security:
+        - Prevents directory traversal (../)
+        - Prevents absolute paths
+        - Validates file extension
     """
     base_path = Path(folder_path).resolve()
+
+    # Additional security checks
+    if Path(filename).is_absolute():
+        raise ValueError(f"Absolute paths not allowed: {filename}")
+
+    if any(part == ".." for part in Path(filename).parts):
+        raise ValueError(f"Path traversal detected: {filename}")
+
+    # Enforce file extension
+    if not filename.lower().endswith(".pdf"):
+        raise ValueError(f"Only PDF files allowed: {filename}")
+
     pdf_path = (base_path / filename).resolve()
 
     # Verify path is within base folder (prevent traversal)
     try:
         pdf_path.relative_to(base_path)
-    except ValueError:
-        raise ValueError(f"Invalid PDF path (directory traversal): {filename}")
+    except ValueError as e:
+        raise ValueError(f"Invalid PDF path (directory traversal): {filename}") from e
 
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")

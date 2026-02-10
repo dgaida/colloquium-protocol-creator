@@ -2,13 +2,14 @@
 """LLM interface for extracting project work metadata."""
 
 import json
-from typing import Dict
+
 from llm_client import LLMClient
+
 from ..core.pdf import extract_text_per_page
 from ..core.prompts import PromptTemplate, build_prompt
 
 
-def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, str]:
+def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, str]:
     """Extract metadata from a project work PDF (title page).
 
     This function reads the first two pages of the PDF and uses an LLM to
@@ -21,9 +22,9 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, 
 
     Returns:
         dict: Dictionary containing extracted metadata with keys:
-            - "stud_name": Full name of the student
+            - "student_name": Full name of the student
             - "student_first_name": First name only (for gender detection)
-            - "sid": Student's matriculation number
+            - "id_number": Student's matriculation number
             - "title": Title of the project work
             - "first_examiner": Name of the first examiner
             - "first_examiner_christian": Christian name of examiner
@@ -32,9 +33,7 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, 
     """
     # Extract text from first two pages
     pages_text = extract_text_per_page(pdf_path, max_pages=2)
-    sample_text = "\n\n".join(
-        [pages_text.get(i, "") for i in sorted(pages_text.keys())]
-    )
+    sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
     prompt = build_prompt(PromptTemplate.EXTRACT_PROJECT_METADATA, text=sample_text)
 
@@ -44,6 +43,12 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> Dict[str, 
     try:
         metadata = json.loads(content)
     except json.JSONDecodeError:
-        metadata = {"error": "Could not parse JSON", "raw": content}
+        return {"error": "Could not parse JSON", "raw": content}
+
+    # Normalize keys
+    if "stud_name" in metadata and "student_name" not in metadata:
+        metadata["student_name"] = metadata.pop("stud_name")
+    if "sid" in metadata and "id_number" not in metadata:
+        metadata["id_number"] = metadata.pop("sid")
 
     return metadata

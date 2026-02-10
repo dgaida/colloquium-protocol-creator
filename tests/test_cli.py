@@ -2,11 +2,12 @@
 Unit tests for src/academic_doc_generator/cli.py
 """
 
-import pytest
 import sys
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from io import StringIO
+
+import pytest
 
 from academic_doc_generator import cli
 
@@ -123,9 +124,7 @@ class TestCreateParser:
         """Test LLM-Optionen."""
         parser = cli.create_parser()
 
-        args = parser.parse_args(
-            ["project", "test.pdf", "--api", "openai", "--model", "gpt-4o"]
-        )
+        args = parser.parse_args(["project", "test.pdf", "--api", "openai", "--model", "gpt-4o"])
 
         assert args.api == "openai"
         assert args.model == "gpt-4o"
@@ -155,8 +154,8 @@ class TestCreateParser:
 class TestMain:
     """Tests für main Funktion."""
 
-    @patch("academic_doc_generator.cli.run_from_config")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.run_from_config")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_with_config(self, mock_validate, mock_run_config):
         """Test main mit Config-Argument."""
         mock_validate.return_value = ["openai"]
@@ -167,8 +166,8 @@ class TestMain:
 
         mock_run_config.assert_called_once_with("config.json")
 
-    @patch("academic_doc_generator.cli.Path")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.Path")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_list_templates_found(self, mock_validate, mock_path_class):
         """Test --list-templates mit vorhandenen Templates."""
         mock_validate.return_value = ["openai"]
@@ -182,16 +181,15 @@ class TestMain:
 
         test_args = ["academic-doc-generator", "--list-templates"]
 
-        with patch.object(sys, "argv", test_args):
-            with patch("sys.stdout", new=StringIO()) as fake_out:
-                cli.main()
-                output = fake_out.getvalue()
+        with patch.object(sys, "argv", test_args), patch("sys.stdout", new=StringIO()) as fake_out:
+            cli.main()
+            output = fake_out.getvalue()
 
-                assert "config_colloquium_campus.json" in output
-                assert "config_project_template.json" in output
+            assert "config_colloquium_campus.json" in output
+            assert "config_project_template.json" in output
 
-    @patch("academic_doc_generator.cli.Path")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.Path")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_list_templates_not_found(self, mock_validate, mock_path_class):
         """Test --list-templates wenn Ordner nicht existiert."""
         mock_validate.return_value = ["openai"]
@@ -207,8 +205,8 @@ class TestMain:
 
             assert exc_info.value.code == 1
 
-    @patch("academic_doc_generator.cli.Path")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.Path")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_list_templates_no_files(self, mock_validate, mock_path_class):
         """Test --list-templates wenn keine Templates vorhanden."""
         mock_validate.return_value = ["openai"]
@@ -225,7 +223,7 @@ class TestMain:
             assert exc_info.value.code == 1
 
     @patch("academic_doc_generator.cli.handlers.run_colloquium_direct")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_colloquium_subcommand(self, mock_validate, mock_run_colloquium):
         """Test main mit Colloquium Subcommand."""
         mock_validate.return_value = ["openai"]
@@ -247,7 +245,7 @@ class TestMain:
         mock_run_colloquium.assert_called_once()
 
     @patch("academic_doc_generator.cli.handlers.run_project_direct")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_project_subcommand(self, mock_validate, mock_run_project):
         """Test main mit Project Subcommand."""
         mock_validate.return_value = ["openai"]
@@ -259,7 +257,7 @@ class TestMain:
         mock_run_project.assert_called_once()
 
     @patch("academic_doc_generator.cli.handlers.run_review_direct")
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_review_subcommand(self, mock_validate, mock_run_review):
         """Test main mit Review Subcommand."""
         mock_validate.return_value = ["openai"]
@@ -270,25 +268,24 @@ class TestMain:
 
         mock_run_review.assert_called_once()
 
-    @patch("academic_doc_generator.cli.validate_api_keys")
+    @patch("academic_doc_generator.cli.main.validate_api_keys")
     def test_main_no_subcommand(self, mock_validate):
         """Test main ohne Subcommand zeigt Hilfe."""
         mock_validate.return_value = ["openai"]
         test_args = ["academic-doc-generator"]
 
-        with patch.object(sys, "argv", test_args):
-            with patch("sys.stdout", new=StringIO()) as fake_out:
-                cli.main()
-                output = fake_out.getvalue()
+        with patch.object(sys, "argv", test_args), patch("sys.stdout", new=StringIO()) as fake_out:
+            cli.main()
+            output = fake_out.getvalue()
 
-                # Sollte Hilfe-Text enthalten
-                assert "Tipp" in output or "usage" in output.lower()
+            # Sollte Hilfe-Text enthalten
+            assert "Tipp" in output or "usage" in output.lower()
 
 
 class TestEntryPoints:
     """Tests für Entry-Point-Funktionen."""
 
-    @patch("academic_doc_generator.cli.main")
+    @patch("academic_doc_generator.cli.main.main")
     def test_colloquium_main_entry_point(self, mock_main):
         """Test colloquium_main Entry Point."""
         original_argv = sys.argv.copy()
@@ -313,7 +310,7 @@ class TestEntryPoints:
         finally:
             sys.argv = original_argv
 
-    @patch("academic_doc_generator.cli.main")
+    @patch("academic_doc_generator.cli.main.main")
     def test_project_main_entry_point(self, mock_main):
         """Test project_main Entry Point."""
         original_argv = sys.argv.copy()

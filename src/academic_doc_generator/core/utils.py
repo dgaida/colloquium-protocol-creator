@@ -4,7 +4,7 @@
 import glob
 import os
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional
 
 
 def get_semester(dt: Optional[datetime] = None) -> str:
@@ -35,7 +35,7 @@ def get_semester(dt: Optional[datetime] = None) -> str:
             return f"WS{(year - 1) % 100}/{year % 100}"
 
 
-def split_stud_name(full_name: str) -> Tuple[str, str]:
+def split_student_name(full_name: str) -> tuple[str, str]:
     """Split a student's full name into first and last name.
 
     Handles formats like "Last, First" or "First Last".
@@ -62,9 +62,7 @@ def split_stud_name(full_name: str) -> Tuple[str, str]:
     return full_name, "Name"
 
 
-def find_latest_tex(
-    folder: str, pattern: str = "bewertung_brief_*.tex"
-) -> Optional[str]:
+def find_latest_tex(folder: str, pattern: str = "bewertung_brief_*.tex") -> Optional[str]:
     """Find the most recently modified TeX file in a folder matching a pattern.
 
     This function searches for files in the given folder whose names match

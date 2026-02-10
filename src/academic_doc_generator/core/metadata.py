@@ -2,13 +2,21 @@
 
 import os
 from datetime import datetime
-from typing import Dict, Optional
-from ..core.types import LLMClientProtocol
+from typing import Optional
+
 from ..core.prompts import PromptTemplate, build_prompt
+from ..core.types import LLMClientProtocol
 
 
 def get_initials(name: str) -> str:
-    """Generate initials for a name (e.g., 'Max Mustermann' -> 'M. M.')."""
+    """Generate initials for a name (e.g., 'Max Mustermann' -> 'M. M.').
+
+    Args:
+        name: Full name of the person.
+
+    Returns:
+        String containing uppercase initials followed by dots.
+    """
     if not name or name in ["Unknown Author", "Unknown", "Unbekannt"]:
         return "U. A."
     # Replace hyphens with spaces to treat as separate parts
@@ -19,7 +27,14 @@ def get_initials(name: str) -> str:
 
 
 def get_author_slug(name: str) -> str:
-    """Generate a short slug from the author's name."""
+    """Generate a short slug from the author's name.
+
+    Args:
+        name: Full name of the person.
+
+    Returns:
+        A 4-character lowercase slug.
+    """
     if not name or name in ["Unknown Author", "Unknown", "Unbekannt"]:
         return "unkn"
     # Replace hyphens with spaces
@@ -34,12 +49,18 @@ def get_author_slug(name: str) -> str:
     return "unkn"
 
 
-def summarize_for_web(pages_text: Dict[int, str], llm_client: LLMClientProtocol) -> str:
-    """Generate a concise, English summary suitable for publication on a website."""
+def summarize_for_web(pages_text: dict[int, str], llm_client: LLMClientProtocol) -> str:
+    """Generate a concise, English summary suitable for publication on a website.
+
+    Args:
+        pages_text: Mapping of page indices to text content.
+        llm_client: LLM client for summary generation.
+
+    Returns:
+        A short English summary string.
+    """
     # Use first 10 pages as in the original script
-    text_to_summarize = "\n\n".join(
-        [pages_text.get(i, "") for i in sorted(pages_text.keys())[:10]]
-    )
+    text_to_summarize = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:10]])
 
     prompt = build_prompt(PromptTemplate.SUMMARIZE_FOR_WEB, text=text_to_summarize)
     messages = [{"role": "user", "content": prompt}]
@@ -50,7 +71,7 @@ def generate_metadata_file(
     output_folder: str,
     title: str,
     author: str,
-    pages_text: Dict[int, str],
+    pages_text: dict[int, str],
     llm_client: LLMClientProtocol,
     work_type: str,  # e.g., "Bachelorthesis", "Masterthesis", "Praxisprojekt"
     semester: str,

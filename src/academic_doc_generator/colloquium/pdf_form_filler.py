@@ -7,11 +7,12 @@ Dieses Script bietet Funktionen zum:
 - Automatischen Ausfüllen von PDF-Formularen
 """
 
-import pymupdf  # PyMuPDF
-from typing import Dict, List, Optional, Any
-from pathlib import Path
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Optional
+
+import pymupdf  # PyMuPDF
 
 
 class PDFFormHandler:
@@ -45,7 +46,7 @@ class PDFFormHandler:
                 return True
         return False
 
-    def list_form_fields(self) -> List[Dict[str, Any]]:
+    def list_form_fields(self) -> list[dict[str, Any]]:
         """
         Listet alle Formularfelder mit Details auf.
 
@@ -119,13 +120,11 @@ class PDFFormHandler:
         if other_fields:
             print("🔧 Andere Felder:")
             for field in other_fields:
-                print(
-                    f"   • '{field['name']}' ({field['type']}) [Seite {field['page']}]"
-                )
+                print(f"   • '{field['name']}' ({field['type']}) [Seite {field['page']}]")
             print()
 
     def fill_form(
-        self, field_data: Dict[str, Any], output_path: str, flatten: bool = False
+        self, field_data: dict[str, Any], output_path: str, flatten: bool = False
     ) -> bool:
         """
         Füllt das PDF-Formular mit den angegebenen Daten aus.
@@ -189,9 +188,7 @@ class PDFFormHandler:
 
             # Prüfe, welche Felder nicht gefunden wurden
             all_field_names = {field["name"] for field in self.list_form_fields()}
-            not_found = [
-                name for name in field_data.keys() if name not in all_field_names
-            ]
+            not_found = [name for name in field_data if name not in all_field_names]
 
             if not_found:
                 print(f"\n⚠️  {len(not_found)} Feld(er) nicht im PDF gefunden:")
@@ -203,9 +200,7 @@ class PDFFormHandler:
                 for page in self.doc:
                     page.annots()  # Erzwingt Rendering
                 self.doc.save(output_path, deflate=True, garbage=3)
-                print(
-                    f"\n✅ PDF gespeichert und geflattent (nicht mehr editierbar): {output_path}"
-                )
+                print(f"\n✅ PDF gespeichert und geflattent (nicht mehr editierbar): {output_path}")
             else:
                 self.doc.save(output_path, garbage=3, deflate=True)
                 print(f"\n✅ PDF erfolgreich ausgefüllt: {output_path}")
@@ -236,7 +231,7 @@ def berechne_gesamtnote(note1: float, note2: float) -> float:
 
 
 def fill_form(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     output_folder: str,
     degree: str,
     location_type: str = "campus",
@@ -259,9 +254,7 @@ def fill_form(
     print("START FILL Form")
 
     if degree == "Master":
-        pdf_path = os.path.join(
-            "data", "Bewertung Masterarbeit_Kolloquium DSS_Formular.pdf"
-        )
+        pdf_path = os.path.join("data", "Bewertung Masterarbeit_Kolloquium DSS_Formular.pdf")
     elif degree == "Bachelor":
         pdf_path = os.path.join(
             "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_Formular.pdf"
@@ -341,9 +334,7 @@ def generate_location_text(
 def main():
     """Beispiel-Verwendung des PDF Form Handlers."""
     # Pfad zur PDF-Datei
-    pdf_path = os.path.join(
-        "data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf"
-    )
+    pdf_path = os.path.join("data", "Bewertung Bachelorarbeit_Kolloquium Informatik_form.pdf")
 
     # Prüfe ob Datei existiert
     if not Path(pdf_path).exists():
@@ -375,9 +366,7 @@ def main():
 
         # Berechnungen
         gesamtnote_ba = berechne_gesamtnote(note_ba_erstpruefer, note_ba_zweitpruefer)
-        gesamtnote_kolloq = berechne_gesamtnote(
-            note_kolloq_erstpruefer, note_kolloq_zweitpruefer
-        )
+        gesamtnote_kolloq = berechne_gesamtnote(note_kolloq_erstpruefer, note_kolloq_zweitpruefer)
         gesamtnote_gesamt = berechne_gesamtnote(gesamtnote_ba, gesamtnote_kolloq)
 
         # Beispieldaten basierend auf den tatsächlichen Feldnamen
@@ -443,9 +432,7 @@ def main():
         print("Empfehlungen:")
         print("1. Bitte die Formularersteller, das PDF mit Adobe Acrobat")
         print("   oder einem ähnlichen Tool neu zu erstellen")
-        print(
-            "2. Alle ausfüllbaren Bereiche sollten als 'Text Fields' definiert werden"
-        )
+        print("2. Alle ausfüllbaren Bereiche sollten als 'Text Fields' definiert werden")
         print("3. Jedes Feld sollte einen eindeutigen Namen haben")
         print("4. Checkboxen für Ankreuzfelder verwenden")
 

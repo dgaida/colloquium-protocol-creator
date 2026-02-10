@@ -2,10 +2,12 @@
 Unit tests for config_loader.py
 """
 
-import pytest
 import json
 import tempfile
 from pathlib import Path
+
+import pytest
+
 from academic_doc_generator.config_loader import ConfigLoader, load_config
 
 

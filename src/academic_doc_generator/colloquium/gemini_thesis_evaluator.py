@@ -4,8 +4,10 @@
 import os
 import tempfile
 from typing import Optional
+
 from llm_client import LLMClient
 from pypdf import PdfReader, PdfWriter
+
 from ..core.prompts import PromptTemplate, build_prompt
 
 
@@ -43,11 +45,11 @@ class GeminiThesisEvaluator:
             writer.add_page(reader.pages[page_num])
 
         # Speichere in temporärer Datei
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", mode="wb")
-        writer.write(temp_file)
-        temp_file.close()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", mode="wb") as temp_file:
+            writer.write(temp_file)
+            temp_name = temp_file.name
 
-        return temp_file.name
+        return temp_name
 
     def _create_emark_prompt(self, thesis_title: str, degree: str) -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
@@ -61,9 +63,7 @@ class GeminiThesisEvaluator:
         """
         niveau = "Bachelor" if degree == "Bachelor" else "Master"
 
-        return build_prompt(
-            PromptTemplate.THESIS_EVALUATION, niveau=niveau, title=thesis_title
-        )
+        return build_prompt(PromptTemplate.THESIS_EVALUATION, niveau=niveau, title=thesis_title)
 
     def evaluate_thesis(
         self,
@@ -96,9 +96,7 @@ class GeminiThesisEvaluator:
             prompt = self._create_emark_prompt(thesis_title, degree)
 
             # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
-            print(
-                "   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)..."
-            )
+            print("   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)...")
 
             messages = [
                 {

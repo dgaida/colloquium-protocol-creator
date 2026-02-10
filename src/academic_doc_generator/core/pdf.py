@@ -1,17 +1,19 @@
 # src/academic_doc_generator/core/pdf.py
 """PDF processing utilities (Docling + pypdf) with comprehensive type annotations."""
 
-from typing import Dict, List, Tuple, Optional
 import re
-from pypdf import PdfReader
-from docling_parse.pdf_parser import DoclingPdfParser
+from typing import Optional
+
 from docling_core.types.doc.page import TextCellUnit
+from docling_parse.pdf_parser import DoclingPdfParser
+from pypdf import PdfReader
+
 from .types import (
-    WordBox,
     AnnotationContext,
-    CommentStats,
-    CommentCategory,
     AnnotationData,
+    CommentCategory,
+    CommentStats,
+    WordBox,
 )
 
 # ============================================================================
@@ -26,7 +28,7 @@ from .types import (
 # ============================================================================
 
 
-def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
+def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
     """Extract text and bounding boxes for words from a PDF using Docling.
 
     Args:
@@ -43,15 +45,13 @@ def extract_text_with_positions(pdf_path: str) -> Dict[int, List[WordBox]]:
     parser = DoclingPdfParser()
     pdf_doc = parser.load(path_or_stream=pdf_path)
 
-    pages_words: Dict[int, List[WordBox]] = {}
+    pages_words: dict[int, list[WordBox]] = {}
 
     # Enumerate to force 0-based indexing, regardless of docling's page_no (1-based)
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
-        words: List[WordBox] = []
+        words: list[WordBox] = []
         for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
-            r = (
-                cell.rect
-            )  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+            r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
 
             words.append(
                 {
@@ -108,7 +108,7 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
 
 def extract_annotations_with_positions(
     pdf_path: str, ignore_source: bool = True
-) -> Tuple[Dict[int, List[AnnotationData]], CommentStats]:
+) -> tuple[dict[int, list[AnnotationData]], CommentStats]:
     """Extract annotations (comments/highlights) and their positions using pypdf.
 
     Annotations are categorized for processing:
@@ -135,11 +135,11 @@ def extract_annotations_with_positions(
         'llm'
     """
     reader = PdfReader(pdf_path)
-    annotations: Dict[int, List[AnnotationData]] = {}
+    annotations: dict[int, list[AnnotationData]] = {}
     stats: CommentStats = {"quelle": 0, "language": 0, "ignore": 0}
 
     for idx, page in enumerate(reader.pages):
-        page_annots: List[AnnotationData] = []
+        page_annots: list[AnnotationData] = []
         if "/Annots" in page:
             for annot_ref in page["/Annots"]:
                 annot = annot_ref.get_object()
@@ -193,8 +193,8 @@ def extract_annotations_with_positions(
 
 
 def words_overlapping_rect(
-    words: List[WordBox], rect: Tuple[float, float, float, float], tol: float = 0.5
-) -> List[WordBox]:
+    words: list[WordBox], rect: tuple[float, float, float, float], tol: float = 0.5
+) -> list[WordBox]:
     """Find all words that overlap with a given rectangle.
 
     Args:
@@ -213,7 +213,7 @@ def words_overlapping_rect(
         1
     """
     x0, y0, x1, y1 = rect
-    hits: List[WordBox] = []
+    hits: list[WordBox] = []
     for w in words:
         wx0, wy0, wx1, wy1 = w["bbox"]
         if wx1 >= x0 - tol and wx0 <= x1 + tol and wy1 >= y0 - tol and wy0 <= y1 + tol:
@@ -222,10 +222,10 @@ def words_overlapping_rect(
 
 
 def get_words_for_annotation_on_page(
-    pages_words: Dict[int, List[WordBox]],
+    pages_words: dict[int, list[WordBox]],
     page_index: int,
-    rect: Tuple[float, float, float, float],
-) -> Tuple[int, List[WordBox]]:
+    rect: tuple[float, float, float, float],
+) -> tuple[int, list[WordBox]]:
     """Get words that match an annotation rectangle, checking neighboring pages if necessary.
 
     Sometimes annotations appear on the wrong page in the PDF structure. This function
@@ -261,8 +261,8 @@ def get_words_for_annotation_on_page(
 
 
 def rect_overlap(
-    word_bbox: Tuple[float, float, float, float],
-    annot_bbox: Tuple[float, float, float, float],
+    word_bbox: tuple[float, float, float, float],
+    annot_bbox: tuple[float, float, float, float],
 ) -> bool:
     """Check if a word bounding box overlaps with an annotation rectangle.
 
@@ -285,8 +285,8 @@ def rect_overlap(
 
 
 def find_annotation_context(
-    pages_words: Dict[int, List[WordBox]], annotations: Dict[int, List[AnnotationData]]
-) -> Dict[int, List[AnnotationContext]]:
+    pages_words: dict[int, list[WordBox]], annotations: dict[int, list[AnnotationData]]
+) -> dict[int, list[AnnotationContext]]:
     """Match annotations to the words and paragraphs they reference.
 
     For each annotation, this function:
@@ -311,10 +311,10 @@ def find_annotation_context(
         >>> context[1][0]['highlighted']
         'test'
     """
-    context_dict: Dict[int, List[AnnotationContext]] = {}
+    context_dict: dict[int, list[AnnotationContext]] = {}
 
     for page_num, annots in annotations.items():
-        page_results: List[AnnotationContext] = []
+        page_results: list[AnnotationContext] = []
 
         for annot in annots:
             rect = annot["rect"]
@@ -335,9 +335,7 @@ def find_annotation_context(
             highlighted_text = " ".join([w["text"] for w in hit_words]).strip()
 
             # Use the full text of the page where words were actually found
-            full_page_text = " ".join(
-                [w["text"] for w in pages_words.get(page_idx_for_words, [])]
-            )
+            full_page_text = " ".join([w["text"] for w in pages_words.get(page_idx_for_words, [])])
             paragraphs = re.split(r"\n\s*\n| {2,}", full_page_text)
 
             # Find paragraph containing the highlighted words
@@ -366,7 +364,7 @@ def find_annotation_context(
     return context_dict
 
 
-def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
+def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> dict[int, str]:
     """Extract plain text (without positions) for the first `max_pages` pages.
 
     This is faster than extracting word positions and is sufficient for metadata
@@ -388,13 +386,11 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> Dict[int, str]:
     parser = DoclingPdfParser()
     pdf_doc = parser.load(path_or_stream=pdf_path)
 
-    pages_text: Dict[int, str] = {}
+    pages_text: dict[int, str] = {}
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
         if zero_idx >= max_pages:
             break
-        words = [
-            cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)
-        ]
+        words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
         page_text = " ".join(words)
         pages_text[zero_idx] = page_text
     return pages_text

@@ -3,12 +3,13 @@
 
 import re
 from pathlib import Path
-from typing import List, Tuple, Dict
+
 from llm_client import LLMClient
+
 from ..core.prompts import PromptTemplate, build_prompt
 
 
-def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
+def mask_comments(text: str) -> tuple[str, dict[str, str]]:
     """Ersetzt Zeilen, die mit % beginnen, durch Platzhalter.
 
     Args:
@@ -21,7 +22,7 @@ def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
     """
     lines = text.splitlines()
     masked_lines = []
-    comment_map: Dict[str, str] = {}
+    comment_map: dict[str, str] = {}
 
     for line in lines:
         if line.strip().startswith("%"):
@@ -34,7 +35,7 @@ def mask_comments(text: str) -> Tuple[str, Dict[str, str]]:
     return "\n".join(masked_lines), comment_map
 
 
-def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
+def unmask_comments(text: str, comment_map: dict[str, str]) -> str:
     """Stellt die ursprünglichen Kommentare aus den Platzhaltern wieder her.
 
     Args:
@@ -53,7 +54,7 @@ def unmask_comments(text: str, comment_map: Dict[str, str]) -> str:
 
 def split_latex_exam_into_sections(
     latex_content: str, verbose: bool = False
-) -> Tuple[str, List[str], str]:
+) -> tuple[str, list[str], str]:
     """Teilt ein LaTeX-Dokument in Präambel, Fragen und Postamble auf.
 
     Ignoriert auskommentierte \\begin{questions} und \\end{questions} Befehle.
@@ -172,9 +173,7 @@ def translate_preamble_to_english(
     if verbose:
         print(f"\n{'='*60}")
         print("PREAMBLE TRANSLATED")
-        print(
-            f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}"
-        )
+        print(f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}")
         if len(translated) < len(preamble) - 500:
             print(translated)
         print(f"{'='*60}\n")
@@ -241,15 +240,13 @@ def translate_latex_exam(
     print(f"\n📄 Lese LaTeX-Datei: {input_path}")
 
     # Lese Input-Datei
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(input_path, encoding="utf-8") as f:
         latex_content = f.read()
 
     print("✂️  Teile Dokument in Abschnitte...")
 
     # Teile in Abschnitte
-    preamble, questions, postamble = split_latex_exam_into_sections(
-        latex_content, verbose
-    )
+    preamble, questions, postamble = split_latex_exam_into_sections(latex_content, verbose)
 
     print(f"   • Präambel: {len(preamble)} Zeichen")
     print(f"   • Anzahl Fragen: {len(questions)}")
@@ -257,9 +254,7 @@ def translate_latex_exam(
 
     # Übersetze Präambel
     print("\n🌍 Übersetze Präambel...")
-    translated_preamble = translate_preamble_to_english(
-        preamble, llm_client, verbose=verbose
-    )
+    translated_preamble = translate_preamble_to_english(preamble, llm_client, verbose=verbose)
 
     # Übersetze jede Frage einzeln
     print(f"\n🌍 Übersetze {len(questions)} Fragen...")
@@ -267,9 +262,7 @@ def translate_latex_exam(
 
     for i, question in enumerate(questions, start=1):
         print(f"   [{i}/{len(questions)}] Übersetze Frage {i}...")
-        translated = translate_question_to_english(
-            question, llm_client, verbose=verbose
-        )
+        translated = translate_question_to_english(question, llm_client, verbose=verbose)
         translated_questions.append(translated)
 
     # Füge alles zusammen
@@ -278,9 +271,7 @@ def translate_latex_exam(
     # Stelle sicher, dass Questions mit Newline beginnen
     questions_text = "\n\n".join(translated_questions)
 
-    translated_content = (
-        f"{translated_preamble}\n\n" f"{questions_text}\n\n" f"{postamble}"
-    )
+    translated_content = f"{translated_preamble}\n\n" f"{questions_text}\n\n" f"{postamble}"
 
     # Speichere Ergebnis
     print(f"\n💾 Speichere englische Version: {output_path}")

@@ -2,10 +2,10 @@
 """Exam Translator package for converting LaTeX exam documents from German to English."""
 
 from .translator import (
-    translate_latex_exam,
     split_latex_exam_into_sections,
-    translate_question_to_english,
+    translate_latex_exam,
     translate_preamble_to_english,
+    translate_question_to_english,
 )
 
 __all__ = [

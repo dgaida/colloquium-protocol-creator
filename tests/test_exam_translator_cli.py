@@ -3,12 +3,13 @@ Comprehensive unit tests for src/academic_doc_generator/exam_translator/cli.py
 Ziel: Coverage von 0% auf >90% erhöhen
 """
 
-import pytest
 import sys
 import tempfile
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from io import StringIO
+
+import pytest
 
 from academic_doc_generator.exam_translator import cli
 
@@ -159,24 +160,22 @@ class TestExamTranslatorMain:
         try:
             test_args = ["exam-translator", pdf_file]
 
-            with patch.object(sys, "argv", test_args):
-                with patch(
-                    "academic_doc_generator.exam_translator.cli.LLMClient"
-                ) as mock_llm:
-                    with patch(
-                        "academic_doc_generator.exam_translator.cli.translate_latex_exam"
-                    ) as mock_translate:
-                        mock_llm.return_value = MagicMock()
-                        mock_translate.return_value = pdf_file.replace(
-                            ".pdf", "_engl.pdf"
-                        )
+            with (
+                patch.object(sys, "argv", test_args),
+                patch("academic_doc_generator.exam_translator.cli.LLMClient") as mock_llm,
+                patch(
+                    "academic_doc_generator.exam_translator.cli.translate_latex_exam"
+                ) as mock_translate,
+            ):
+                mock_llm.return_value = MagicMock()
+                mock_translate.return_value = pdf_file.replace(".pdf", "_engl.pdf")
 
-                        with patch("sys.stdout", new=StringIO()) as fake_out:
-                            cli.exam_translator_main()
-                            output = fake_out.getvalue()
+                with patch("sys.stdout", new=StringIO()) as fake_out:
+                    cli.exam_translator_main()
+                    output = fake_out.getvalue()
 
-                        # Sollte Warnung ausgeben
-                        assert "Warnung" in output or "keine .tex Endung" in output
+                # Sollte Warnung ausgeben
+                assert "Warnung" in output or "keine .tex Endung" in output
 
         finally:
             Path(pdf_file).unlink(missing_ok=True)
@@ -204,9 +203,7 @@ class TestExamTranslatorMain:
 
     @patch("academic_doc_generator.exam_translator.cli.LLMClient")
     @patch("academic_doc_generator.exam_translator.cli.translate_latex_exam")
-    def test_exam_translator_main_translation_value_error(
-        self, mock_translate, mock_llm_class
-    ):
+    def test_exam_translator_main_translation_value_error(self, mock_translate, mock_llm_class):
         """Test mit ValueError während der Übersetzung."""
         with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
             f.write("\\documentclass{exam}")
@@ -230,9 +227,7 @@ class TestExamTranslatorMain:
 
     @patch("academic_doc_generator.exam_translator.cli.LLMClient")
     @patch("academic_doc_generator.exam_translator.cli.translate_latex_exam")
-    def test_exam_translator_main_unexpected_error(
-        self, mock_translate, mock_llm_class
-    ):
+    def test_exam_translator_main_unexpected_error(self, mock_translate, mock_llm_class):
         """Test mit unerwartetem Fehler."""
         with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
             f.write("\\documentclass{exam}")

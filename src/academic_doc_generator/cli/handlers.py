@@ -1,15 +1,17 @@
 """CLI command handlers for different tasks."""
 
-import sys
 import argparse
+import sys
 from pathlib import Path
+
 from llm_client import LLMClient
-from .config_loader import ConfigLoader, load_config
-from .colloquium.orchestrator import run_pipeline
-from .project.orchestrator import run_project_pipeline
-from .review.orchestrator import run_review_pipeline
-from .core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
-from .domain.validation import validate_pdf_path
+
+from ..colloquium.orchestrator import run_pipeline
+from ..config_loader import ConfigLoader, load_config
+from ..core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
+from ..core.validation import validate_pdf_path
+from ..project.orchestrator import run_project_pipeline
+from ..review.orchestrator import run_review_pipeline
 
 
 def run_from_config(config_path: str | Path) -> ConfigLoader:
@@ -24,9 +26,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
     # Create LLM client
     llm_config = config.get_llm_config()
     try:
-        llm_client = LLMClient(
-            api_choice=llm_config.get("api_choice"), llm=llm_config.get("model")
-        )
+        llm_client = LLMClient(api_choice=llm_config.get("api_choice"), llm=llm_config.get("model"))
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
@@ -58,9 +58,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
             time=coll_config["time"],
             llm_client=llm_client,
             groq_free=llm_config.get("groq_free", False),
-            output_folder=(
-                Path(output_config["folder"]) if output_config.get("folder") else None
-            ),
+            output_folder=(Path(output_config["folder"]) if output_config.get("folder") else None),
             compile_pdf=output_config.get("compile_pdf", True),
             fill_form_only=output_config.get("fill_form_only", False),
             location_type=coll_config["location_type"],  # type: ignore
@@ -92,9 +90,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
         proj_workflow_config = ProjectWorkflowConfig(
             pdf_path=pdf_path,
             llm_client=llm_client,
-            output_folder=(
-                Path(output_config["folder"]) if output_config.get("folder") else None
-            ),
+            output_folder=(Path(output_config["folder"]) if output_config.get("folder") else None),
             compile_pdf=output_config.get("compile_pdf", True),
             signature_file=output_config.get("signature_file", "signature.png"),
             mark=mark,

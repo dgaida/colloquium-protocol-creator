@@ -4,7 +4,26 @@
 import glob
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
+
+import yaml
+
+
+def load_global_config() -> dict:
+    """Load settings from global config.yaml file if it exists.
+
+    Returns:
+        dict: The configuration settings.
+    """
+    config_path = Path("config.yaml")
+    if config_path.exists():
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+        except Exception as e:
+            print(f"Warning: Could not load config.yaml: {e}")
+    return {}
 
 
 def get_semester(dt: Optional[datetime] = None) -> str:

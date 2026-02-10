@@ -1,8 +1,161 @@
 # Academic Document Generator Documentation
 
+<style>
+.workflow-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin: 40px 0;
+    padding: 30px;
+    background: linear-gradient(135deg, var(--md-primary-fg-color) 0%, var(--md-accent-fg-color) 100%);
+    border-radius: 8px;
+}
+
+.workflow-box {
+    background: var(--md-default-bg-color);
+    padding: 25px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.workflow-box .icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.workflow-box h3 {
+    margin: 10px 0;
+    color: var(--md-primary-fg-color);
+}
+
+.workflow-arrow {
+    font-size: 2rem;
+    color: var(--md-default-bg-color);
+    font-weight: bold;
+}
+
+@media (max-width: 76.1875em) {
+    .workflow-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .workflow-arrow {
+        transform: rotate(90deg);
+    }
+}
+</style>
+
+<div class="workflow-container">
+    <div class="workflow-box">
+        <div class="icon">📄</div>
+        <h3>Eingabe</h3>
+        <p>Annotierte PDF</p>
+    </div>
+    
+    <div class="workflow-arrow">→</div>
+    
+    <div class="workflow-box">
+        <div class="icon">🤖</div>
+        <h3>KI-Verarbeitung</h3>
+        <p>LLM extrahiert & formuliert</p>
+    </div>
+    
+    <div class="workflow-arrow">→</div>
+    
+    <div class="workflow-box">
+        <div class="icon">📝</div>
+        <h3>Ausgabe</h3>
+        <p>LaTeX + PDF</p>
+    </div>
+</div>
+
 Welcome to the Academic Document Generator documentation!
 
 Transform annotated PDFs into professional LaTeX documents using AI. Generate thesis colloquium protocols, project grading letters, peer review comments, and translate LaTeX exams automatically.
+
+---
+
+## 🎯 Workflow auf einen Blick
+
+```mermaid
+graph LR
+    subgraph "Input"
+        A[📄 Annotierte PDFThesis/Paper/Projekt]
+    end
+    
+    subgraph "Verarbeitung"
+        B[🤖 KI-ExtraktionOpenAI/Groq/Gemini/Ollama]
+    end
+    
+    subgraph "Output"
+        C[📝 LaTeX + PDFTH Köln Format]
+    end
+    
+    A -->|PDF-Annotationen| B
+    B -->|Umformulierung| C
+    
+    style A fill:#f093fb,stroke:#f5576c,color:#000,stroke-width:3px
+    style B fill:#4facfe,stroke:#00f2fe,color:#000,stroke-width:3px
+    style C fill:#43e97b,stroke:#38f9d7,color:#000,stroke-width:3px
+```
+
+## 📊 Vier Hauptanwendungsfälle
+
+<div class="grid cards" markdown>
+
+-   :material-school:{ .lg .middle } __🎓 Kolloquium-Protokolle__
+
+    ---
+
+    - Notizen → klare Fragen
+    - Auto-Metadaten-Extraktion  
+    - Thesis-Zusammenfassung
+    - Formular-Ausfüllung
+    - E-Mail-Generierung
+
+    [:octicons-arrow-right-24: Dokumentation](COLLOQUIUM.md)
+
+-   :material-file-document:{ .lg .middle } __📊 Praxisprojekt-Benotung__
+
+    ---
+
+    - Metadaten-Extraktion
+    - Anrede-Bestimmung (Herr/Frau)
+    - Bewertungsbrief-Vorlage
+    - Feedback-Zusammenfassung
+    - Studierenden-E-Mail
+
+    [:octicons-arrow-right-24: Dokumentation](PROJECT.md)
+
+-   :material-pencil:{ .lg .middle } __✍️ Peer Review Kommentare__
+
+    ---
+
+    - Notizen → konstruktives Feedback
+    - Auto-Zeilennummern-Erkennung
+    - Markdown-Export
+    - Immer auf Englisch
+    - Wissenschaftlicher Ton
+
+    [:octicons-arrow-right-24: Dokumentation](REVIEW.md)
+
+-   :material-translate:{ .lg .middle } __🔤 LaTeX-Klausur-Übersetzer__
+
+    ---
+
+    - Deutsch → Englisch
+    - Exam-Klasse optimiert
+    - Mathe-Formeln erhalten
+    - Kommentare geschützt
+    - Struktur-bewusst
+
+    [:octicons-arrow-right-24: Dokumentation](TRANSLATOR.md)
+
+</div>
+
+---
 
 ## 🎯 Quick Links
 

@@ -6,6 +6,7 @@ mkdocs-material
 mkdocstrings[python]
 mkdocs-literate-nav
 mkdocs-section-index
+types-PyYAML>=6.0.0
 
 # Base requirements
 -r requirements.txt

@@ -16,6 +16,7 @@ dependencies = [
     "PyMuPDF>=1.24.0",
     "docling-parse>=0.2.0",
     "docling-core>=0.2.0",
+    "PyYAML>=6.0.0",
     "llm-client @ git+https://github.com/dgaida/llm_client.git",
 ]
 
@@ -32,6 +33,7 @@ dev = [
     "ruff>=0.5.0",
     "black>=24.0.0",
     "mypy>=1.8.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 [tool.setuptools]

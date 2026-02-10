@@ -1,11 +1,13 @@
 """Generation of web-compatible metadata files for student projects."""
 
 import os
+import shutil
 from datetime import datetime
 from typing import Optional
 
 from ..core.prompts import PromptTemplate, build_prompt
 from ..core.types import LLMClientProtocol
+from .utils import load_global_config
 
 
 def get_initials(name: str) -> str:
@@ -136,5 +138,16 @@ semester: "{semester}"
 """
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(content)
+
+    # Copy to global web metadata folder if configured
+    global_config = load_global_config()
+    web_metadata_folder = global_config.get("web_metadata_folder")
+    if web_metadata_folder:
+        try:
+            os.makedirs(web_metadata_folder, exist_ok=True)
+            shutil.copy2(md_path, os.path.join(web_metadata_folder, md_filename))
+            print(f"✅ Web metadata also copied to: {web_metadata_folder}")
+        except Exception as e:
+            print(f"⚠️  Error copying web metadata: {e}")
 
     return md_path

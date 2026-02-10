@@ -1,0 +1,6 @@
+# Configuration for academic-doc-generator
+
+# Global folder where generated web metadata (*.md files) will be copied.
+# This folder is always the same and does not depend on the thesis.
+# Set to null to disable copying.
+web_metadata_folder: null

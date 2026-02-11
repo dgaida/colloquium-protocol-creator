@@ -1,449 +1,713 @@
-"""
-Additional unit tests to increase coverage for llm and pdf.
-
-FIXED VERSION - Korrigiert die StopIteration-Fehler bei Mock-Aufrufen
-"""
-
+import os
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch, mock_open
+import pytest
 import json
-from unittest.mock import MagicMock, patch
 
-from academic_doc_generator.core import llm, pdf
+from academic_doc_generator.colloquium.gemini_thesis_evaluator import GeminiThesisEvaluator
+from academic_doc_generator.core import pdf, llm
+from academic_doc_generator.exam_translator import translator
+from academic_doc_generator.colloquium import orchestrator, pdf_form_filler
+from academic_doc_generator.cli import handlers
+from academic_doc_generator.core.types import ColloquiumWorkflowConfig
 
-# ============================================================================
-# Additional Tests for llm.py
-# ============================================================================
+# --- Tests for GeminiThesisEvaluator ---
 
+class TestGeminiThesisEvaluator:
+    def test_init_success(self, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        assert evaluator.llm_client == mock_llm_client
 
-class TestLLMInterfaceAdditional:
-    """Additional tests for LLM interface to increase coverage."""
+    def test_init_failure(self, mock_llm_client):
+        mock_llm_client.api_choice = "openai"
+        with pytest.raises(ValueError, match="GeminiThesisEvaluator benötigt einen LLMClient mit api_choice='gemini'"):
+            GeminiThesisEvaluator(mock_llm_client)
 
-    def test_rewrite_comments_with_groq_free_throttle(self, mock_llm_client):
-        """Test rewrite_comments with groq_free throttling at intervals."""
-        # Create context with 10 pages to trigger throttling
-        context_dict = {
-            i: [
-                {
-                    "comment": f"Q{i}",
-                    "highlighted": "t",
-                    "paragraph": "p",
-                    "category": "llm",
-                }
-            ]
-            for i in range(1, 11)
+    @patch("academic_doc_generator.colloquium.gemini_thesis_evaluator.PdfReader")
+    @patch("academic_doc_generator.colloquium.gemini_thesis_evaluator.PdfWriter")
+    def test_remove_first_page(self, mock_writer_cls, mock_reader_cls, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+
+        mock_reader = MagicMock()
+        mock_reader.pages = [MagicMock(), MagicMock(), MagicMock()] # 3 pages
+        mock_reader_cls.return_value = mock_reader
+
+        mock_writer = MagicMock()
+        mock_writer_cls.return_value = mock_writer
+
+        with patch("tempfile.NamedTemporaryFile") as mock_temp:
+            mock_temp_file = MagicMock()
+            mock_temp_file.name = "temp.pdf"
+            mock_temp.return_value.__enter__.return_value = mock_temp_file
+
+            result = evaluator._remove_first_page("original.pdf")
+
+            assert result == "temp.pdf"
+            assert mock_writer.add_page.call_count == 1 # 3 - 2 = 1 (removes first and last)
+
+    def test_create_emark_prompt(self, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        prompt = evaluator._create_emark_prompt("Title", "Bachelor")
+        assert "Bachelor" in prompt
+        assert "Title" in prompt
+
+    @patch.object(GeminiThesisEvaluator, "_remove_first_page")
+    @patch("os.unlink")
+    def test_evaluate_thesis_success(self, mock_unlink, mock_remove_page, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        mock_llm_client.chat_completion_with_files.return_value = "Excellent work"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        mock_remove_page.return_value = "temp.pdf"
+
+        result = evaluator.evaluate_thesis("test.pdf", "Title", "Bachelor")
+
+        assert result == "Excellent work"
+        mock_unlink.assert_called_with("temp.pdf")
+
+    @patch.object(GeminiThesisEvaluator, "_remove_first_page")
+    @patch("os.path.exists")
+    @patch("os.unlink")
+    def test_evaluate_thesis_exception(self, mock_unlink, mock_exists, mock_remove_page, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        mock_llm_client.chat_completion_with_files.side_effect = Exception("API Error")
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        mock_remove_page.return_value = "temp.pdf"
+        mock_exists.return_value = True
+
+        result = evaluator.evaluate_thesis("test.pdf", "Title", "Bachelor")
+
+        assert result is None
+        mock_unlink.assert_called_with("temp.pdf")
+
+    def test_format_emark_for_latex(self, mock_llm_client):
+        mock_llm_client.api_choice = "gemini"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        emark = "```latex\nSome LaTeX code\n```"
+        formatted = evaluator.format_emark_for_latex(emark)
+        assert "Some LaTeX code" in formatted
+        assert "```latex" not in formatted
+        assert "Automatische Bewertung" in formatted
+
+# --- Tests for core.pdf ---
+
+class TestCorePdf:
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    def test_extract_text_with_positions(self, mock_parser_cls):
+        mock_parser = MagicMock()
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_cell = MagicMock()
+        mock_cell.text = "Hello"
+        mock_cell.rect.r_x0 = 0
+        mock_cell.rect.r_y0 = 0
+        mock_cell.rect.r_x1 = 10
+        mock_cell.rect.r_y1 = 10
+
+        mock_page.iterate_cells.return_value = [mock_cell]
+        mock_doc.iterate_pages.return_value = [(1, mock_page)]
+        mock_parser.load.return_value = mock_doc
+        mock_parser_cls.return_value = mock_parser
+
+        result = pdf.extract_text_with_positions("test.pdf")
+        assert result[0][0]["text"] == "Hello"
+        assert result[0][0]["bbox"] == (0.0, 0.0, 10.0, 10.0)
+
+    def test_is_quelle_comment(self):
+        assert pdf.is_quelle_comment("Quelle?") is True
+        assert pdf.is_quelle_comment("Source missing") is True
+        assert pdf.is_quelle_comment("Consequent") is False
+        assert pdf.is_quelle_comment("This is a very long comment about sources that should be ignored", max_length=10) is False
+
+    @patch("academic_doc_generator.core.pdf.PdfReader")
+    def test_extract_annotations_with_positions(self, mock_reader_cls):
+        mock_reader = MagicMock()
+        mock_page = MagicMock()
+        mock_annot = MagicMock()
+        mock_annot.get_object.return_value = {
+            "/Subtype": "/Text",
+            "/Rect": [0, 0, 10, 10],
+            "/Contents": "Quelle?"
         }
+        mock_page.__contains__.side_effect = lambda x: x == "/Annots"
+        mock_page.__getitem__.side_effect = lambda x: [mock_annot] if x == "/Annots" else None
+        mock_reader.pages = [mock_page]
+        mock_reader_cls.return_value = mock_reader
 
-        mock_llm_client.chat_completion.return_value = "Rewritten"
-
-        with patch("academic_doc_generator.core.llm.time.sleep") as mock_sleep:
-            llm.rewrite_comments(context_dict, mock_llm_client, groq_free=True, verbose=False)
-
-            # Should sleep for groq_free: 4s per request + 10s every 5 pages
-            assert mock_sleep.call_count > 0
-            # Check for the 10s sleep (happens at page 5)
-            sleep_calls = [call.args[0] for call in mock_sleep.call_args_list]
-            assert 10 in sleep_calls
-
-    def test_rewrite_comments_verbose_output(self, sample_context, mock_llm_client):
-        """Test rewrite_comments with verbose flag."""
-        mock_llm_client.chat_completion.return_value = "Rewritten question?"
-
-        # Just check it doesn't crash with verbose=True
-        result = llm.rewrite_comments(
-            sample_context, mock_llm_client, groq_free=False, verbose=True
-        )
-
-        assert 1 in result
-
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_extract_document_metadata_german(self, mock_extract, mock_llm_client):
-        """Test metadata extraction for German thesis."""
-        mock_extract.return_value = {
-            0: "Bachelorarbeit von Max Mustermann, Matrikelnr. 12345",
-            1: "Erstprüfer: Prof. Dr. Hans Meyer",
-        }
-
-        mock_llm_client.chat_completion.return_value = json.dumps(
-            {
-                "author": "Max Mustermann",
-                "id_number": "12345",
-                "title": "Test Thesis",
-                "first_examiner": "Prof. Dr. Hans Meyer",
-                "first_examiner_christian": "Hans",
-                "first_examiner_family": "Meyer",
-                "second_examiner": "Dr. Test",
-                "bachelor_master": "Bachelor",
-            }
-        )
-
-        result = llm.extract_document_metadata({0: "", 1: ""}, "German", mock_llm_client)
-
-        assert result["author"] == "Max Mustermann"
-        assert result["bachelor_master"] == "Bachelor"
-
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_extract_document_metadata_english(self, mock_extract, mock_llm_client):
-        """Test metadata extraction for English thesis."""
-        mock_extract.return_value = {0: "Master Thesis by John Doe"}
-
-        mock_llm_client.chat_completion.return_value = json.dumps(
-            {
-                "author": "John Doe",
-                "id_number": "67890",
-                "title": "English Thesis",
-                "first_examiner": "Prof. Smith",
-                "first_examiner_christian": "John",
-                "first_examiner_family": "Smith",
-                "second_examiner": "Dr. Brown",
-                "bachelor_master": "Master",
-            }
-        )
-
-        result = llm.extract_document_metadata({0: ""}, "English", mock_llm_client)
-
-        assert result["bachelor_master"] == "Master"
-
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_summarize_thesis_german(self, mock_extract, mock_llm_client):
-        """Test thesis summarization in German."""
-        mock_extract.return_value = {
-            0: "Diese Arbeit behandelt das Thema X",
-            1: "Die Forschungsfrage lautet Y",
-        }
-
-        mock_llm_client.chat_completion.return_value = (
-            "Diese Arbeit untersucht X.\\\\\n"
-            "Die Hauptergebnisse sind Y.\\\\\n"
-            "Es wurde die Methode Z verwendet."
-        )
-
-        result = llm.summarize_thesis({0: "", 1: ""}, "German", mock_llm_client)
-
-        assert "untersucht" in result
-        assert "\\\\" in result  # LaTeX line breaks
-
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_summarize_thesis_english(self, mock_extract, mock_llm_client):
-        """Test thesis summarization in English."""
-        mock_extract.return_value = {0: "This thesis addresses topic X"}
-
-        mock_llm_client.chat_completion.return_value = (
-            "This thesis investigates X.\\\\\nThe main findings are Y."
-        )
-
-        result = llm.summarize_thesis({0: ""}, "English", mock_llm_client)
-
-        assert "investigates" in result
-
-    def test_detect_language_sample_size(self, mock_llm_client):
-        """Test language detection with custom sample size."""
-        results = {1: [{"rewritten": "Warum?"} for _ in range(10)]}
-
-        mock_llm_client.chat_completion.return_value = "German"
-
-        lang = llm.detect_language(results, mock_llm_client, groq_free=False, sample_size=5)
-
-        assert lang == "German"
-        # Verify only sample_size texts were used
-        call_args = mock_llm_client.chat_completion.call_args[0][0]
-        prompt_text = call_args[0]["content"]
-        assert prompt_text.count("Warum?") <= 5
-
-    @patch("academic_doc_generator.core.llm.time.sleep")
-    def test_detect_language_groq_free(self, mock_sleep, mock_llm_client):
-        """Test language detection with groq_free throttling."""
-        results = {1: [{"rewritten": "Test"}]}
-
-        mock_llm_client.chat_completion.return_value = "German"
-
-        llm.detect_language(results, mock_llm_client, groq_free=True)
-
-        mock_sleep.assert_called_once_with(2)
-
-    @patch("academic_doc_generator.core.llm.LLMClient")
-    def test_rewrite_comments_in_pdf_auto_client(self, mock_client_class, mock_pdf_processor):
-        """Test rewrite_comments_in_pdf with automatic client creation."""
-        mock_client = MagicMock()
-        mock_client.api_choice = "openai"
-        mock_client.llm = "gpt-4o"
-        mock_client_class.return_value = mock_client
-
-        result, stats = llm.rewrite_comments_in_pdf(
-            "test.pdf", llm_client=None, pdf_processor=mock_pdf_processor
-        )
-
-        mock_client_class.assert_called_once()
-
-    def test_rewrite_comments_in_pdf_verbose(self, mock_pdf_processor, mock_llm_client):
-        """Test rewrite_comments_in_pdf with verbose output."""
-        mock_pdf_processor.extract_annotations_with_positions.return_value = (
-            {},
-            {"quelle": 1, "language": 2, "ignore": 0},
-        )
-
-        result, stats = llm.rewrite_comments_in_pdf(
-            "test.pdf",
-            llm_client=mock_llm_client,
-            verbose=True,
-            pdf_processor=mock_pdf_processor,
-        )
-
+        annots, stats = pdf.extract_annotations_with_positions("test.pdf")
+        assert annots[0][0]["comment"] == "Quelle?"
+        assert annots[0][0]["category"] == "quelle"
         assert stats["quelle"] == 1
-        assert stats["language"] == 2
 
-    @patch("academic_doc_generator.core.llm.LLMClient")
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_get_summary_and_metadata_auto_client(self, mock_extract, mock_client_class):
-        """Test get_summary_and_metadata with automatic client creation."""
-        mock_client = MagicMock()
-        mock_client.api_choice = "openai"
-        mock_client.llm = "gpt-4o"
-        mock_client_class.return_value = mock_client
+        # Test other categories
+        mock_annot.get_object.return_value["/Contents"] = "ab hier"
+        annots, stats = pdf.extract_annotations_with_positions("test.pdf")
+        assert annots[0][0]["category"] == "ignore"
 
-        mock_extract.return_value = {0: "Test content"}
+        mock_annot.get_object.return_value["/Contents"] = "Grammatikfehler"
+        annots, stats = pdf.extract_annotations_with_positions("test.pdf")
+        assert annots[0][0]["category"] == "language"
 
-        # FIXED: Mock muss zwei Aufrufe behandeln korrekt
-        call_count = [0]
+    def test_words_overlapping_rect(self):
+        words = [{"text": "Hello", "bbox": (10, 10, 20, 20)}]
+        rect = (5, 5, 25, 25)
+        assert len(pdf.words_overlapping_rect(words, rect)) == 1
 
-        def mock_completion(messages):
-            call_count[0] += 1
-            if call_count[0] == 1:
-                # Erster Aufruf: extract_document_metadata
-                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
-            else:
-                # Zweiter Aufruf: summarize_thesis
-                return "Summary text"
+        rect = (30, 30, 40, 40)
+        assert len(pdf.words_overlapping_rect(words, rect)) == 0
 
-        mock_client.chat_completion.side_effect = mock_completion
+    def test_get_words_for_annotation_on_page(self):
+        pages_words = {0: [{"text": "Hello", "bbox": (10, 10, 20, 20)}]}
+        rect = (5, 5, 25, 25)
+        idx, hits = pdf.get_words_for_annotation_on_page(pages_words, 0, rect)
+        assert idx == 0
+        assert len(hits) == 1
 
-        summary, metadata = llm.get_summary_and_metadata_of_pdf(
-            "test.pdf", "German", llm_client=None
-        )
+        idx, hits = pdf.get_words_for_annotation_on_page(pages_words, 1, rect) # Check neighboring page
+        assert idx == 0
+        assert len(hits) == 1
 
-        mock_client_class.assert_called_once()
-        assert summary == "Summary text"
-        assert metadata["author"] == "Test"
+    def test_rect_overlap(self):
+        assert pdf.rect_overlap((10, 10, 20, 20), (5, 5, 25, 25)) is True
+        assert pdf.rect_overlap((10, 10, 20, 20), (25, 25, 30, 30)) is False
 
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    @patch("academic_doc_generator.core.llm.time.sleep")
-    def test_get_summary_and_metadata_groq_free(self, mock_sleep, mock_extract, mock_llm_client):
-        """Test get_summary_and_metadata with groq_free throttling."""
-        mock_extract.return_value = {0: "Test"}
+    def test_find_annotation_context(self):
+        pages_words = {0: [{"text": "Target", "bbox": (10, 10, 20, 20)}, {"text": "Other", "bbox": (50, 50, 60, 60)}]}
+        annotations = {0: [{"comment": "Note", "rect": [5, 5, 25, 25], "category": "llm", "quadpoints": None}]}
 
-        # FIXED: Verwende Funktion statt Liste
-        call_count = [0]
-
-        def mock_completion(messages):
-            call_count[0] += 1
-            if call_count[0] == 1:
-                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
-            else:
-                return "Summary"
-
-        mock_llm_client.chat_completion.side_effect = mock_completion
-
-        llm.get_summary_and_metadata_of_pdf(
-            "test.pdf", "German", llm_client=mock_llm_client, groq_free=True
-        )
-
-        # Should sleep 20s after metadata and 2s after summary
-        assert mock_sleep.call_count == 2
-        sleep_calls = [call.args[0] for call in mock_sleep.call_args_list]
-        assert 20 in sleep_calls
-        assert 2 in sleep_calls
-
-    @patch("academic_doc_generator.core.llm.pdf.extract_text_per_page")
-    def test_get_summary_and_metadata_verbose(self, mock_extract, mock_llm_client):
-        """Test get_summary_and_metadata with verbose output."""
-        mock_extract.return_value = {0: "Test"}
-
-        # FIXED: Verwende Funktion statt Liste
-        call_count = [0]
-
-        def mock_completion(messages):
-            call_count[0] += 1
-            if call_count[0] == 1:
-                return json.dumps({"author": "Test", "bachelor_master": "Bachelor"})
-            else:
-                return "Test summary"
-
-        mock_llm_client.chat_completion.side_effect = mock_completion
-
-        summary, metadata = llm.get_summary_and_metadata_of_pdf(
-            "test.pdf", "German", llm_client=mock_llm_client, verbose=True
-        )
-
-        assert summary == "Test summary"
-
-
-# ============================================================================
-# Additional Tests for pdf.py
-# ============================================================================
-
-
-class TestPdfProcessingAdditional:
-    """Additional tests for PDF processing to increase coverage."""
-
-    def test_extract_annotations_with_positions_ignore_source_false(self):
-        """Test annotation extraction without ignoring sources."""
-        # This would require a real PDF, so we'll test the logic
-        # In practice, with ignore_source=False, quelle comments get category "llm"
-        pass  # Actual implementation would need PDF mocking
-
-    def test_extract_annotations_multiple_categories(self):
-        """Test that multiple comment categories are detected correctly."""
-        # Mock test to verify category detection logic
-        comments = [
-            "ab hier",  # ignore
-            "Quelle fehlt",  # quelle
-            "Rechtschreibung",  # language
-            "Why is this?",  # llm
-        ]
-
-        categories = []
-        for comment in comments:
-            if comment.lower() == "ab hier":
-                categories.append("ignore")
-            elif pdf.is_quelle_comment(comment):
-                categories.append("quelle")
-            elif any(kw in comment.lower() for kw in ["rechtschreibung", "grammatik"]):
-                categories.append("language")
-            else:
-                categories.append("llm")
-
-        assert categories == ["ignore", "quelle", "language", "llm"]
-
-    def test_find_annotation_context_multiple_pages(self):
-        """Test context finding across multiple pages."""
-        pages_words = {
-            0: [{"text": "Page1", "bbox": (10, 10, 50, 20)}],
-            1: [{"text": "Page2", "bbox": (10, 10, 50, 20)}],
-        }
-
-        annotations = {
-            0: [{"comment": "C1", "rect": (5, 5, 55, 25), "category": "llm"}],
-            1: [{"comment": "C2", "rect": (5, 5, 55, 25), "category": "llm"}],
-        }
-
-        result = pdf.find_annotation_context(pages_words, annotations)
-
-        assert 1 in result  # Page 1 (1-based)
-        assert 2 in result  # Page 2 (1-based)
-
-    def test_find_annotation_context_with_quadpoints(self):
-        """Test context finding with quadpoints instead of rect."""
-        pages_words = {0: [{"text": "Test", "bbox": (10, 10, 50, 20)}]}
-
-        annotations = {
-            0: [
-                {
-                    "comment": "Test comment",
-                    "rect": None,
-                    "quadpoints": [5, 5, 55, 5, 55, 25, 5, 25],  # QuadPoints format
-                    "category": "llm",
-                }
-            ]
-        }
-
-        result = pdf.find_annotation_context(pages_words, annotations)
-
-        assert 1 in result
-
-    def test_find_annotation_context_no_rect_no_quadpoints(self):
-        """Test handling of annotations without rect or quadpoints."""
-        pages_words = {0: [{"text": "Test", "bbox": (10, 10, 50, 20)}]}
-
-        annotations = {
-            0: [{"comment": "Test", "rect": None, "quadpoints": None, "category": "llm"}]
-        }
-
-        result = pdf.find_annotation_context(pages_words, annotations)
-
-        # Should skip annotation
-        assert 1 not in result or len(result.get(1, [])) == 0
-
-    def test_find_annotation_context_paragraph_matching(self):
-        """Test paragraph matching in context finding."""
-        pages_words = {
-            0: [
-                {"text": "First", "bbox": (10, 100, 40, 110)},
-                {"text": "paragraph", "bbox": (45, 100, 90, 110)},
-                {"text": "Second", "bbox": (10, 80, 50, 90)},
-                {"text": "paragraph", "bbox": (55, 80, 100, 90)},
-            ]
-        }
-
-        annotations = {
-            0: [
-                {
-                    "comment": "About second",
-                    "rect": (5, 75, 105, 95),  # Overlaps with "Second paragraph"
-                    "category": "llm",
-                }
-            ]
-        }
-
-        result = pdf.find_annotation_context(pages_words, annotations)
-
-        assert 1 in result
-        # The highlighted text should be from the second paragraph
-        assert "Second" in result[1][0]["highlighted"]
+        context = pdf.find_annotation_context(pages_words, annotations)
+        assert context[1][0]["highlighted"] == "Target"
+        assert "Target" in context[1][0]["paragraph"]
 
     def test_find_annotation_context_fallback_paragraph(self):
-        """Test fallback to first paragraph when no match found."""
-        pages_words = {
-            0: [
-                {"text": "First", "bbox": (10, 100, 40, 110)},
-                {"text": "para", "bbox": (45, 100, 70, 110)},
-            ]
-        }
+        pages_words = {0: [{"text": "Hello", "bbox": (10, 10, 20, 20)}]}
+        # Highlighted text not in full text (somehow)
+        annotations = {0: [{"comment": "Note", "rect": [5, 5, 25, 25], "category": "llm", "quadpoints": None}]}
+        with patch("academic_doc_generator.core.pdf.get_words_for_annotation_on_page") as mock_get:
+            mock_get.return_value = (0, [{"text": "Missing", "bbox": (10, 10, 20, 20)}])
+            context = pdf.find_annotation_context(pages_words, annotations)
+            assert context[1][0]["highlighted"] == "Missing"
+            assert context[1][0]["paragraph"] == "Hello" # Fallback to first paragraph
 
-        annotations = {
-            0: [
-                {
-                    "comment": "Test",
-                    "rect": (200, 200, 300, 300),  # No words overlap
-                    "category": "llm",
-                }
-            ]
-        }
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    def test_extract_text_per_page(self, mock_parser_cls):
+        mock_parser = MagicMock()
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_cell = MagicMock()
+        mock_cell.text = "Hello"
+        mock_page.iterate_cells.return_value = [mock_cell]
+        mock_doc.iterate_pages.return_value = [(1, mock_page), (2, mock_page)]
+        mock_parser.load.return_value = mock_doc
+        mock_parser_cls.return_value = mock_parser
 
-        result = pdf.find_annotation_context(pages_words, annotations)
+        result = pdf.extract_text_per_page("test.pdf", max_pages=1)
+        assert len(result) == 1
+        assert result[0] == "Hello"
 
-        assert 1 in result
-        # Should have fallback paragraph
-        assert result[1][0]["paragraph"] is not None
+# --- Tests for exam_translator.translator ---
 
-    def test_words_overlapping_rect_with_tolerance(self):
-        """Test word overlap detection with tolerance."""
-        words = [
-            {"text": "Test", "bbox": (10, 10, 50, 20)},
+class TestExamTranslator:
+    def test_mask_unmask_comments(self):
+        text = "Line 1\n% Comment\nLine 2"
+        masked, cmap = translator.mask_comments(text)
+        assert "%%COMMENT_0%%" in masked
+        assert cmap["%%COMMENT_0%%"] == "% Comment"
+
+        unmasked = translator.unmask_comments(masked, cmap)
+        assert unmasked == text
+
+    def test_split_latex_exam_into_sections(self):
+        latex = r"""
+\documentclass{exam}
+\begin{document}
+\begin{questions}
+\question Q1
+\question Q2
+\end{questions}
+\end{document}
+"""
+        preamble, questions, postamble = translator.split_latex_exam_into_sections(latex)
+        assert r"\begin{questions}" in preamble
+        assert len(questions) == 2
+        assert r"\end{questions}" in postamble
+        assert questions[0] == r"\question Q1"
+
+    def test_split_latex_exam_no_begin(self):
+        with pytest.raises(ValueError, match="Keine \\\\begin{questions} Umgebung gefunden!"):
+            translator.split_latex_exam_into_sections("no questions")
+
+    def test_split_latex_exam_no_end(self):
+        with pytest.raises(ValueError, match="Keine \\\\end{questions} Umgebung gefunden!"):
+            translator.split_latex_exam_into_sections(r"\begin{questions}")
+
+    def test_translate_question(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = r"\question Translated"
+        result = translator.translate_question_to_english(r"\question Original", mock_llm_client)
+        assert result == r"\question Translated"
+
+    def test_translate_preamble(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Translated Preamble"
+        result = translator.translate_preamble_to_english("Original Preamble", mock_llm_client)
+        assert result == "Translated Preamble"
+
+    @patch("builtins.open", new_callable=mock_open, read_data=r"\begin{questions}\question Q1\end{questions}")
+    @patch("pathlib.Path.exists", return_value=True)
+    def test_translate_latex_exam(self, mock_exists, mock_file, mock_llm_client, tmp_path):
+        mock_llm_client.chat_completion.return_value = "Translated"
+        # Use a real output path in tmp_path
+        output_path = tmp_path / "output.tex"
+        with patch("academic_doc_generator.exam_translator.translator.split_latex_exam_into_sections") as mock_split:
+            mock_split.return_value = (r"\begin{questions}", [r"\question Q1"], r"\end{questions}")
+            result = translator.translate_latex_exam("input.tex", mock_llm_client, output_path=output_path)
+            assert str(output_path) == result
+
+    def test_translate_latex_exam_file_not_found(self):
+        with pytest.raises(FileNotFoundError):
+            translator.translate_latex_exam("nonexistent.tex")
+
+    def test_translate_question_verbose(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = r"\question Translated"
+        result = translator.translate_question_to_english(r"\question Original", mock_llm_client, verbose=True)
+        assert result == r"\question Translated"
+
+    def test_translate_preamble_verbose(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Translated Preamble"
+        result = translator.translate_preamble_to_english("Original Preamble", mock_llm_client, verbose=True)
+        assert result == "Translated Preamble"
+
+# --- Tests for core.llm ---
+
+class TestCoreLlm:
+    def test_rewrite_comments(self, mock_llm_client):
+        context = {1: [{"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"}]}
+        mock_llm_client.chat_completion.return_value = "Rewritten"
+        result = llm.rewrite_comments(context, mock_llm_client)
+        assert result[1][0]["rewritten"] == "Rewritten"
+
+    def test_rewrite_comments_groq_free(self, mock_llm_client):
+        context = {i: [{"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"}] for i in range(1, 7)}
+        mock_llm_client.chat_completion.return_value = "Rewritten"
+        with patch("time.sleep") as mock_sleep:
+            result = llm.rewrite_comments(context, mock_llm_client, groq_free=True)
+            assert len(result) == 6
+            assert mock_sleep.call_count > 0
+
+    def test_determine_gender_from_name(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Frau"
+        assert llm.determine_gender_from_name("Maria", mock_llm_client) == "Frau"
+
+        mock_llm_client.chat_completion.return_value = "Unknown"
+        assert llm.determine_gender_from_name("Maria", mock_llm_client) == "Herr/Frau"
+
+    def test_detect_degree_from_filename(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Bachelor"
+        assert llm.detect_degree_from_filename("Bachelor_Thesis.pdf", mock_llm_client) == "Bachelor"
+
+        mock_llm_client.chat_completion.return_value = "Master"
+        assert llm.detect_degree_from_filename("Master_Thesis.pdf", mock_llm_client) == "Master"
+
+        mock_llm_client.chat_completion.return_value = "Something else"
+        assert llm.detect_degree_from_filename("Thesis.pdf", mock_llm_client) is None
+
+    def test_extract_document_metadata(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = json.dumps({"author": "John Doe", "sid": "12345"})
+        pages_text = {0: "Sample Text"}
+        result = llm.extract_document_metadata(pages_text, "English", mock_llm_client)
+        assert result["author"] == "John Doe"
+        assert result["id_number"] == "12345"
+
+    def test_extract_document_metadata_json_error(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Not JSON"
+        result = llm.extract_document_metadata({}, "English", mock_llm_client)
+        assert result == {}
+
+    def test_summarize_thesis(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "A summary"
+        result = llm.summarize_thesis({0: "text"}, "English", mock_llm_client)
+        assert "A summary" in result
+
+    def test_rewrite_comments_in_pdf_verbose(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "Rewritten"
+        mock_processor = MagicMock()
+        mock_processor.extract_text_with_positions.return_value = {0: [{"text": "text", "bbox": (0,0,10,10)}]}
+        mock_processor.extract_annotations_with_positions.return_value = ({0: [{"comment": "Why?", "rect": [0,0,10,10], "category": "llm", "quadpoints": None}]}, {"quelle": 0, "language": 0, "ignore": 0})
+        mock_processor.find_annotation_context.return_value = {1: [{"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"}]}
+
+        result, stats = llm.rewrite_comments_in_pdf("test.pdf", mock_llm_client, verbose=True, pdf_processor=mock_processor)
+        assert result[1][0]["rewritten"] == "Rewritten"
+
+    def test_get_summary_and_metadata_of_pdf_complex(self, mock_llm_client):
+        mock_llm_client.chat_completion.side_effect = [
+            json.dumps({"author": "John Doe"}),
+            "Bachelor", # For detect_degree_from_filename fallback
+            "A summary"
         ]
+        with patch("academic_doc_generator.core.pdf.extract_text_per_page") as mock_extract:
+            mock_extract.return_value = {0: "Text"}
+            with patch("time.sleep") as mock_sleep:
+                summary, metadata = llm.get_summary_and_metadata_of_pdf("test.pdf", "English", mock_llm_client, groq_free=True, verbose=True)
+                assert metadata["author"] == "John Doe"
+                assert "A summary" in summary
+                assert mock_sleep.called
 
-        # Rectangle just slightly off
-        rect = (50.4, 19.9, 60, 25)
+    def test_detect_language(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "German"
+        comments = {1: [{"rewritten": "Was ist das?"}]}
+        assert llm.detect_language(comments, mock_llm_client, groq_free=False) == "German"
 
-        # Without tolerance, no overlap
-        hits_no_tol = pdf.words_overlapping_rect(words, rect, tol=0.0)
-        assert len(hits_no_tol) == 0
-
-        # With tolerance, should overlap
-        hits_with_tol = pdf.words_overlapping_rect(words, rect, tol=0.5)
-        assert len(hits_with_tol) == 1
-
-    def test_get_words_for_annotation_fallback_previous_page(self):
-        """Test fallback to previous page when annotation doesn't match."""
-        pages_words = {
-            0: [{"text": "Page0", "bbox": (10, 10, 50, 20)}],
-            1: [{"text": "Page1", "bbox": (100, 100, 150, 120)}],  # No overlap
-            2: [{"text": "Page2", "bbox": (10, 10, 50, 20)}],
+    def test_detect_language_sample_size(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "English"
+        comments = {
+            1: [{"rewritten": "One"}, {"rewritten": "Two"}],
+            2: [{"rewritten": "Three"}, {"rewritten": "Four"}]
         }
+        # Should stop after 3 comments
+        assert llm.detect_language(comments, mock_llm_client, groq_free=False, sample_size=3) == "English"
 
-        rect = (5, 5, 55, 25)  # Overlaps with Page0 and Page2
+# --- Tests for colloquium.orchestrator ---
 
-        # Search from page 1, should fall back to page 0 (tries -1 before +1)
-        page_idx, words = pdf.get_words_for_annotation_on_page(pages_words, 1, rect)
+class TestColloquiumOrchestrator:
+    @patch("academic_doc_generator.core.pdf.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm.rewrite_comments_in_pdf")
+    @patch("academic_doc_generator.core.llm.detect_language")
+    @patch("academic_doc_generator.core.llm.get_summary_and_metadata_of_pdf")
+    @patch("academic_doc_generator.core.latex.create_formal_letter_tex")
+    @patch("academic_doc_generator.colloquium.pdf_form_filler.fill_form")
+    @patch("academic_doc_generator.colloquium.email_generator.EmailGenerator.generate_colloquium_email")
+    @patch("academic_doc_generator.colloquium.email_generator.EmailGenerator.save_email_to_markdown")
+    @patch("academic_doc_generator.colloquium.calendar_generator.CalendarGenerator.generate_ics")
+    @patch("academic_doc_generator.colloquium.outlook_mail_generator.OutlookMailGenerator.create_outlook_mail")
+    @patch("academic_doc_generator.core.metadata.generate_metadata_file")
+    def test_run_pipeline(self, mock_gen_metadata, mock_outlook, mock_ics, mock_save_email,
+                          mock_gen_email, mock_fill_form, mock_latex, mock_llm_summary,
+                          mock_detect_lang, mock_rewrite, mock_extract_text, mock_llm_client, tmp_path):
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="campus",
+            room="1.101",
+            llm_client=mock_llm_client,
+            gemini_emark_enabled=True,
+            output_folder=tmp_path
+        )
 
-        # Implementation tries: page 1, then page 2 (+1), then page 0 (-1)
-        # Since page 1 and 2 don't match, should find page 0
-        assert page_idx in [0, 2]
-        assert len(words) > 0
+        mock_rewrite.return_value = ({}, {"quelle": 5, "language": 6, "ignore": 0}) # Trigger stats-based mods
+        mock_detect_lang.return_value = "German"
+        mock_llm_summary.return_value = ("Summary", {"author": "Me", "id_number": "1"})
+        mock_extract_text.return_value = {0: "Text"}
+
+        with patch("academic_doc_generator.colloquium.orchestrator.GeminiThesisEvaluator") as mock_eval_cls:
+            mock_eval = MagicMock()
+            mock_eval.evaluate_thesis.return_value = "Gemini Grade"
+            mock_eval.format_emark_for_latex.return_value = "Formatted Gemini"
+            mock_eval_cls.return_value = mock_eval
+
+            result = orchestrator.run_pipeline(config)
+            assert result.tex_path is not None
+            assert mock_rewrite.called
+            assert mock_fill_form.called
+
+    def test_get_gemini_emark_failure(self, mock_llm_client):
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="campus",
+            room="1.101",
+            llm_client=mock_llm_client,
+            gemini_emark_enabled=True
+        )
+        with patch("academic_doc_generator.colloquium.orchestrator.GeminiThesisEvaluator") as mock_eval_cls:
+            mock_eval = MagicMock()
+            mock_eval.evaluate_thesis.return_value = None # Failure
+            mock_eval_cls.return_value = mock_eval
+
+            result = orchestrator._get_gemini_emark(config, {"title": "Test"})
+            assert result is None
+
+    def test_get_gemini_emark_exception(self, mock_llm_client):
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="campus",
+            room="1.101",
+            llm_client=mock_llm_client,
+            gemini_emark_enabled=True
+        )
+        with patch("academic_doc_generator.colloquium.orchestrator.LLMClient") as mock_llm_cls:
+            mock_llm_cls.side_effect = Exception("init error")
+            result = orchestrator._get_gemini_emark(config, {"title": "Test"})
+            assert result is None
+
+    @patch("academic_doc_generator.colloquium.orchestrator.CalendarGenerator.generate_ics")
+    @patch("academic_doc_generator.colloquium.orchestrator.email_generator.EmailGenerator")
+    def test_generate_emails_and_calendar_error(self, mock_email_gen_cls, mock_ics, mock_llm_client):
+        mock_email_gen = MagicMock()
+        mock_email_gen_cls.return_value = mock_email_gen
+        mock_ics.side_effect = Exception("ICS Error")
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="campus",
+            room="1.101"
+        )
+        result = orchestrator._generate_emails_and_calendar(config, {}, mock_llm_client, "out/")
+        assert result[2] is None # ics_path is None on error
+
+    @patch("academic_doc_generator.colloquium.orchestrator.OutlookMailGenerator")
+    def test_create_outlook_draft_error(self, mock_outlook_cls):
+        mock_outlook = MagicMock()
+        mock_outlook.create_outlook_mail.side_effect = Exception("Outlook Error")
+        mock_outlook_cls.return_value = mock_outlook
+        # Should catch exception and print error
+        orchestrator._create_outlook_draft({}, "text", "ics", "email")
+
+    @patch("academic_doc_generator.colloquium.orchestrator.generate_metadata_file")
+    def test_generate_web_metadata_error(self, mock_gen, mock_llm_client):
+        mock_gen.side_effect = Exception("Metadata Error")
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="campus",
+            room="1.101"
+        )
+        result = orchestrator._generate_web_metadata(config, {}, {}, mock_llm_client, "out/")
+        assert result == ""
+
+    def test_run_pipeline_fill_form_only(self, mock_llm_client, tmp_path):
+        config = ColloquiumWorkflowConfig(
+            pdf_path=Path("test.pdf"),
+            date="01.01.2024",
+            time="10:00",
+            location_type="online",
+            zoom_link="https://zoom.us/j/123",
+            llm_client=mock_llm_client,
+            fill_form_only=True,
+            output_folder=tmp_path
+        )
+        with patch("academic_doc_generator.core.pdf.extract_text_per_page") as mock_extract:
+            mock_extract.return_value = {0: "Text"}
+            with patch("academic_doc_generator.core.llm.get_summary_and_metadata_of_pdf") as mock_llm:
+                mock_llm.return_value = ("Summary", {"author": "Me", "id_number": "1"})
+                with patch("academic_doc_generator.colloquium.orchestrator._fill_grading_form") as mock_fill:
+                    result = orchestrator.run_pipeline(config)
+                    assert result.tex_path == ""
+
+# --- Tests for colloquium.pdf_form_filler ---
+
+class TestPdfFormFiller:
+    @patch("pymupdf.open")
+    def test_pdf_form_handler_details(self, mock_open):
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+
+        # Test different widget types
+        mock_widget_text = MagicMock()
+        mock_widget_text.field_name = "Text1"
+        mock_widget_text.field_type = 7 # Text
+        mock_widget_text.field_value = "Value"
+
+        mock_widget_cb = MagicMock()
+        mock_widget_cb.field_name = "CB1"
+        mock_widget_cb.field_type = 2 # Checkbox
+        mock_widget_cb.field_value = True
+
+        mock_widget_other = MagicMock()
+        mock_widget_other.field_name = "Other1"
+        mock_widget_other.field_type = 3 # Radio
+        mock_widget_other.field_value = "Option"
+
+        mock_page.widgets.return_value = [mock_widget_text, mock_widget_cb, mock_widget_other]
+        mock_doc.__iter__.return_value = [mock_page]
+        mock_doc.__len__.return_value = 1
+        mock_open.return_value = mock_doc
+
+        handler = pdf_form_filler.PDFFormHandler("test.pdf")
+        assert handler.has_form_fields() is True
+        fields = handler.list_form_fields()
+        assert len(fields) == 3
+
+        with patch("builtins.print") as mock_print:
+            handler.print_form_fields()
+            assert mock_print.called
+
+    @patch("pymupdf.open")
+    def test_pdf_form_handler_fill(self, mock_open):
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+
+        mock_widget_text = MagicMock()
+        mock_widget_text.field_name = "Text1"
+        mock_widget_text.field_type = 7
+
+        mock_widget_cb = MagicMock()
+        mock_widget_cb.field_name = "CB1"
+        mock_widget_cb.field_type = 2
+
+        mock_page.widgets.return_value = [mock_widget_text, mock_widget_cb]
+        mock_doc.__iter__.return_value = [mock_page]
+        mock_open.return_value = mock_doc
+
+        handler = pdf_form_filler.PDFFormHandler("test.pdf")
+        handler.fill_form({"Text1": "Value", "CB1": True, "Missing": "X"}, "out.pdf")
+        assert mock_widget_text.field_value == "Value"
+        assert mock_widget_cb.field_value is True
+
+        # Test flatten=True
+        handler.fill_form({"Text1": "Value"}, "out.pdf", flatten=True)
+        assert mock_doc.save.called
+
+    def test_berechne_gesamtnote(self):
+        assert pdf_form_filler.berechne_gesamtnote(1.0, 2.0) == 1.5
+        assert pdf_form_filler.berechne_gesamtnote(1.3, 1.7) == 1.5
+
+    def test_add_minutes(self):
+        assert pdf_form_filler.add_minutes("10:00", 45) == "10:45"
+        assert pdf_form_filler.add_minutes("23:30", 45) == "00:15"
+
+    def test_generate_location_text(self):
+        assert "Raum 1.101" in pdf_form_filler.generate_location_text("campus", room="1.101")
+        assert "MyCompany" in pdf_form_filler.generate_location_text("company", company_name="MyCompany")
+        assert "Zoom" in pdf_form_filler.generate_location_text("online")
+
+        with pytest.raises(ValueError):
+            pdf_form_filler.generate_location_text("campus") # Missing room
+
+    @patch("academic_doc_generator.colloquium.pdf_form_filler.PDFFormHandler")
+    @patch("pathlib.Path.exists", return_value=True)
+    def test_fill_form_util(self, mock_exists, mock_handler_cls):
+        mock_handler = MagicMock()
+        mock_handler_cls.return_value = mock_handler
+
+        result = pdf_form_filler.fill_form(
+            {"name_student": "Test", "Startzeit": "10:00"}, "out/", "Bachelor", location_type="online"
+        )
+        assert result is not None
+        assert mock_handler.fill_form.called
+
+    def test_fill_form_util_unknown_degree(self):
+        result = pdf_form_filler.fill_form({}, "out/", "Unknown")
+        assert result is None
+
+# --- Tests for cli.handlers ---
+
+class TestCliHandlers:
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.ColloquiumWorkflowConfig")
+    @patch("academic_doc_generator.cli.handlers.run_pipeline")
+    def test_run_colloquium_direct(self, mock_run, mock_config_cls, mock_llm_cls, mock_val):
+        # Test basic handler call
+        args = MagicMock()
+        args.path = "test.pdf"
+        mock_val.return_value = Path("test.pdf")
+        args.api = "openai"
+        args.model = "gpt-4"
+        args.date = "01.01.2024"
+        args.time = "10:00"
+        args.location = "campus"
+        args.room = "1.101"
+        args.company_name = "Company"
+        args.company_address = "Address"
+        args.zoom_link = "http://zoom"
+        args.zcode = "123"
+        args.groq_free = False
+        args.compile_pdf = True
+        args.fill_form_only = False
+        args.gemini_emark = False
+        args.gemini_model = "model"
+        args.output = "output_dir"
+
+        handlers.run_colloquium_direct(args)
+        assert mock_run.called
+
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.run_project_pipeline")
+    def test_run_project_direct(self, mock_run, mock_llm_cls, mock_val):
+        args = MagicMock()
+        args.path = "test.pdf"
+        mock_val.return_value = Path("test.pdf")
+        args.api = "openai"
+        args.model = "gpt-4"
+        args.output = None
+        handlers.run_project_direct(args)
+        assert mock_run.called
+
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.run_review_pipeline")
+    def test_run_review_direct(self, mock_run, mock_llm_cls, mock_val):
+        args = MagicMock()
+        args.path = "test.pdf"
+        mock_val.return_value = Path("test.pdf")
+        args.api = "openai"
+        args.model = "gpt-4"
+        handlers.run_review_direct(args)
+        assert mock_run.called
+
+    def test_run_from_config_not_found(self):
+        with pytest.raises(SystemExit):
+            handlers.run_from_config("nonexistent.yaml")
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    def test_run_colloquium_direct_error(self, mock_llm_cls):
+        mock_llm_cls.side_effect = Exception("LLM Error")
+        args = MagicMock()
+        args.api = "openai"
+        with pytest.raises(SystemExit):
+            handlers.run_colloquium_direct(args)
+
+    @patch("academic_doc_generator.project.llm.extract_text_per_page")
+    def test_project_llm_extract_metadata_json_error(self, mock_extract, mock_llm_client):
+        from academic_doc_generator.project import llm as project_llm
+        mock_extract.return_value = {0: "text"}
+        mock_llm_client.chat_completion.return_value = "invalid json"
+        result = project_llm.extract_project_metadata("test.pdf", mock_llm_client)
+        assert "error" in result
+
+class TestOutlookMailGenerator:
+    @patch("platform.system")
+    def test_is_outlook_open_linux(self, mock_system):
+        from academic_doc_generator.colloquium.outlook_mail_generator import OutlookMailGenerator
+        mock_system.return_value = "Linux"
+        assert OutlookMailGenerator.is_outlook_open() is False
+
+    @patch("platform.system")
+    @patch("subprocess.check_output")
+    def test_is_outlook_open_windows(self, mock_check, mock_system):
+        from academic_doc_generator.colloquium.outlook_mail_generator import OutlookMailGenerator
+        mock_system.return_value = "Windows"
+        mock_check.return_value = b"OUTLOOK.EXE"
+        assert OutlookMailGenerator.is_outlook_open() is True
+
+        mock_check.side_effect = Exception("error")
+        assert OutlookMailGenerator.is_outlook_open() is False
+
+    @patch("platform.system")
+    @patch("subprocess.check_call")
+    def test_is_outlook_open_macos(self, mock_check, mock_system):
+        from academic_doc_generator.colloquium.outlook_mail_generator import OutlookMailGenerator
+        mock_system.return_value = "Darwin"
+        mock_check.return_value = 0
+        assert OutlookMailGenerator.is_outlook_open() is True
+
+        from subprocess import CalledProcessError
+        mock_check.side_effect = CalledProcessError(1, "pgrep")
+        assert OutlookMailGenerator.is_outlook_open() is False
+
+    @patch("subprocess.run")
+    def test_create_outlook_mail_linux(self, mock_run):
+        from academic_doc_generator.colloquium.outlook_mail_generator import OutlookMailGenerator
+        with patch("platform.system", return_value="Linux"):
+            gen = OutlookMailGenerator()
+            assert gen.create_outlook_mail("Student", "Body", verbose=True) is True
+            assert mock_run.called

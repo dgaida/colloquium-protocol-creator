@@ -4,3 +4,7 @@
 # This folder is always the same and does not depend on the thesis.
 # Set to null to disable copying.
 web_metadata_folder: null
+
+# Default first examiner name. If set, it will be used for all documents.
+# If null, the name will be extracted from the PDF.
+first_examiner: null

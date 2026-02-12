@@ -16,7 +16,7 @@ from ..core.types import (
     ProjectWorkflowConfig,
     ProjectWorkflowResult,
 )
-from ..core.utils import get_semester, split_student_name
+from ..core.utils import get_semester, load_global_config, split_student_name
 from .feedback_generator import generate_feedback_summary
 from .latex import create_project_grading_letter_tex
 from .llm import (
@@ -61,6 +61,10 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         llm_client = LLMClient()
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
+    # Load global config
+    global_config = load_global_config()
+    global_first_examiner = global_config.get("first_examiner")
+
     # Extract metadata and text from PDF
     print(f"Extracting metadata from {pdf_path}")
     pages_text = pdf.extract_text_per_page(str(pdf_path))
@@ -70,11 +74,14 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     student_first_name, student_last_name = split_student_name(student_name)
     id_number = metadata.get("id_number", "unknown")
     project_title = metadata.get("title", "Unknown")
-    examiner_name = metadata.get("first_examiner", "Unbekannt")
-    examiner_email = (
-        f"{metadata.get('first_examiner_christian', '')}"
-        f".{metadata.get('first_examiner_family', '')}@th-koeln.de"
-    )
+
+    # Use global examiner if provided, otherwise from metadata
+    examiner_name = global_first_examiner or metadata.get("first_examiner") or "Unbekannt"
+
+    # Robust email generation
+    ex_christian = metadata.get("first_examiner_christian") or ""
+    ex_family = metadata.get("first_examiner_family") or ""
+    examiner_email = f"{ex_christian}.{ex_family}@th-koeln.de"
     # Prioritize work_type from config, then from metadata, then default
     work_type = config.work_type or metadata.get("work_type", "Praxisprojekt")
 

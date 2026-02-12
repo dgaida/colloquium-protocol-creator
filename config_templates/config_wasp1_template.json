@@ -1,0 +1,25 @@
+{
+  "task": "project",
+  "description": "WASP1-Projekt-Bewertungsbrief",
+
+  "pdf": {
+    "filename": "WASP1_Projekt_Mueller.pdf"
+  },
+
+  "project": {
+    "mark": null,
+    "work_type": "Projektteil WASP1"
+  },
+
+  "llm": {
+    "api_choice": null,
+    "model": null
+  },
+
+  "output": {
+    "folder": null,
+    "compile_pdf": true,
+    "signature_file": "signature.png",
+    "create_feedback_mail": true
+  }
+}

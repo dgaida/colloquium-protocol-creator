@@ -35,16 +35,20 @@ Configuration for an online thesis colloquium via Zoom.
 - `colloquium.zoom_link`: Zoom meeting URL
 - `colloquium.zcode`: (Optional) Zoom access code
 
-### Project Template
+### Project Templates
 
-#### `config_project.json`
+#### 1. `config_project.json`
 Configuration for generating a project work (Praxisprojekt) grading letter.
 
 **Required fields:**
 - `pdf.filename`: Name of the project PDF file
 
 **Optional fields:**
+- `project.work_type`: Custom work type (e.g., "Projektarbeit")
 - `output.signature_file`: Path to signature image
+
+#### 2. `config_wasp1_template.json`
+Configuration specifically for a **WASP1 project**. It sets the work type to "Projektteil WASP1" as required by the examination service.
 
 ### Review Template
 

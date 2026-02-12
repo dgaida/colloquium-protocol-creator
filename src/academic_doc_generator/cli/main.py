@@ -79,6 +79,7 @@ def create_parser() -> argparse.ArgumentParser:
     project_parser = subparsers.add_parser("project", help="Generate project work grading letter")
     project_parser.add_argument("pdf", help="Path to the project work PDF")
     project_parser.add_argument("--mark", help="Grade for the project (e.g., 1.3)")
+    project_parser.add_argument("--work-type", help="Type of work (e.g., 'Projektteil WASP1')")
     project_parser.add_argument(
         "--api",
         choices=["openai", "groq", "gemini", "ollama"],

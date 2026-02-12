@@ -206,6 +206,7 @@ class TestRunColloquiumDirect:
             groq_free=False,
             gemini_eval=False,
             gemini_model="gemini-2.0-flash-exp",
+            gemini_upload_pdf=False,
             out="/output",
             no_compile=False,
             company_name=None,

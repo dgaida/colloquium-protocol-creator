@@ -35,7 +35,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install .
-          pip install mkdocs mkdocs-material pymdown-extensions mkdocs-autorefs mkdocstrings[python] mkdocs-literate-nav mkdocs-section-index
+          pip install mkdocs mkdocs-material mkdocs-static-i18n pymdown-extensions mkdocs-autorefs mkdocstrings[python] mkdocs-literate-nav mkdocs-section-index
 
       - name: Generate API Documentation
         run: python scripts/generate_api_docs.py

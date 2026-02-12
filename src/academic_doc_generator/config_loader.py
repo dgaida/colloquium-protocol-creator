@@ -168,8 +168,13 @@ class ConfigLoader:
             Dictionary mit Gemini-Emarks-Einstellungen:
             - enabled: bool (default False)
             - model: str (default "gemini-2.0-flash-exp")
+            - use_text_extraction: bool (default True)
         """
-        default_config = {"enabled": False, "model": "gemini-2.0-flash-exp"}
+        default_config = {
+            "enabled": False,
+            "model": "gemini-2.0-flash-exp",
+            "use_text_extraction": True,
+        }
         return self.config.get("gemini_emark", default_config)
 
     def __repr__(self) -> str:

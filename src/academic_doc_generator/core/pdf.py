@@ -364,7 +364,7 @@ def find_annotation_context(
     return context_dict
 
 
-def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> dict[int, str]:
+def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[int, str]:
     """Extract plain text (without positions) for the first `max_pages` pages.
 
     This is faster than extracting word positions and is sufficient for metadata
@@ -372,7 +372,8 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> dict[int, str]:
 
     Args:
         pdf_path: Path to the PDF file.
-        max_pages: Maximum number of pages to read. Defaults to 10.
+        max_pages: Maximum number of pages to read. If None, all pages are read.
+            Defaults to 10.
 
     Returns:
         Dictionary mapping 0-based page indices to the full concatenated text
@@ -388,7 +389,7 @@ def extract_text_per_page(pdf_path: str, max_pages: int = 10) -> dict[int, str]:
 
     pages_text: dict[int, str] = {}
     for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
-        if zero_idx >= max_pages:
+        if max_pages is not None and zero_idx >= max_pages:
             break
         words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
         page_text = " ".join(words)

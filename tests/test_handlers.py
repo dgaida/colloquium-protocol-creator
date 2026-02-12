@@ -206,6 +206,7 @@ class TestRunColloquiumDirect:
             groq_free=False,
             gemini_eval=False,
             gemini_model="gemini-2.0-flash-exp",
+            gemini_upload_pdf=False,
             out="/output",
             no_compile=False,
             company_name=None,
@@ -244,6 +245,7 @@ class TestRunColloquiumDirect:
             room="3.217",
             api="invalid",
             model=None,
+            gemini_upload_pdf=False,
         )
 
         mock_llm_class.side_effect = Exception("Invalid API")

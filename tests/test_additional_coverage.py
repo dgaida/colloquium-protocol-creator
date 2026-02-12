@@ -60,16 +60,39 @@ class TestGeminiThesisEvaluator:
 
     @patch.object(GeminiThesisEvaluator, "_remove_first_page")
     @patch("os.unlink")
-    def test_evaluate_thesis_success(self, mock_unlink, mock_remove_page, mock_llm_client):
+    def test_evaluate_thesis_success_legacy(self, mock_unlink, mock_remove_page, mock_llm_client):
         mock_llm_client.api_choice = "gemini"
         mock_llm_client.chat_completion_with_files.return_value = "Excellent work"
         evaluator = GeminiThesisEvaluator(mock_llm_client)
         mock_remove_page.return_value = "temp.pdf"
 
-        result = evaluator.evaluate_thesis("test.pdf", "Title", "Bachelor")
+        result = evaluator.evaluate_thesis(
+            "test.pdf", "Title", "Bachelor", use_text_extraction=False
+        )
 
         assert result == "Excellent work"
         mock_unlink.assert_called_with("temp.pdf")
+
+    @patch.object(GeminiThesisEvaluator, "_remove_first_page")
+    @patch.object(GeminiThesisEvaluator, "_extract_text_from_pdf")
+    @patch("os.unlink")
+    def test_evaluate_thesis_success_text(
+        self, mock_unlink, mock_extract, mock_remove_page, mock_llm_client
+    ):
+        mock_llm_client.api_choice = "gemini"
+        mock_llm_client.chat_completion.return_value = "Excellent work text"
+        evaluator = GeminiThesisEvaluator(mock_llm_client)
+        mock_remove_page.return_value = "temp.pdf"
+        mock_extract.return_value = "Extracted text content"
+
+        result = evaluator.evaluate_thesis(
+            "test.pdf", "Title", "Bachelor", use_text_extraction=True
+        )
+
+        assert result == "Excellent work text"
+        mock_unlink.assert_called_with("temp.pdf")
+        assert mock_extract.called
+        assert mock_llm_client.chat_completion.called
 
     @patch.object(GeminiThesisEvaluator, "_remove_first_page")
     @patch("os.path.exists")

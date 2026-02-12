@@ -51,25 +51,46 @@ class GeminiThesisEvaluator:
 
         return temp_name
 
-    def _create_emark_prompt(self, thesis_title: str, degree: str) -> str:
+    def _extract_text_from_pdf(self, pdf_path: str) -> str:
+        """Extrahiert den Text aus dem PDF mit docling.
+
+        Args:
+            pdf_path: Pfad zum PDF.
+
+        Returns:
+            Extrahierter Text.
+        """
+        from ..core.pdf import extract_text_per_page
+
+        pages_text = extract_text_per_page(pdf_path, max_pages=None)
+        return "\n\n".join(pages_text.values())
+
+    def _create_emark_prompt(self, thesis_title: str, degree: str, document_text: str = "") -> str:
         """Erstellt den Prompt für die Thesis-Bewertung.
 
         Args:
             thesis_title: Titel der Arbeit.
             degree: "Bachelor" oder "Master".
+            document_text: Extrahierter Text der Arbeit (optional).
 
         Returns:
             Formatierter Prompt-String.
         """
         niveau = "Bachelor" if degree == "Bachelor" else "Master"
 
-        return build_prompt(PromptTemplate.THESIS_EVALUATION, niveau=niveau, title=thesis_title)
+        return build_prompt(
+            PromptTemplate.THESIS_EVALUATION,
+            niveau=niveau,
+            title=thesis_title,
+            document_text=(f"\n\n**Dokumententext:**\n\n{document_text}" if document_text else ""),
+        )
 
     def evaluate_thesis(
         self,
         pdf_path: str,
         thesis_title: str,
         degree: str,
+        use_text_extraction: bool = True,
         verbose: bool = False,
     ) -> Optional[str]:
         """Bewertet eine Thesis mit Google Gemini.
@@ -78,6 +99,7 @@ class GeminiThesisEvaluator:
             pdf_path: Pfad zur Thesis-PDF.
             thesis_title: Titel der Arbeit (aus Metadaten extrahiert).
             degree: "Bachelor" oder "Master".
+            use_text_extraction: Text-Extraktion statt PDF-Upload verwenden.
             verbose: Debug-Ausgaben aktivieren.
 
         Returns:
@@ -86,30 +108,36 @@ class GeminiThesisEvaluator:
         print("\n🤖 Starte automatische Bewertung mit Google Gemini...")
         print(f"   Niveau: {degree}arbeit")
         print(f"   Titel: {thesis_title}")
+        print(f"   Modus: {'Text-Extraktion' if use_text_extraction else 'PDF-Upload'}")
 
         try:
             # Schritt 1: Erste Seite entfernen (Datenschutz)
             print("   📄 Entferne erste Seite (Datenschutz)...")
             temp_pdf = self._remove_first_page(pdf_path)
 
-            # Schritt 2: Prompt erstellen
-            prompt = self._create_emark_prompt(thesis_title, degree)
+            if use_text_extraction:
+                # Schritt 2: Text extrahieren
+                print("   🔍 Extrahiere Text aus PDF mit docling...")
+                text = self._extract_text_from_pdf(temp_pdf)
 
-            # Schritt 3: API-Aufruf mit PDF-Dokument (neues File-Upload-Feature)
-            print("   🚀 Sende Arbeit an Google Gemini (dies kann 1-2 Minuten dauern)...")
+                # Schritt 3: Prompt erstellen
+                prompt = self._create_emark_prompt(thesis_title, degree, document_text=text)
 
-            messages = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
+                # Schritt 4: API-Aufruf mit extrahiertem Text
+                print("   🚀 Sende Text an Google Gemini...")
+                messages = [{"role": "user", "content": prompt}]
+                response = self.llm_client.chat_completion(messages=messages)
+            else:
+                # Schritt 2: Prompt erstellen (ohne Text)
+                prompt = self._create_emark_prompt(thesis_title, degree)
 
-            # Nutze das neue chat_completion_with_files Feature
-            response = self.llm_client.chat_completion_with_files(
-                messages=messages,
-                files=[temp_pdf],
-            )
+                # Schritt 3: API-Aufruf mit PDF-Dokument (File-Upload)
+                print("   🚀 Sende PDF-Datei an Google Gemini (dies kann 1-2 Minuten dauern)...")
+                messages = [{"role": "user", "content": prompt}]
+                response = self.llm_client.chat_completion_with_files(
+                    messages=messages,
+                    files=[temp_pdf],
+                )
 
             # Schritt 4: Temporäre Datei löschen
             os.unlink(temp_pdf)

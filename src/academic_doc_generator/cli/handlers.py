@@ -87,6 +87,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
     elif task == "project":
         proj_config = config.get_project_config() or {}
         mark = proj_config.get("mark")
+        work_type = proj_config.get("work_type")
 
         proj_workflow_config = ProjectWorkflowConfig(
             pdf_path=pdf_path,
@@ -96,6 +97,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
             signature_file=output_config.get("signature_file", "signature.png"),
             mark=mark,
             create_feedback_mail=output_config.get("create_feedback_mail", True),
+            work_type=work_type,
         )
 
         proj_result = run_project_pipeline(proj_workflow_config)
@@ -207,6 +209,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
         signature_file=args.signature,
         mark=getattr(args, "mark", None),
         create_feedback_mail=args.create_feedback_mail,
+        work_type=getattr(args, "work_type", None),
     )
 
     result = run_project_pipeline(workflow_config)

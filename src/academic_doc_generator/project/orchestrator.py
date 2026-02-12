@@ -75,7 +75,8 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         f"{metadata.get('first_examiner_christian', '')}"
         f".{metadata.get('first_examiner_family', '')}@th-koeln.de"
     )
-    work_type = metadata.get("work_type", "Praxisprojekt")
+    # Prioritize work_type from config, then from metadata, then default
+    work_type = config.work_type or metadata.get("work_type", "Praxisprojekt")
 
     # Determine gender from first name
     print(f"Determining gender for first name: {student_first_name}")
@@ -159,7 +160,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
                 student_name=student_name,
                 email_text=grading_email_text,
                 attachment_path=compiled_pdf_path if compiled_pdf_path else None,
-                subject=f"Bewertung Praxisprojekt {gender} {student_first_name} {student_last_name}",
+                subject=f"Bewertung {work_type} {gender} {student_first_name} {student_last_name}",
                 verbose=False,
             )
         except Exception as e:
@@ -175,7 +176,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
                         student_name=student_name,
                         email_text=student_email_text,
                         attachment_path=None,
-                        subject=f"Feedback zu Ihrem Praxisprojekt - {student_name}",
+                        subject=f"Feedback zu Ihrem {work_type} - {student_name}",
                         recipient=student_email_addr if student_email_addr else "",
                         verbose=False,
                     )
@@ -196,7 +197,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             author=student_name,
             pages_text=pages_text,
             llm_client=llm_client,
-            work_type="Praxisprojekt",
+            work_type=work_type,
             semester=semester_name,
         )
         print(f"✅ Web-Metadaten erstellt: {web_md_path}")

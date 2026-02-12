@@ -258,6 +258,7 @@ class ProjectWorkflowConfig:
     signature_file: str = "signature.png"
     mark: Optional[str] = None
     create_feedback_mail: bool = True
+    work_type: Optional[str] = None
 
 
 # ==============================================================================

@@ -66,7 +66,9 @@ class TestGeminiThesisEvaluator:
         evaluator = GeminiThesisEvaluator(mock_llm_client)
         mock_remove_page.return_value = "temp.pdf"
 
-        result = evaluator.evaluate_thesis("test.pdf", "Title", "Bachelor", use_text_extraction=False)
+        result = evaluator.evaluate_thesis(
+            "test.pdf", "Title", "Bachelor", use_text_extraction=False
+        )
 
         assert result == "Excellent work"
         mock_unlink.assert_called_with("temp.pdf")
@@ -83,7 +85,9 @@ class TestGeminiThesisEvaluator:
         mock_remove_page.return_value = "temp.pdf"
         mock_extract.return_value = "Extracted text content"
 
-        result = evaluator.evaluate_thesis("test.pdf", "Title", "Bachelor", use_text_extraction=True)
+        result = evaluator.evaluate_thesis(
+            "test.pdf", "Title", "Bachelor", use_text_extraction=True
+        )
 
         assert result == "Excellent work text"
         mock_unlink.assert_called_with("temp.pdf")

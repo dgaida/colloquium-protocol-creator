@@ -82,9 +82,7 @@ class GeminiThesisEvaluator:
             PromptTemplate.THESIS_EVALUATION,
             niveau=niveau,
             title=thesis_title,
-            document_text=(
-                f"\n\n**Dokumententext:**\n\n{document_text}" if document_text else ""
-            ),
+            document_text=(f"\n\n**Dokumententext:**\n\n{document_text}" if document_text else ""),
         )
 
     def evaluate_thesis(

@@ -66,3 +66,14 @@ LLM clients are injected into orchestrators and core functions, allowing for eas
 | `project/orchestrator.py` | Project work grading workflow orchestration |
 | `cli.py` | Argument parsing and main entry points |
 | `handlers.py` | Routing CLI/Config commands to orchestrators |
+
+## Supported LLM APIs
+
+The tool automatically selects the best available API based on your configuration.
+
+| API | Default Model | API Key Required | Notes |
+|-----|---------------|------------------|-------|
+| OpenAI | `gpt-4o-mini` | Yes | Reliable, ~$0.01-0.05/thesis |
+| Groq | `moonshotai/kimi-k2-instruct-0905` | Yes | Very fast, free tier (30 req/min) |
+| Google Gemini | `gemini-2.0-flash-exp` | Yes | Fast, free tier (60 req/min) |
+| Ollama | `llama3.2:1b` | No | Runs locally, completely free |

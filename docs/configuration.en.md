@@ -135,6 +135,16 @@ GEMINI_API_KEY=AIzaSyxxxxxxxx
 }
 ```
 
+## 📝 Configuration Templates
+
+Pre-built JSON configurations for common workflows in the `config_templates/` directory:
+
+- `config_colloquium_campus.json` - Thesis colloquium on campus
+- `config_colloquium_company.json` - Thesis colloquium at a company
+- `config_colloquium_online.json` - Online thesis colloquium (Zoom)
+- `config_project_template.json` - Project work grading
+- `config_review_template.json` - Peer review comments
+
 ## 📚 Related Documentation
 
 - [Installation Guide](INSTALL.md)

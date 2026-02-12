@@ -38,6 +38,48 @@ theme:
     - navigation.footer
 
 plugins:
+  - i18n:
+      default_language: de
+      languages:
+        - locale: de
+          name: Deutsch
+          default: true
+          build: true
+          nav:
+            - Startseite: index.md
+            - Erste Schritte:
+                - Installation: INSTALL.md
+                - Konfiguration: configuration.md
+            - Anwendungsfälle:
+                - Thesis-Kolloquium: COLLOQUIUM.md
+                - Projekt-Benotung: PROJECT.md
+                - Peer-Review: REVIEW.md
+                - Klausur-Übersetzung: TRANSLATOR.md
+            - Beispiele: EXAMPLES.md
+            - Anleitungen:
+                - Testing: TESTING.md
+                - Architektur: ARCHITECTURE.md
+                - Mitwirken: CONTRIBUTING.md
+            - API-Referenz: api_reference/
+        - locale: en
+          name: English
+          build: true
+          nav:
+            - Home: index.md
+            - Getting Started:
+                - Installation: INSTALL.md
+                - Configuration: configuration.md
+            - Use Cases:
+                - Thesis Colloquium: COLLOQUIUM.md
+                - Project Grading: PROJECT.md
+                - Peer Review: REVIEW.md
+                - Exam Translation: TRANSLATOR.md
+            - Examples: EXAMPLES.md
+            - Guides:
+                - Testing: TESTING.md
+                - Architecture: ARCHITECTURE.md
+                - Contributing: CONTRIBUTING.md
+            - API Reference: api_reference/
   - search
   - autorefs
   - mkdocstrings:
@@ -73,22 +115,6 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-
-nav:
-  - Home: index.md
-  - Getting Started:
-      - Installation: INSTALL.md
-      - Configuration: configuration.md
-  - Use Cases:
-      - Thesis Colloquium: COLLOQUIUM.md
-      - Project Grading: PROJECT.md
-      - Peer Review: REVIEW.md
-      - Exam Translation: TRANSLATOR.md
-  - Guides:
-      - Testing: TESTING.md
-      - Architecture: ARCHITECTURE.md
-      - Contributing: CONTRIBUTING.md
-  - API Reference: api_reference/
 
 extra:
   social:

@@ -191,6 +191,14 @@ def _generate_latex_outputs(
     tex_name = f"bewertung_brief_{matriculation}.tex"
     tex_path = str(Path(output_folder) / tex_name)
 
+    # Load global config
+    global_config = utils.load_global_config()
+    global_first_examiner = global_config.get("first_examiner")
+
+    # Use global examiner if provided, otherwise from metadata
+    first_ex = global_first_examiner or metadata.get("first_examiner") or "Unbekannt"
+    second_ex = metadata.get("second_examiner") or "Unbekannt"
+
     latex.create_formal_letter_tex(
         filename=tex_path,
         recipient="Prüfungsausschuss der TH Köln",
@@ -198,8 +206,8 @@ def _generate_latex_outputs(
         title=metadata.get("title", ""),
         author=f"{author.title()}, Matr.-Nr. {matriculation}",
         summary=summary,
-        first_examiner=metadata.get("first_examiner", "Unbekannt").title(),
-        second_examiner=metadata.get("second_examiner", "Unbekannt").title(),
+        first_examiner=first_ex.title(),
+        second_examiner=second_ex.title(),
         examiner_email=f"{metadata.get('first_examiner_christian', '')}.{metadata.get('first_examiner_family', '')}@th-koeln.de",
         questions=questions,
         gemini_emark=gemini_emark_text,
@@ -266,6 +274,11 @@ def _generate_emails_and_calendar(
     id_number = metadata.get("id_number", "unknown")
     student_first_name, student_last_name = utils.split_student_name(author)
 
+    # Load global config
+    global_config = utils.load_global_config()
+    global_first_examiner = global_config.get("first_examiner")
+    first_ex = global_first_examiner or metadata.get("first_examiner") or "Unbekannt"
+
     registration_email_text = mymailgen.generate_colloquium_email(
         llm_client=llm_client,
         student_first_name=student_first_name,
@@ -273,7 +286,7 @@ def _generate_emails_and_calendar(
         id_number=id_number,
         date_colloquium=config.date,
         time_colloquium=config.time,
-        first_examiner=metadata.get("first_examiner", "Unbekannt"),
+        first_examiner=first_ex,
         location_type=config.location_type,
         room=config.room,
         company_name=config.company_name,
@@ -293,7 +306,7 @@ def _generate_emails_and_calendar(
         first_name=student_first_name,
         last_name=student_last_name,
         id_number=id_number,
-        examiner_name=metadata.get("first_examiner", "Unbekannt"),
+        examiner_name=first_ex,
     )
     mymailgen.save_email_to_markdown(
         output_folder=output_folder,

@@ -118,13 +118,14 @@ class ColloquiumRegistrationEmail:
         """
         weekday = weekday_from_string(date)
 
+        examiner_str = examiner.title() if examiner else "Unbekannt"
         return f"""Lieber Prüfungsservice,
 hiermit möchte ich {student.full_name_with_id} zum Kolloquium anmelden. Dieses findet statt am:
 {weekday}, {date}, um {time},
 {location_text}.
 {student.title_last_name}: Bitte bereiten Sie eine max. 15-minütige Präsentation zu Ihrer Arbeit vor (wenn möglich inkl. Demo).
 Viele Grüße,
-{examiner.title()}"""
+{examiner_str}"""
 
 
 class FinalGradeEmail:
@@ -135,10 +136,11 @@ class FinalGradeEmail:
         student: EmailRecipient,
         examiner: str,
     ) -> str:
+        examiner_str = examiner.title() if examiner else "Unbekannt"
         return f"""Lieber Prüfungsservice,
 hiermit möchte ich die Bewertung für {student.full_name_with_id} einreichen (s. Anhang).
 Viele Grüße,
-{examiner.title()}"""
+{examiner_str}"""
 
 
 class StudentFeedbackEmail:
@@ -151,6 +153,7 @@ class StudentFeedbackEmail:
         feedback_bulletpoints: str,
         examiner: str,
     ) -> str:
+        examiner_str = examiner.title() if examiner else "Unbekannt"
         return f"""{student.formal_salutation},
 
 ich habe Ihre Arbeit mit einer {mark} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
@@ -158,4 +161,4 @@ ich habe Ihre Arbeit mit einer {mark} bewertet. Hier ist mein Feedback zu Ihrer 
 {feedback_bulletpoints}
 
 Viele Grüße,
-{examiner.title()}"""
+{examiner_str}"""

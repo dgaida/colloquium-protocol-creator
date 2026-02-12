@@ -245,6 +245,7 @@ class TestRunColloquiumDirect:
             room="3.217",
             api="invalid",
             model=None,
+            gemini_upload_pdf=False,
         )
 
         mock_llm_class.side_effect = Exception("Invalid API")

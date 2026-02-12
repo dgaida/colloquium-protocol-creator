@@ -1,12 +1,10 @@
-
-import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-import pytest
 
 from academic_doc_generator.core.types import ProjectWorkflowConfig
 from academic_doc_generator.project.orchestrator import run_project_pipeline
+
 
 class TestWASP1Config:
     @patch("academic_doc_generator.project.orchestrator.extract_project_metadata")
@@ -40,7 +38,7 @@ class TestWASP1Config:
             "first_examiner": "Prof. Test",
             "first_examiner_christian": "Test",
             "first_examiner_family": "Examiner",
-            "work_type": "Praxisprojekt", # LLM thinks it's a Praxisprojekt
+            "work_type": "Praxisprojekt",  # LLM thinks it's a Praxisprojekt
         }
         mock_gender.return_value = "Herr"
         mock_feedback.return_value = "- Feedback"
@@ -63,7 +61,7 @@ class TestWASP1Config:
                 output_folder=Path(tmpdir),
                 compile_pdf=False,
                 work_type="Projektteil WASP1",
-                mark="1.0"
+                mark="1.0",
             )
 
             run_project_pipeline(config)

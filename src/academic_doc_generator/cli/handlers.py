@@ -69,6 +69,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
             zcode=coll_config.get("zcode"),
             gemini_emark_enabled=gemini_config.get("enabled", False),
             gemini_model=gemini_config.get("model"),
+            gemini_use_text_extraction=gemini_config.get("use_text_extraction", True),
         )
 
         coll_result = run_pipeline(coll_workflow_config)
@@ -162,6 +163,7 @@ def run_colloquium_direct(args: argparse.Namespace) -> None:
         zcode=args.zcode,
         gemini_emark_enabled=args.gemini_eval,
         gemini_model=args.gemini_model,
+        gemini_use_text_extraction=not args.gemini_upload_pdf,
     )
 
     result = run_pipeline(workflow_config)

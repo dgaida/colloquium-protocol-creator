@@ -210,6 +210,7 @@ class GeminiEmarkConfig(TypedDict, total=False):
 
     enabled: bool
     model: Optional[str]
+    use_text_extraction: bool
 
 
 class PDFConfig(TypedDict):
@@ -243,6 +244,7 @@ class ColloquiumWorkflowConfig:
     zcode: Optional[str] = None
     gemini_emark_enabled: bool = False
     gemini_model: Optional[str] = None
+    gemini_use_text_extraction: bool = True
 
 
 @dataclass

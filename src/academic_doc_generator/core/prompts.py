@@ -228,6 +228,7 @@ Summary:
     THESIS_EVALUATION = """Du bist ein erfahrener Professor für Informatik an der TH Köln und bewertest eine {niveau}arbeit.
 
 **Titel der Arbeit:** {title}
+{document_text}
 
 **Deine Aufgabe:**
 

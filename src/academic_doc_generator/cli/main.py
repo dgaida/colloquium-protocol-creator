@@ -65,6 +65,11 @@ def create_parser() -> argparse.ArgumentParser:
         default="gemini-2.0-flash-exp",
         help="Gemini model for emark",
     )
+    colloquium_parser.add_argument(
+        "--gemini-upload-pdf",
+        action="store_true",
+        help="Upload PDF instead of text (not default)",
+    )
     colloquium_parser.add_argument("--out", help="Output folder")
     colloquium_parser.add_argument(
         "--no-compile", action="store_true", help="Do not compile .tex to PDF"

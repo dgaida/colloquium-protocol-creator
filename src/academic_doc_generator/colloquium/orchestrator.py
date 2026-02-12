@@ -154,6 +154,7 @@ def _get_gemini_emark(config: ColloquiumWorkflowConfig, metadata: dict) -> Optio
             pdf_path=str(config.pdf_path),
             thesis_title=metadata.get("title", ""),
             degree=metadata.get("bachelor_master", "Bachelor"),
+            use_text_extraction=config.gemini_use_text_extraction,
             verbose=False,
         )
 

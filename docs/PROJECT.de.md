@@ -1,26 +1,32 @@
-# Benotungsbriefe für Praxisprojekte
+# Benotungsbriefe für Praxis- & WASP1-Projekte
 
 ## Übersicht
 
-Dieses Tool automatisiert die Erstellung formeller Benotungsbriefe für Praxisprojekte, Projektarbeiten und ähnliche Leistungen an der TH Köln. Es extrahiert Metadaten aus dem Projekt-PDF, bestimmt automatisch die korrekte Anrede (Herr/Frau) und generiert eine LaTeX-Briefvorlage im TH Köln-Format sowie Feedback-E-Mails.
+Dieses Tool automatisiert die Erstellung formeller Benotungsbriefe für Praxisprojekte, WASP1-Projekte, Projektarbeiten und ähnliche Leistungen an der TH Köln. Es extrahiert Metadaten aus dem Projekt-PDF, bestimmt automatisch die korrekte Anrede (Herr/Frau) und generiert eine LaTeX-Briefvorlage im TH Köln-Format sowie Feedback-E-Mails.
 
 ## Erzeugte Dateien (Ergebnisse)
 
-### 1. LaTeX-Benotungsbrief
+Eine detaillierte Übersicht mit Bildern finden Sie auf der Seite [Beispiele](EXAMPLES.md#projekt-wasp1).
+
+### 1. [LaTeX-Benotungsbrief](EXAMPLES.md#latex-benotungsbrief)
 **Dateiname:** `projektarbeit_brief_<matrikelnr>.tex`
 Ein formeller `scrlttr2`-Brief mit dem Briefkopf und Fußzeile der TH Köln.
 
-### 2. Kompiliertes PDF
+### 2. [Kompiliertes PDF](EXAMPLES.md#kompiliertes-pdf-projekt)
 **Dateiname:** `projektarbeit_brief_<matrikelnr>.pdf`
 Das druckfertige PDF des Benotungsbriefs (erfordert LuaLaTeX).
 
-### 3. E-Mail für den Prüfungsservice
+### 3. [E-Mail für den Prüfungsservice](EXAMPLES.md#e-mail-prufungsservice)
 **Dateiname:** `projekt_anmeldung_<name>_<matrikelnr>.md`
 Eine fertige E-Mail-Vorlage zur Einreichung der Note beim Prüfungsservice.
 
-### 4. Feedback-E-Mails für Studierende
+### 4. [Feedback-E-Mails für Studierende](EXAMPLES.md#feedback-e-mail-studierende)
 **Dateiname:** `feedback_student_<name>_<matrikelnr>.md`
 Ein automatisch generierter Entwurf mit einer Zusammenfassung der Stärken und Schwächen sowie der Note.
+
+### 5. [Web-Metadaten (Steckbrief)](EXAMPLES.md#web-metadaten-steckbrief)
+**Dateiname:** `YYYY-MM-DD-titel.md`
+Ein Jekyll-kompatibler Steckbrief der Arbeit für die eigene Webseite. Der Pfad kann global in der `config.yaml` definiert werden.
 
 ---
 
@@ -33,15 +39,21 @@ Ein automatisch generierter Entwurf mit einer Zusammenfassung der Stärken und S
 
 ## Benutzung
 
+Der empfohlene Weg ist die Nutzung einer [Konfigurationsdatei](configuration.md).
+
 ### Kommandozeile (CLI)
 
 ```bash
+# Mit einer Konfigurationsdatei
+academic-doc-generator --config config_project_template.json
+
 # Basis-Nutzung
 academic-doc-generator project /pfad/zu/Praxisprojekt_Mueller.pdf
-
-# Feedback-Mail deaktivieren (Standard ist aktiviert)
-academic-doc-generator project project.pdf --no-feedback-mail
 ```
+
+### Nutzung über main.py
+
+Sie können das Tool auch über die `main.py` ausführen, indem Sie dort den Pfad zum Projekt-Ordner angeben. Details dazu finden Sie im [Konfigurations-Handbuch](configuration.md#3-tool-ausfuhren).
 
 ## Feedback & Studierenden-E-Mail
 

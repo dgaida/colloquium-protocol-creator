@@ -106,6 +106,33 @@ def is_quelle_comment(text: str, max_length: int = 20) -> bool:
     return bool(re.search(quelle_pattern, normalized, re.IGNORECASE))
 
 
+def is_footnote_reference(text: str) -> bool:
+    """Check if the text is likely just a footnote reference or citation marker.
+
+    Args:
+        text: The text to check.
+
+    Returns:
+        True if it looks like a footnote or citation reference, False otherwise.
+
+    Examples:
+        >>> is_footnote_reference("[1]")
+        True
+        >>> is_footnote_reference("1.")
+        True
+        >>> is_footnote_reference("[Mül23]")
+        True
+    """
+    normalized = text.strip()
+    # matches [1], [12], 1., (1)
+    if re.match(r"^(\[?\d+\]?|\d+\.|\(\d+\))$", normalized):
+        return True
+    # matches typical German citation style [Mül23] or [ABC23]
+    if re.match(r"^\[[A-Z][a-zäöüA-Z]{1,3}\d{2}\]$", normalized):
+        return True
+    return False
+
+
 def extract_annotations_with_positions(
     pdf_path: str, ignore_source: bool = True
 ) -> tuple[dict[int, list[AnnotationData]], CommentStats]:
@@ -149,12 +176,32 @@ def extract_annotations_with_positions(
                 content = annot.get("/Contents")
 
                 if content:
+                    # Filter by subtype to avoid picking up links, widgets, etc. as comments
+                    # Common comment subtypes: /Text (sticky notes), /Highlight, /Underline, etc.
+                    allowed_subtypes = [
+                        "/Text",
+                        "/Highlight",
+                        "/Underline",
+                        "/Squiggly",
+                        "/StrikeOut",
+                        "/FreeText",
+                        "/Stamp",
+                        "/Ink",
+                        "/Line",
+                        "/Square",
+                        "/Circle",
+                        "/Polygon",
+                        "/PolyLine",
+                    ]
+                    if subtype not in allowed_subtypes:
+                        continue
+
                     text = content.strip()
                     category: CommentCategory = "llm"  # default
 
                     # --- Categorize ---
-                    # Check for "ab hier" first (highest priority, complete ignore)
-                    if text.lower() == "ab hier":
+                    # Check for "ab hier" first or footnote references (complete ignore)
+                    if text.lower() == "ab hier" or is_footnote_reference(text):
                         category = "ignore"
                         stats["ignore"] += 1
 

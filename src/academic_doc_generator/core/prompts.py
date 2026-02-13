@@ -19,6 +19,7 @@ IMPORTANT:
 - Always produce the rewritten comment in the SAME language (usually German, sometimes English).
 - Format the summary so that it can be directly inserted into a LaTeX document.
 - Use normal LaTeX text, not markdown.
+- IMPORTANT: Ignore footnotes and citations completely. Do not create questions or feedback for them.
 
 Paragraph:
 {paragraph}
@@ -252,6 +253,7 @@ Summary:
 - Escape LaTeX-Sonderzeichen korrekt (verwende \\& statt &, \\% statt %, etc.)
 - Sei konstruktiv und professionell
 - Gib konkrete Beispiele aus der Arbeit
+- **Wichtig:** Ignoriere Fußnoten, Zitate und Literaturangaben im Text vollständig. Diese sollen weder analysiert werden noch als Basis für Kolloquiumsfragen dienen.
 
 **Format der Antwort:**
 
@@ -286,6 +288,7 @@ Du bist ein Professor und bewertest ein Praxisprojekt eines Studierenden.
 Schreibe den folgenden kurzen Korrekturkommentar in ein klares, höfliches und konstruktives
 Feedback an den Studierenden um. Behalte die Bedeutung bei, aber formuliere es als professionelles
 Feedback (KEINE Fragen, sondern direkte Rückmeldung). Schreibe immer auf Deutsch.
+Wichtig: Ignoriere Fußnoten und Literaturverweise vollständig.
 
 Hervorgehobener Text (falls vorhanden):
 {highlighted}

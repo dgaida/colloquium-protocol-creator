@@ -125,12 +125,11 @@ def is_footnote_reference(text: str) -> bool:
     """
     normalized = text.strip()
     # matches [1], [12], 1., (1)
-    if re.match(r"^(\[?\d+\]?|\d+\.|\(\d+\))$", normalized):
-        return True
-    # matches typical German citation style [Mül23] or [ABC23]
-    if re.match(r"^\[[A-Z][a-zäöüA-Z]{1,3}\d{2}\]$", normalized):
-        return True
-    return False
+    # or typical German citation style [Mül23] or [ABC23]
+    return bool(
+        re.match(r"^(\[?\d+\]?|\d+\.|\(\d+\))$", normalized)
+        or re.match(r"^\[[A-Z][a-zäöüA-Z]{1,3}\d{2}\]$", normalized)
+    )
 
 
 def extract_annotations_with_positions(

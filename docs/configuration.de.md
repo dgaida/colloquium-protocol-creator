@@ -6,7 +6,7 @@ Diese Anleitung erklärt, wie Sie den Academic Document Generator mithilfe von J
 
 Das Tool unterstützt JSON-basierte Konfigurationen für drei Hauptanwendungsfälle:
 - **Kolloquium-Protokolle** (Thesis-Verteidigung)
-- **Praxisprojekt-Benotung**
+- **Praxisprojekt- & WASP1-Benotung**
 - **Peer-Review** Kommentare
 
 ## 🎯 Quick Start
@@ -25,12 +25,17 @@ academic-doc-generator --list-templates
 cp config_templates/config_colloquium_campus.json /pfad/zu/ihrer/thesis/
 ```
 
+Passen Sie anschließend die `config.json` Datei an. Mindestens der Dateiname des zu analysierenden PDF-Dokuments (`pdf` -> `filename`) muss korrekt gesetzt sein.
+
 ### 3. Tool ausführen
 
+**Option A: Über die CLI**
 ```bash
-# Über die CLI
 academic-doc-generator --config /pfad/zu/ihrer/thesis/config_colloquium_campus.json
 ```
+
+**Option B: Über main.py**
+Sie können das Tool auch über die `main.py` im Projekt-Stammverzeichnis ausführen. Passen Sie dazu in der `main.py` den Pfad (`folder`) zu dem Ordner an, in dem Ihr PDF und die neue JSON-Datei liegen.
 
 ## 📝 Konfigurations-Struktur
 
@@ -105,7 +110,23 @@ Vorgefertigte JSON-Konfigurationen im Ordner `config_templates/`:
 - `config_colloquium_company.json` - Thesis-Kolloquium im Unternehmen
 - `config_colloquium_online.json` - Online-Kolloquium (Zoom)
 - `config_project_template.json` - Praxisprojekt-Benotung
+- `config_wasp1_template.json` - WASP1-Projekt-Benotung
 - `config_review_template.json` - Peer-Review-Kommentare
+
+## ⚙️ Globale Konfiguration (config.yaml)
+
+Zusätzlich zu den projekt-spezifischen JSON-Dateien gibt es eine globale `config.yaml` im Projekt-Stammverzeichnis für allgemeine Einstellungen:
+
+```yaml
+# Globaler Ordner für Web-Metadaten (*.md Steckbriefe)
+web_metadata_folder: "/pfad/zu/ihrer/webseite/data/projects/"
+
+# Standard-Prüfername (überschreibt Extraktion aus PDF)
+first_examiner: "Prof. Dr. Vorname Nachname"
+```
+
+- `web_metadata_folder`: Wenn gesetzt, werden die generierten Jekyll-kompatiblen Steckbriefe automatisch in diesen Ordner kopiert.
+- `first_examiner`: Hier kann ein Name hinterlegt werden, der global für alle Dokumente als Erstprüfer verwendet wird.
 
 ## 📚 Weitere Dokumentation
 

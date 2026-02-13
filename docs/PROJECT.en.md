@@ -1,26 +1,32 @@
-# Project Work Grading Letters
+# Project Work & WASP1 Grading Letters
 
 ## Overview
 
-This tool generates formal grading letters for project work (Praxisprojekt) at TH Köln. It extracts metadata from the project PDF, automatically determines the appropriate formal address, and generates a LaTeX letter template with TH Köln formatting.
+This tool generates formal grading letters for project work (Praxisprojekt), WASP1 projects, and similar academic work at TH Köln. It extracts metadata from the project PDF, automatically determines the appropriate formal address, and generates a LaTeX letter template with TH Köln formatting.
 
 ## Generated Files (Results)
 
-### 1. LaTeX Grading Letter
+A detailed overview with images can be found on the [Examples](EXAMPLES.md#project-wasp1) page.
+
+### 1. [LaTeX Grading Letter](EXAMPLES.md#latex-grading-letter)
 **Filename:** `projektarbeit_brief_<matrikelnr>.tex`
 A formal `scrlttr2` letter with TH Köln letterhead and footer.
 
-### 2. Compiled PDF
+### 2. [Compiled PDF](EXAMPLES.md#compiled-pdf-project)
 **Filename:** `projektarbeit_brief_<matrikelnr>.pdf`
 The ready-to-print PDF of the grading letter (requires LuaLaTeX).
 
-### 3. Email for Examination Office
+### 3. [Email for Examination Office](EXAMPLES.md#email-for-examination-office)
 **Filename:** `projekt_anmeldung_<name>_<matrikelnr>.md`
 A ready-to-use email template for submitting the grade to the examination office.
 
-### 4. Student Feedback Email
+### 4. [Student Feedback Email](EXAMPLES.md#student-feedback-email)
 **Filename:** `feedback_student_<name>_<matrikelnr>.md`
 An automatically generated draft containing a summary of strengths/weaknesses and the final grade.
+
+### 5. [Web Metadata (Profile)](EXAMPLES.md#web-metadata-profile)
+**Filename:** `YYYY-MM-DD-title.md`
+A Jekyll-compatible profile of the work for your own website. The path can be defined globally in `config.yaml`.
 
 ---
 
@@ -33,15 +39,21 @@ An automatically generated draft containing a summary of strengths/weaknesses an
 
 ## Usage
 
+The recommended way is to use a [configuration file](configuration.md).
+
 ### Command Line (CLI)
 
 ```bash
+# Using a config file
+academic-doc-generator --config config_project_template.json
+
 # Basic usage
 academic-doc-generator project /path/to/Praxisprojekt_Mueller.pdf
-
-# Disable feedback mail (default is enabled)
-academic-doc-generator project project.pdf --no-feedback-mail
 ```
+
+### Usage via main.py
+
+You can also run the tool via `main.py` by specifying the path to the project folder there. Details can be found in the [Configuration Guide](configuration.md#3-run-the-tool).
 
 ## Feedback & Student Email
 

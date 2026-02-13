@@ -7,7 +7,7 @@ This guide explains how to configure the Academic Document Generator using JSON 
 The tool supports JSON-based configuration for three use cases:
 
 - **Colloquium protocols** (thesis defense)
-- **Project work grading** letters
+- **Project work & WASP1 grading** letters
 - **Peer review** comments
 
 ## 🎯 Quick Start
@@ -26,13 +26,18 @@ academic-doc-generator --list-templates
 cp config_templates/config_colloquium_campus.json /path/to/thesis/
 ```
 
+After copying, customize the `config.json` file. At a minimum, you must set the correct PDF filename (`pdf` -> `filename`).
+
 ### 3. Run the Tool
 
+**Option A: Use main.py**
+You can run the tool via `main.py` in the project root. To do this, edit the `folder` variable in `main.py` to point to the directory containing your PDF and the JSON config.
 ```bash
-# Option A: Use main.py
 python main.py
+```
 
-# Option B: Use CLI directly
+**Option B: Use CLI directly**
+```bash
 academic-doc-generator --config /path/to/thesis/config_colloquium_campus.json
 ```
 
@@ -143,7 +148,23 @@ Pre-built JSON configurations for common workflows in the `config_templates/` di
 - `config_colloquium_company.json` - Thesis colloquium at a company
 - `config_colloquium_online.json` - Online thesis colloquium (Zoom)
 - `config_project_template.json` - Project work grading
+- `config_wasp1_template.json` - WASP1 project grading
 - `config_review_template.json` - Peer review comments
+
+## ⚙️ Global Configuration (config.yaml)
+
+In addition to project-specific JSON files, there is a global `config.yaml` in the project root for general settings:
+
+```yaml
+# Global folder for web metadata (*.md profiles)
+web_metadata_folder: "/path/to/your/website/data/projects/"
+
+# Default first examiner name (overrides PDF extraction)
+first_examiner: "Prof. Dr. Firstname Lastname"
+```
+
+- `web_metadata_folder`: If set, generated Jekyll-compatible project profiles are automatically copied to this folder.
+- `first_examiner`: A name set here will be used as the first examiner for all generated documents.
 
 ## 📚 Related Documentation
 

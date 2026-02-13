@@ -6,21 +6,27 @@ This tool generates a formal LaTeX protocol letter for thesis colloquiums (Bache
 
 ## Generated Files (Results)
 
-### 1. LaTeX Protocol Letter
+A detailed overview with images can be found on the [Examples](EXAMPLES.md#thesis-colloquium) page.
+
+### 1. [LaTeX Protocol Letter](EXAMPLES.md#latex-protocol-letter)
 **Filename:** `bewertung_brief_<matrikelnr>.tex`
 A formal `scrlttr2` letter with TH Köln letterhead and footer.
 
-### 2. Compiled PDF
+### 2. [Compiled PDF](EXAMPLES.md#compiled-pdf)
 **Filename:** `bewertung_brief_<matrikelnr>.pdf`
 The ready-to-print PDF of the protocol letter (requires LuaLaTeX).
 
-### 3. Pre-filled Grading Form
+### 3. [Pre-filled Grading Form](EXAMPLES.md#pre-filled-grading-form)
 **Filename:** `Bewertung <Bachelor/Master>arbeit_Kolloq Inf_<stud_name>.pdf`
 The official TH Köln grading form, automatically filled with student data and correct checkboxes.
 
-### 4. Email & Outlook Draft
+### 4. [Email & Outlook Draft](EXAMPLES.md#email-outlook-draft)
 **Filename:** `kolloquium_anmeldung_<name>_<matrikelnr>.md`
 A ready-to-send email for the examination office. If Outlook is open, a draft is created automatically with an ICS calendar attachment.
+
+### 5. [Web Metadata (Profile)](EXAMPLES.md#web-metadata-profile)
+**Filename:** `YYYY-MM-DD-title.md`
+A Jekyll-compatible profile of the work (summary, keywords, etc.) for your own website. The path where these files should be copied can be defined globally in `config.yaml`.
 
 ---
 
@@ -33,17 +39,21 @@ A ready-to-send email for the examination office. If Outlook is open, a draft is
 
 ## Usage
 
+The recommended way is to use a [configuration file](configuration.md).
+
 ### Command Line (CLI)
 
-The recommended way to run the tool:
-
 ```bash
-# Basic usage (auto-detects available API)
-academic-doc-generator colloquium /path/to/Bachelorarbeit_Mueller.pdf --date 20.01.2026 --time 14:00 --room 3.217
-
 # Using a config file
 academic-doc-generator --config config_colloquium_campus.json
+
+# Basic usage (auto-detects available API)
+academic-doc-generator colloquium /path/to/Bachelorarbeit_Mueller.pdf --date 20.01.2026 --time 14:00 --room 3.217
 ```
+
+### Usage via main.py
+
+You can also run the tool via `main.py` by specifying the path to the thesis folder there. Details can be found in the [Configuration Guide](configuration.md#3-run-the-tool).
 
 ## Metadata & Course of Study
 
@@ -52,27 +62,29 @@ The tool extracts the `course_of_study` from the thesis title page and uses it t
 | Course of Study | PDF Form Checkbox |
 |-----------------|-------------------|
 | Informatik | KontrollInformatik |
-| Wirtschaftsinformatik | ControlWI |
+| Wirtschaftsinformatik | KontrollWI |
 | Medieninformatik | KontrollMedien |
 | IT-Management | KontrollITM |
 
 ## Comment Categories
 
-Annotations are automatically categorized into four types:
+The tool follows the author's workflow: to keep reading the thesis smoothly, only brief notes (annotations) are made in the PDF. The tool automatically categorizes these to prepare them appropriately in the protocol letter.
 
 ### 1. LLM Comments (Default)
-Regular comments rewritten by the LLM into polite, clear questions.
+Understanding questions or content-related notes rewritten by the LLM into polite, clear examination questions.
 *Example: "Why?" → "Could you explain the reasoning behind this decision?"*
 
 ### 2. Source Comments
-Notes about missing sources. These are counted in statistics but not rewritten.
+Notes about missing sources. The author usually just writes "Source?", "Source missing", or "Reference?". These are counted in statistics but not rewritten.
 *Rule: Contains "quelle" or "source" and is short.*
 
 ### 3. Language Comments
-Grammar or spelling notes. These are counted to provide a note on linguistic quality.
+Notes on grammar, spelling, or style. These are counted to provide a note on linguistic quality at the end.
+*Examples: "Grammar", "Expression", "illegible", "Spelling".*
 
-### 4. Ignore Comments
-Markers like "ab hier" are completely excluded.
+### 4. Ignore Comments / Markers
+Special markers for own orientation.
+*Example: "ab hier" (from here) – This comment only serves as a hint for the reader where to continue next time if the thesis is not read in one go. Such markers are ignored in the protocol.*
 
 ---
 

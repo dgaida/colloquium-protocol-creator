@@ -1,4 +1,6 @@
-# Academic Document Generator Documentation
+<p align="center">
+  <img src="assets/logo.png" width="250" alt="Academic Doc Generator Logo">
+</p>
 
 ![Workflow Infographic](infografik.png)
 

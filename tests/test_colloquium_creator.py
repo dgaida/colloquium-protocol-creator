@@ -355,6 +355,36 @@ class TestLatexGeneration:
             if os.path.exists(tex_path):
                 os.unlink(tex_path)
 
+    def test_create_formal_letter_tex_escaping(self):
+        """Test that hardcoded strings in LaTeX letter have escaped ampersands."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
+            tex_path = f.name
+
+        try:
+            latex.create_formal_letter_tex(
+                filename=tex_path,
+                recipient="Test",
+                subject="Test",
+                title="Test",
+                author="Test",
+                summary="Test",
+                first_examiner="Test",
+                second_examiner="Test",
+                examiner_email="test@example.com",
+                questions="Test",
+            )
+
+            with open(tex_path, encoding="utf-8") as f:
+                content = f.read()
+
+            assert r"1. Inhaltliche Qualität \& Struktur:" in content
+            assert r"2. Darstellung \& Visualisierung:" in content
+            assert r"3. Präsentation \& Auftreten:" in content
+
+        finally:
+            if os.path.exists(tex_path):
+                os.unlink(tex_path)
+
 
 # ============================================================================
 # Tests for utils.py

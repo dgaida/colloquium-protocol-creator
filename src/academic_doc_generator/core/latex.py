@@ -253,7 +253,7 @@ Bewertung folgender Thesis:\\[1ex]
 
 Bewertung des Vortrags:
 
-1. Inhaltliche Qualität & Struktur:
+1. Inhaltliche Qualität \& Struktur:
 
 Kriterien:
 \begin{{itemize}}
@@ -272,7 +272,7 @@ Bewertung der Kriterien:
 \item ausreichend
 \end{{itemize}}
 
-2. Darstellung & Visualisierung:
+2. Darstellung \& Visualisierung:
 
 Kriterien:
 \begin{{itemize}}
@@ -290,7 +290,7 @@ Bewertung der Kriterien:
 \item ausreichend
 \end{{itemize}}
 
-3. Präsentation & Auftreten:
+3. Präsentation \& Auftreten:
 
 Kriterien:
 \begin{{itemize}}

@@ -1,6 +1,7 @@
-import re
 import os
+import re
 import sys
+
 
 def increment_version():
     filepath = "pyproject.toml"
@@ -8,7 +9,7 @@ def increment_version():
         print(f"Error: {filepath} not found.")
         sys.exit(1)
 
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         lines = f.readlines()
 
     new_lines = []
@@ -32,6 +33,7 @@ def increment_version():
     else:
         print("Error: Could not find version string in pyproject.toml")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     increment_version()

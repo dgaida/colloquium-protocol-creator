@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "colloquium-protocol-creator"
-version = "0.1.0"
+version = "0.2.0"
 description = "Create colloquium protocol letters from thesis PDFs (annotation extraction, comment rewriting, LaTeX generation) as well as paper reviews."
 authors = [{name = "Daniel Gaida", email = "daniel.gaida@th-koeln.de"}]
 readme = "README.md"

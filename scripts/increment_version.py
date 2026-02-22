@@ -18,10 +18,18 @@ def increment_version():
         if not found and line.strip().startswith('version = "'):
             match = re.search(r'version = "(\d+)\.(\d+)\.(\d+)"', line)
             if match:
-                major, minor, patch = match.groups()
-                new_patch = str(int(patch) + 1)
-                new_version = f"{major}.{minor}.{new_patch}"
+                major, minor, patch = map(int, match.groups())
                 old_version = f"{major}.{minor}.{patch}"
+
+                patch += 1
+                if patch > 9:
+                    patch = 0
+                    minor += 1
+                if minor > 9:
+                    minor = 0
+                    major += 1
+
+                new_version = f"{major}.{minor}.{patch}"
                 line = line.replace(f'version = "{old_version}"', f'version = "{new_version}"')
                 found = True
                 print(f"Incrementing version: {old_version} -> {new_version}")

@@ -5,6 +5,7 @@
 **Create LaTeX protocol letters and grading documents for academic work at TH Köln**
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+[![Version](https://img.shields.io/github/v/tag/dgaida/colloquium-protocol-creator?label=version)](https://github.com/dgaida/colloquium-protocol-creator/tags)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/dgaida/colloquium-protocol-creator/branch/master/graph/badge.svg)](https://codecov.io/gh/dgaida/colloquium-protocol-creator)
 [![Tests](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/colloquium-protocol-creator/actions/workflows/tests.yml)

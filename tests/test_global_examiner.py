@@ -36,6 +36,7 @@ class TestGlobalExaminer:
         mock_load_config.return_value = {"first_examiner": "Global Examiner"}
         mock_extract.return_value = {
             "student_name": "Test Student",
+            "student_first_name": "Test",
             "first_examiner": "Metadata Examiner",
         }
         mock_gender.return_value = "Herr"

@@ -86,7 +86,11 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
 
     elif task == "project":
         proj_config = config.get_project_config() or {}
+        # Support both 'mark' and 'grade' (alias)
         mark = proj_config.get("mark")
+        if mark is None:
+            mark = proj_config.get("grade")
+
         work_type = proj_config.get("work_type")
 
         proj_workflow_config = ProjectWorkflowConfig(

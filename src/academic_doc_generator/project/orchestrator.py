@@ -72,6 +72,13 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
 
     student_name = metadata.get("student_name", "Unknown")
     student_first_name, student_last_name = split_student_name(student_name)
+
+    # Check if first name was recognized
+    # We consider it recognized if the LLM explicitly found it AND the whole name is not "Unknown"
+    first_name_recognized = (
+        metadata.get("student_first_name") is not None and student_name != "Unknown"
+    )
+
     id_number = metadata.get("id_number", "unknown")
     project_title = metadata.get("title", "Unknown")
 
@@ -122,19 +129,23 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
 
     # Generate email for Prüfungsservice
     mymailgen = EmailGenerator()
-    grading_email_text = mymailgen.generate_final_mark_email(
-        evaluator_client=llm_client,
-        first_name=student_first_name,
-        last_name=student_last_name,
-        id_number=id_number,
-        examiner_name=examiner_name,
-    )
-    email_path = mymailgen.save_email_to_markdown(
-        output_folder=output_folder,
-        student_last_name=student_last_name,
-        id_number=id_number,
-        filename_prefix="bewertung_projekt_email",
-    )
+    grading_email_text = ""
+    email_path = ""
+
+    if first_name_recognized:
+        grading_email_text = mymailgen.generate_final_mark_email(
+            evaluator_client=llm_client,
+            first_name=student_first_name,
+            last_name=student_last_name,
+            id_number=id_number,
+            examiner_name=examiner_name,
+        )
+        email_path = mymailgen.save_email_to_markdown(
+            output_folder=output_folder,
+            student_last_name=student_last_name,
+            id_number=id_number,
+            filename_prefix="bewertung_projekt_email",
+        )
 
     # Generate student feedback email
     student_email_path = ""
@@ -161,17 +172,18 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         outlook_gen = OutlookMailGenerator()
 
         # 1. Draft for Prüfungsservice
-        print("\n📧 Erstelle Outlook-Mail für Prüfungsservice...")
-        try:
-            outlook_gen.create_outlook_mail(
-                student_name=student_name,
-                email_text=grading_email_text,
-                attachment_path=compiled_pdf_path if compiled_pdf_path else None,
-                subject=f"Bewertung {work_type} {gender} {student_first_name} {student_last_name}",
-                verbose=False,
-            )
-        except Exception as e:
-            print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Service): {e}")
+        if first_name_recognized:
+            print("\n📧 Erstelle Outlook-Mail für Prüfungsservice...")
+            try:
+                outlook_gen.create_outlook_mail(
+                    student_name=student_name,
+                    email_text=grading_email_text,
+                    attachment_path=compiled_pdf_path if compiled_pdf_path else None,
+                    subject=f"Bewertung {work_type} {gender} {student_first_name} {student_last_name}",
+                    verbose=False,
+                )
+            except Exception as e:
+                print(f"⚠️  Fehler beim Erstellen der Outlook-Mail (Service): {e}")
 
         # 2. Draft for Student (only if Outlook is open)
         if create_feedback_mail:
@@ -206,11 +218,19 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             llm_client=llm_client,
             work_type=work_type,
             semester=semester_name,
+            copy_to_web_folder=first_name_recognized,
         )
         print(f"✅ Web-Metadaten erstellt: {web_md_path}")
     except Exception as e:
         print(f"⚠️  Fehler beim Erstellen der Web-Metadaten: {e}")
         web_md_path = ""
+
+    if not first_name_recognized:
+        print(
+            "\n⚠️  Warnung: Vorname wurde nicht erkannt. "
+            "Die Email zur Einreichung der Note wurde nicht erstellt und "
+            "die Web-Metadaten wurden nicht in den globalen Ordner kopiert."
+        )
 
     return ProjectWorkflowResult(
         tex_path=tex_path,

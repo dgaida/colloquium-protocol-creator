@@ -78,6 +78,7 @@ def generate_metadata_file(
     work_type: str,  # e.g., "Bachelorthesis", "Masterthesis", "Praxisprojekt"
     semester: str,
     date_str: Optional[str] = None,
+    copy_to_web_folder: bool = True,
 ) -> str:
     """Create a Jekyll-style Markdown file with frontmatter for a student project.
 
@@ -90,6 +91,7 @@ def generate_metadata_file(
         work_type: String indicating the type of work.
         semester: Semester name (e.g., "Wintersemester 24/25").
         date_str: Date of the work (YYYY-MM-DD). Defaults to today.
+        copy_to_web_folder: Whether to copy the file to the global web metadata folder.
 
     Returns:
         Path to the generated .md file.
@@ -139,15 +141,16 @@ semester: "{semester}"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    # Copy to global web metadata folder if configured
-    global_config = load_global_config()
-    web_metadata_folder = global_config.get("web_metadata_folder")
-    if web_metadata_folder:
-        try:
-            os.makedirs(web_metadata_folder, exist_ok=True)
-            shutil.copy2(md_path, os.path.join(web_metadata_folder, md_filename))
-            print(f"✅ Web metadata also copied to: {web_metadata_folder}")
-        except Exception as e:
-            print(f"⚠️  Error copying web metadata: {e}")
+    # Copy to global web metadata folder if configured and requested
+    if copy_to_web_folder:
+        global_config = load_global_config()
+        web_metadata_folder = global_config.get("web_metadata_folder")
+        if web_metadata_folder:
+            try:
+                os.makedirs(web_metadata_folder, exist_ok=True)
+                shutil.copy2(md_path, os.path.join(web_metadata_folder, md_filename))
+                print(f"✅ Web metadata also copied to: {web_metadata_folder}")
+            except Exception as e:
+                print(f"⚠️  Error copying web metadata: {e}")
 
     return md_path

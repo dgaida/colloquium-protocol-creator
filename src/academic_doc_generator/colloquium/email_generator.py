@@ -154,6 +154,7 @@ class EmailGenerator:
         last_name: str,
         id_number: str,
         examiner_name: str,
+        students: list[EmailRecipient] = None,
     ) -> str:
         """Generiert den Text für die E-Mail zur Einreichung der Note."""
         gender = determine_gender_from_name(first_name, evaluator_client)
@@ -165,7 +166,9 @@ class EmailGenerator:
         )
 
         template = FinalGradeEmail()
-        self.email_text = template.render(student=student, examiner=examiner_name)
+        self.email_text = template.render(
+            student=student, examiner=examiner_name, students=students
+        )
         return self.email_text
 
     def generate_student_feedback_email(
@@ -175,6 +178,7 @@ class EmailGenerator:
         mark: str,
         feedback_bulletpoints: str,
         examiner_name: str,
+        students: list[EmailRecipient] = None,
     ) -> str:
         """Generiert eine Feedback-E-Mail an den Studierenden."""
         student = EmailRecipient(
@@ -189,6 +193,7 @@ class EmailGenerator:
             mark=mark,
             feedback_bulletpoints=feedback_bulletpoints,
             examiner=examiner_name,
+            students=students,
         )
         return self.email_text
 

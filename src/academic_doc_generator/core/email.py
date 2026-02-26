@@ -86,6 +86,40 @@ class EmailRecipient:
             return self.last_name
         return f"{self.gender} {self.last_name}"
 
+    @staticmethod
+    def format_recipients_salutation(recipients: list["EmailRecipient"]) -> str:
+        """Format joint salutation for multiple recipients.
+
+        Example: "Guten Tag Frau Musterfrau, guten Tag Herr Mustermann"
+        """
+        if not recipients:
+            return "Guten Tag"
+        if len(recipients) == 1:
+            return recipients[0].formal_salutation
+
+        parts = [r.formal_salutation for r in recipients]
+        # Lowercase "guten Tag" for subsequent parts
+        formatted_parts = [parts[0]]
+        for p in parts[1:]:
+            formatted_parts.append(p[0].lower() + p[1:])
+        return ", ".join(formatted_parts)
+
+    @staticmethod
+    def format_recipients_full_names(recipients: list["EmailRecipient"]) -> str:
+        """Format joint names for multiple recipients.
+
+        Example: "Frau Maria Musterfrau (123456) und Herr Max Mustermann (654321)"
+        """
+        if not recipients:
+            return "Unbekannt"
+        if len(recipients) == 1:
+            return recipients[0].full_name_with_id
+
+        parts = [r.full_name_with_id for r in recipients]
+        if len(parts) == 2:
+            return " und ".join(parts)
+        return ", ".join(parts[:-1]) + " und " + parts[-1]
+
 
 class EmailTemplate(Protocol):
     """Protocol for email templates."""
@@ -135,10 +169,18 @@ class FinalGradeEmail:
         self,
         student: EmailRecipient,
         examiner: str,
+        students: list[EmailRecipient] = None,
     ) -> str:
         examiner_str = examiner.title() if examiner else "Unbekannt"
+        if students and len(students) > 1:
+            names = EmailRecipient.format_recipients_full_names(students)
+            plural_text = "die Bewertungen"
+        else:
+            names = student.full_name_with_id
+            plural_text = "die Bewertung"
+
         return f"""Lieber Prüfungsservice,
-hiermit möchte ich die Bewertung für {student.full_name_with_id} einreichen (s. Anhang).
+hiermit möchte ich {plural_text} für {names} einreichen (s. Anhang).
 Viele Grüße,
 {examiner_str}"""
 
@@ -152,11 +194,19 @@ class StudentFeedbackEmail:
         mark: str,
         feedback_bulletpoints: str,
         examiner: str,
+        students: list[EmailRecipient] = None,
     ) -> str:
         examiner_str = examiner.title() if examiner else "Unbekannt"
-        return f"""{student.formal_salutation},
+        if students and len(students) > 1:
+            salutation = EmailRecipient.format_recipients_salutation(students)
+            arbeit_text = "Ihre gemeinsame Arbeit"
+        else:
+            salutation = student.formal_salutation
+            arbeit_text = "Ihre Arbeit"
 
-ich habe Ihre Arbeit mit einer {mark} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
+        return f"""{salutation},
+
+ich habe {arbeit_text} mit einer {mark} bewertet. Hier ist mein Feedback zu Ihrer Arbeit:
 
 {feedback_bulletpoints}
 

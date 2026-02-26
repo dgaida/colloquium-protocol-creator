@@ -5,6 +5,7 @@ import os
 from typing import Optional
 
 from ..core.latex import escape_for_latex
+from ..core.types import StudentInfo
 from ..core.utils import get_semester
 
 
@@ -14,40 +15,82 @@ def create_project_grading_letter_tex(
     title: str,
     examiner: str,
     contact: str,
-    gender: str,
+    salutation: str,
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
     date: str = r"\today",
     signature_file: str = "signature.png",
     grade_mark: Optional[str] = None,
+    students: Optional[list[StudentInfo]] = None,
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
 
     Args:
         filename: Output path for the LaTeX file.
-        author: Author info (name and ID).
+        author: Author info (name and ID). Used if students is None.
         title: Title of the project work.
         examiner: Name of the examiner.
         contact: Contact address of the examiner.
-        gender: Gender indicator ("Herr" or "Frau") for formal address.
+        salutation: Gender indicator ("Herr" or "Frau") for formal address. Used if students is None.
         work_type: Type of work (default: "Praxisprojekt").
         place: Place of issue (default: "Gummersbach").
         date: Date string (default: LaTeX \\today).
         signature_file: Path to signature image file (default: "signature.png").
         grade_mark: The mark obtained (default: None, results in a blank line).
+        students: Optional list of student info dictionaries for group projects.
     """
     semester = get_semester()
 
     # Escape all text inputs for LaTeX
-    author_safe = escape_for_latex(author, preserve_latex=False)
     title_safe = escape_for_latex(title, preserve_latex=False)
     work_type_safe = escape_for_latex(work_type, preserve_latex=False)
 
-    sein_ihr = "sein" if gender == "Herr" else "ihr"
-    er_sie = "Er" if gender == "Herr" else "Sie"
-
     # Handle mark
     mark_tex = grade_mark if grade_mark is not None else r"\underline{\hspace{2cm}}"
+
+    # Handle multiple authors logic
+    if students and len(students) > 1:
+        # Multiple authors
+        authors_formatted = []
+        for s in students:
+            s_salutation = s.get("salutation", "Herr/Frau")
+            s_name = s.get("name", "Unknown")
+            s_id = s.get("id_number", "unknown")
+            authors_formatted.append(f"{s_salutation} {s_name}, Matrikelnr. {s_id}")
+
+        authors_str = " und ".join(authors_formatted)
+        authors_str_safe = escape_for_latex(authors_str, preserve_latex=False)
+        subject_authors = ", ".join([s.get("name", "Unknown") for s in students])
+        subject_authors_safe = escape_for_latex(subject_authors, preserve_latex=False)
+
+        body_intro = f"{authors_str_safe},"
+        body_main = (
+            f"haben im {semester} ihr {work_type_safe} bei mir gemacht. "
+            f"Sie haben die Note {mark_tex} erhalten."
+        )
+        subject_line = f"{work_type_safe} {subject_authors_safe}"
+    else:
+        # Single author (either from students list or from author/salutation params)
+        if students and len(students) == 1:
+            s = students[0]
+            current_salutation = s.get("salutation", salutation)
+            current_author = f"{s.get('name')}, Matrikelnr. {s.get('id_number')}"
+        else:
+            current_salutation = salutation
+            current_author = author
+
+        author_safe = escape_for_latex(current_author, preserve_latex=False)
+        salutation_safe = escape_for_latex(current_salutation, preserve_latex=False)
+
+        sein_ihr = "sein" if current_salutation == "Herr" else "ihr"
+        er_sie = "Er" if current_salutation == "Herr" else "Sie"
+
+        body_intro = f"{salutation_safe}\\\\ \\\\ {author_safe},"
+        body_main = (
+            f"hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. "
+            f"{er_sie} hat die Note {mark_tex} erhalten."
+        )
+        subject_line = f"{work_type_safe} {salutation_safe} {author_safe}"
 
     # Handle signature
     signature_path_safe = signature_file.replace("\\", "/")
@@ -73,7 +116,7 @@ def create_project_grading_letter_tex(
 \\setkomavar{{fromemail}}{{{contact}}}
 \\setkomavar{{place}}{{{place}}}
 \\setkomavar{{date}}{{{date}}}
-\\setkomavar{{subject}}{{{work_type_safe} {gender} {author_safe}}}
+\\setkomavar{{subject}}{{{subject_line}}}
 
 % Footer
 \\setkomavar{{firstfoot}}{{%
@@ -93,11 +136,9 @@ def create_project_grading_letter_tex(
 
 \\opening{{Sehr geehrte Mitarbeiter*innen des Prüfungsservice,}}
 
-{gender}
+{body_intro}
 
-{author_safe},
-
-hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. {er_sie} hat die Note {mark_tex} erhalten.
+{body_main}
 
 Das Thema war:
 

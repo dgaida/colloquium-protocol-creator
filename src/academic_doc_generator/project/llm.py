@@ -7,9 +7,10 @@ from llm_client import LLMClient
 
 from ..core.pdf import extract_text_per_page
 from ..core.prompts import PromptTemplate, build_prompt
+from ..core.types import ProjectMetadata
 
 
-def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, str]:
+def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> ProjectMetadata:
     """Extract metadata from a project work PDF (title page).
 
     This function reads the first two pages of the PDF and uses an LLM to
@@ -43,12 +44,29 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, 
     try:
         metadata = json.loads(content)
     except json.JSONDecodeError:
-        return {"error": "Could not parse JSON", "raw": content}
+        return {"error": "Could not parse JSON", "raw": content, "students": []}
 
-    # Normalize keys
-    if "stud_name" in metadata and "student_name" not in metadata:
-        metadata["student_name"] = metadata.pop("stud_name")
-    if "sid" in metadata and "id_number" not in metadata:
-        metadata["id_number"] = metadata.pop("sid")
+    # Ensure "students" list exists
+    if "students" not in metadata or not isinstance(metadata["students"], list):
+        # Create it from single-student fields if they exist
+        if "student_name" in metadata:
+            metadata["students"] = [
+                {
+                    "name": metadata.get("student_name"),
+                    "first_name": metadata.get("student_first_name"),
+                    "id_number": metadata.get("id_number"),
+                    "email": metadata.get("student_email"),
+                }
+            ]
+        else:
+            metadata["students"] = []
+
+    # Normalize single-student keys for backward compatibility if not present
+    if metadata["students"] and "student_name" not in metadata:
+        first_student = metadata["students"][0]
+        metadata["student_name"] = first_student.get("name")
+        metadata["student_first_name"] = first_student.get("first_name")
+        metadata["id_number"] = first_student.get("id_number")
+        metadata["student_email"] = first_student.get("email")
 
     return metadata

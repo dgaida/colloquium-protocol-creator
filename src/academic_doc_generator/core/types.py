@@ -154,9 +154,23 @@ class ThesisMetadata(TypedDict, total=False):
     course_of_study: Optional[str]
 
 
+class StudentInfo(TypedDict, total=False):
+    """Information about a single student/author."""
+
+    name: str
+    first_name: str
+    last_name: str
+    id_number: str
+    email: Optional[str]
+    salutation: str
+
+
 class ProjectMetadata(TypedDict, total=False):
     """Metadata extracted from a project work PDF."""
 
+    error: str
+    raw: str
+    students: list[StudentInfo]
     student_name: Optional[str]
     student_first_name: Optional[str]
     id_number: Optional[str]

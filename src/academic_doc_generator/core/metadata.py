@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from ..core.prompts import PromptTemplate, build_prompt
-from ..core.types import LLMClientProtocol
+from ..core.types import LLMClientProtocol, StudentInfo
 from .utils import load_global_config
 
 
@@ -79,19 +79,21 @@ def generate_metadata_file(
     semester: str,
     date_str: Optional[str] = None,
     copy_to_web_folder: bool = True,
+    students: Optional[list[StudentInfo]] = None,
 ) -> str:
     """Create a Jekyll-style Markdown file with frontmatter for a student project.
 
     Args:
         output_folder: Folder where the .md file will be saved.
         title: Title of the work.
-        author: Full name of the student.
+        author: Full name of the student (or first student in group).
         pages_text: Extracted text from the PDF.
         llm_client: LLM client for summary generation.
         work_type: String indicating the type of work.
         semester: Semester name (e.g., "Wintersemester 24/25").
         date_str: Date of the work (YYYY-MM-DD). Defaults to today.
         copy_to_web_folder: Whether to copy the file to the global web metadata folder.
+        students: Optional list of student info for group projects.
 
     Returns:
         Path to the generated .md file.
@@ -100,12 +102,24 @@ def generate_metadata_file(
         date_str = datetime.now().strftime("%Y-%m-%d")
 
     summary = summarize_for_web(pages_text, llm_client)
-    initials = get_initials(author)
-    author_slug = get_author_slug(author)
 
-    # Clean up summary: replace full author name with initials if it appears
-    if author and author not in ["Unknown Author", "Unknown", "Unbekannt"]:
-        summary = summary.replace(author, initials)
+    if students and len(students) > 1:
+        initials_list = [get_initials(s.get("name", "U. A.")) for s in students]
+        initials = " & ".join(initials_list)
+        slugs_list = [get_author_slug(s.get("name", "unkn")) for s in students]
+        author_slug = "_".join(slugs_list)
+
+        # Replace all author names with their respective initials in the summary
+        for s in students:
+            s_name = s.get("name")
+            if s_name and s_name not in ["Unknown Author", "Unknown", "Unbekannt"]:
+                summary = summary.replace(s_name, get_initials(s_name))
+    else:
+        initials = get_initials(author)
+        author_slug = get_author_slug(author)
+        # Clean up summary: replace full author name with initials if it appears
+        if author and author not in ["Unknown Author", "Unknown", "Unbekannt"]:
+            summary = summary.replace(author, initials)
 
     # Create .md filename
     # format: {year}_{semester_slug}_{type_slug}_{author_slug}.md

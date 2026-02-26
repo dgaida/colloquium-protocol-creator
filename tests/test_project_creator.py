@@ -79,7 +79,7 @@ class TestProjectLatexGeneration:
                 title="Test Project Title",
                 examiner="Prof. Test",
                 contact="test@example.com",
-                gender="Herr",
+                salutation="Herr",
                 work_type="Praxisprojekt",
                 grade_mark="1.3",
             )
@@ -118,7 +118,7 @@ class TestProjectLatexGeneration:
                 title="Another Test Project",
                 examiner="Dr. Example",
                 contact="example@th-koeln.de",
-                gender="Frau",
+                salutation="Frau",
                 work_type="Projektarbeit",
             )
 
@@ -147,7 +147,7 @@ class TestProjectLatexGeneration:
                 title="Project with 100% Coverage & $pecial Char$",
                 examiner="Prof. Test",
                 contact="test@example.com",
-                gender="Herr",
+                salutation="Herr",
             )
 
             with open(tex_path, encoding="utf-8") as f:
@@ -191,7 +191,7 @@ class TestProjectLatexGeneration:
                 title="Custom Project",
                 examiner="Prof. Custom",
                 contact="custom@th-koeln.de",
-                gender="Herr",
+                salutation="Herr",
                 place="Köln",
                 date="15.01.2025",
                 signature_file="custom_sig.png",
@@ -371,7 +371,7 @@ class TestProjectIntegration:
                 title=metadata["title"],
                 examiner=metadata["first_examiner"],
                 contact=f"{metadata['first_examiner_christian']}.{metadata['first_examiner_family']}@th-koeln.de",
-                gender=gender,
+                salutation=gender,
                 work_type=metadata["work_type"],
             )
 

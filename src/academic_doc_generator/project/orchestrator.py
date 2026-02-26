@@ -82,16 +82,14 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             }
         ]
 
-    # Process all students: split names and detect genders
+    # Process all students: split names and detect salutations
     for s in students:
         if not s.get("first_name") or not s.get("last_name"):
             first, last = split_student_name(s.get("name", "Unknown"))
             s["first_name"] = s.get("first_name") or first
             s["last_name"] = s.get("last_name") or last
 
-        print(f"Determining gender for student: {s.get('name')}")
-        s["gender"] = determine_gender_from_name(s["first_name"], llm_client)
-        print(f"Detected gender: {s['gender']}")
+        s["salutation"] = determine_gender_from_name(s["first_name"], llm_client)
 
     # For legacy variables and filenames, use the first student
     first_student = students[0]
@@ -99,7 +97,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     student_first_name = first_student.get("first_name", "Unknown")
     student_last_name = first_student.get("last_name", "Name")
     id_number = first_student.get("id_number", "unknown")
-    gender = first_student.get("gender", "Herr/Frau")
+    salutation = first_student.get("salutation", "Herr/Frau")
 
     # Check if first name was recognized
     # We consider it recognized if the LLM explicitly found it AND the whole name is not "Unknown"
@@ -137,7 +135,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         title=project_title,
         examiner=examiner_name,
         contact=examiner_email,
-        gender=gender,
+        salutation=salutation,
         work_type=work_type,
         signature_file=signature_file,
         grade_mark=mark_result,
@@ -161,7 +159,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         EmailRecipient(
             first_name=s.get("first_name", ""),
             last_name=s.get("last_name", ""),
-            gender=s.get("gender", "Herr/Frau"),
+            gender=s.get("salutation", "Herr/Frau"),
             identifier=s.get("id_number", ""),
         )
         for s in students
@@ -190,7 +188,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         feedback_bullets = generate_feedback_summary(str(pdf_path), llm_client)
 
         student_email_text = mymailgen.generate_student_feedback_email(
-            gender=gender,
+            gender=salutation,
             last_name=student_last_name,
             mark=mark_result if mark_result else "[NOTE]",
             feedback_bulletpoints=feedback_bullets,
@@ -216,7 +214,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
                     student_name=student_name,
                     email_text=grading_email_text,
                     attachment_path=compiled_pdf_path if compiled_pdf_path else None,
-                    subject=f"Bewertung {work_type} {gender} {student_first_name} {student_last_name}",
+                    subject=f"Bewertung {work_type} {salutation} {student_first_name} {student_last_name}",
                     verbose=False,
                 )
             except Exception as e:

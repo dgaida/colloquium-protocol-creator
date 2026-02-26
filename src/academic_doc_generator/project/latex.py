@@ -14,7 +14,7 @@ def create_project_grading_letter_tex(
     title: str,
     examiner: str,
     contact: str,
-    gender: str,
+    salutation: str,
     work_type: str = "Praxisprojekt",
     place: str = "Gummersbach",
     date: str = r"\today",
@@ -30,7 +30,7 @@ def create_project_grading_letter_tex(
         title: Title of the project work.
         examiner: Name of the examiner.
         contact: Contact address of the examiner.
-        gender: Gender indicator ("Herr" or "Frau") for formal address. Used if students is None.
+        salutation: Gender indicator ("Herr" or "Frau") for formal address. Used if students is None.
         work_type: Type of work (default: "Praxisprojekt").
         place: Place of issue (default: "Gummersbach").
         date: Date string (default: LaTeX \\today).
@@ -52,10 +52,10 @@ def create_project_grading_letter_tex(
         # Multiple authors
         authors_formatted = []
         for s in students:
-            s_gender = s.get("gender", "Herr/Frau")
+            s_salutation = s.get("salutation", "Herr/Frau")
             s_name = s.get("name", "Unknown")
             s_id = s.get("id_number", "unknown")
-            authors_formatted.append(f"{s_gender} {s_name}, Matrikelnr. {s_id}")
+            authors_formatted.append(f"{s_salutation} {s_name}, Matrikelnr. {s_id}")
 
         authors_str = " und ".join(authors_formatted)
         authors_str_safe = escape_for_latex(authors_str, preserve_latex=False)
@@ -69,27 +69,27 @@ def create_project_grading_letter_tex(
         )
         subject_line = f"{work_type_safe} {subject_authors_safe}"
     else:
-        # Single author (either from students list or from author/gender params)
+        # Single author (either from students list or from author/salutation params)
         if students and len(students) == 1:
             s = students[0]
-            current_gender = s.get("gender", gender)
+            current_salutation = s.get("salutation", salutation)
             current_author = f"{s.get('name')}, Matrikelnr. {s.get('id_number')}"
         else:
-            current_gender = gender
+            current_salutation = salutation
             current_author = author
 
         author_safe = escape_for_latex(current_author, preserve_latex=False)
-        gender_safe = escape_for_latex(current_gender, preserve_latex=False)
+        salutation_safe = escape_for_latex(current_salutation, preserve_latex=False)
 
-        sein_ihr = "sein" if current_gender == "Herr" else "ihr"
-        er_sie = "Er" if current_gender == "Herr" else "Sie"
+        sein_ihr = "sein" if current_salutation == "Herr" else "ihr"
+        er_sie = "Er" if current_salutation == "Herr" else "Sie"
 
-        body_intro = f"{gender_safe}\\\\ \\\\ {author_safe},"
+        body_intro = f"{salutation_safe}\\\\ \\\\ {author_safe},"
         body_main = (
             f"hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. "
             f"{er_sie} hat die Note {mark_tex} erhalten."
         )
-        subject_line = f"{work_type_safe} {gender_safe} {author_safe}"
+        subject_line = f"{work_type_safe} {salutation_safe} {author_safe}"
 
     # Handle signature
     signature_path_safe = signature_file.replace("\\", "/")

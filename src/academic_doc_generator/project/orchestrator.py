@@ -9,6 +9,7 @@ from llm_client import LLMClient
 from ..colloquium.email_generator import EmailGenerator
 from ..colloquium.outlook_mail_generator import OutlookMailGenerator
 from ..core import pdf
+from ..core.email import EmailRecipient
 from ..core.latex import compile_latex_to_pdf
 from ..core.llm import determine_gender_from_name
 from ..core.metadata import generate_metadata_file
@@ -70,16 +71,42 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     pages_text = pdf.extract_text_per_page(str(pdf_path))
     metadata = extract_project_metadata(str(pdf_path), llm_client)
 
-    student_name = metadata.get("student_name", "Unknown")
-    student_first_name, student_last_name = split_student_name(student_name)
+    students = metadata.get("students", [])
+    if not students:
+        students = [
+            {
+                "name": metadata.get("student_name", "Unknown"),
+                "first_name": metadata.get("student_first_name"),
+                "id_number": metadata.get("id_number", "unknown"),
+                "email": metadata.get("student_email"),
+            }
+        ]
+
+    # Process all students: split names and detect genders
+    for s in students:
+        if not s.get("first_name") or not s.get("last_name"):
+            first, last = split_student_name(s.get("name", "Unknown"))
+            s["first_name"] = s.get("first_name") or first
+            s["last_name"] = s.get("last_name") or last
+
+        print(f"Determining gender for student: {s.get('name')}")
+        s["gender"] = determine_gender_from_name(s["first_name"], llm_client)
+        print(f"Detected gender: {s['gender']}")
+
+    # For legacy variables and filenames, use the first student
+    first_student = students[0]
+    student_name = first_student.get("name", "Unknown")
+    student_first_name = first_student.get("first_name", "Unknown")
+    student_last_name = first_student.get("last_name", "Name")
+    id_number = first_student.get("id_number", "unknown")
+    gender = first_student.get("gender", "Herr/Frau")
 
     # Check if first name was recognized
     # We consider it recognized if the LLM explicitly found it AND the whole name is not "Unknown"
     first_name_recognized = (
-        metadata.get("student_first_name") is not None and student_name != "Unknown"
+        first_student.get("first_name") is not None and student_name != "Unknown"
     )
 
-    id_number = metadata.get("id_number", "unknown")
     project_title = metadata.get("title", "Unknown")
 
     # Use global examiner if provided, otherwise from metadata
@@ -92,11 +119,6 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     # Prioritize work_type from config, then from metadata, then default
     work_type = config.work_type or metadata.get("work_type", "Praxisprojekt")
 
-    # Determine gender from first name
-    print(f"Determining gender for first name: {student_first_name}")
-    gender = determine_gender_from_name(student_first_name, llm_client)
-    print(f"Detected gender: {gender}")
-
     # Check for signature in data/
     data_signature = os.path.join("data", "signature.png")
     if os.path.exists(data_signature):
@@ -104,6 +126,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         print(f"Using signature found in {data_signature}")
 
     # Create output filename
+    # For groups, we could join IDs, but using the first one is simpler for filenames
     tex_name = f"bewertung_projekt_{id_number}.tex"
     tex_path = os.path.join(output_folder, tex_name)
 
@@ -118,6 +141,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         work_type=work_type,
         signature_file=signature_file,
         grade_mark=mark_result,
+        students=students,
     )
 
     # Compile to PDF if requested
@@ -132,6 +156,17 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     grading_email_text = ""
     email_path = ""
 
+    # Convert student list to EmailRecipient objects for joint emails
+    recipients = [
+        EmailRecipient(
+            first_name=s.get("first_name", ""),
+            last_name=s.get("last_name", ""),
+            gender=s.get("gender", "Herr/Frau"),
+            identifier=s.get("id_number", ""),
+        )
+        for s in students
+    ]
+
     if first_name_recognized:
         grading_email_text = mymailgen.generate_final_mark_email(
             evaluator_client=llm_client,
@@ -139,6 +174,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             last_name=student_last_name,
             id_number=id_number,
             examiner_name=examiner_name,
+            students=recipients,
         )
         email_path = mymailgen.save_email_to_markdown(
             output_folder=output_folder,
@@ -159,6 +195,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             mark=mark_result if mark_result else "[NOTE]",
             feedback_bulletpoints=feedback_bullets,
             examiner_name=examiner_name,
+            students=recipients,
         )
         student_email_path = mymailgen.save_email_to_markdown(
             output_folder=output_folder,
@@ -219,6 +256,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
             work_type=work_type,
             semester=semester_name,
             copy_to_web_folder=first_name_recognized,
+            students=students,
         )
         print(f"✅ Web-Metadaten erstellt: {web_md_path}")
     except Exception as e:

@@ -118,24 +118,35 @@ If uncertain, respond with "Herr/Frau".
 """
 
     EXTRACT_PROJECT_METADATA = """
-You are given the first pages of a project work (Praxisprojekt) submitted
+You are given the first pages of a project work (Praxisprojekt or WASP) submitted
 at TH Köln University. Extract the following information if available:
 
-- Student's full name (Autor/Author)
-- Student's first name only (Vorname)
-- Matriculation number (Matrikelnr.)
+- Student's full name(s) (Autor/Author). NOTE: There can be multiple authors!
+- Student's first name(s) only (Vorname)
+- Matriculation number(s) (Matrikelnr.). NOTE: Multiple 8-digit numbers on the title page strongly indicate multiple authors.
 - Title of the project work
 - First examiner (Erstprüfer/Betreuer)
 - Christian name of first examiner
 - Family name of first examiner
-- Type of work (e.g., "Praxisprojekt", "Projektarbeit")
-- Student's email address
+- Type of work (e.g., "Praxisprojekt", "Projektarbeit", "Projektteil WASP1")
+- Student's email address(es)
 - Course of study (Studiengang). Often find "Studiengang" followed by either "Informatik", "Wirtschaftsinformatik", "Medieninformatik" or "IT-Management".
 
-Return the result as a valid JSON object with keys:
-"student_name", "student_first_name", "id_number", "title",
+Return the result as a valid JSON object.
+If there are multiple students, return them as a list under the key "students".
+Each item in "students" should be an object with: "name", "first_name", "id_number", "email".
+
+Return keys:
+"students": [
+  {{"name": "...", "first_name": "...", "id_number": "...", "email": "..."}},
+  ...
+],
+"title",
 "first_examiner", "first_examiner_christian", "first_examiner_family",
-"work_type", "student_email", "course_of_study".
+"work_type", "course_of_study".
+
+For backward compatibility, also provide the FIRST student's info in:
+"student_name", "student_first_name", "id_number", "student_email".
 
 If something is missing, use null as the value.
 Do not include any extra text, only valid JSON.

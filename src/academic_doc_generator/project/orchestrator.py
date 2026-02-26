@@ -16,6 +16,7 @@ from ..core.metadata import generate_metadata_file
 from ..core.types import (
     ProjectWorkflowConfig,
     ProjectWorkflowResult,
+    StudentInfo,
 )
 from ..core.utils import get_semester, load_global_config, split_student_name
 from .feedback_generator import generate_feedback_summary
@@ -71,7 +72,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
     pages_text = pdf.extract_text_per_page(str(pdf_path))
     metadata = extract_project_metadata(str(pdf_path), llm_client)
 
-    students = metadata.get("students", [])
+    students: list[StudentInfo] = metadata.get("students", [])
     if not students:
         students = [
             {

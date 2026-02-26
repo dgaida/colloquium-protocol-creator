@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from ..core.prompts import PromptTemplate, build_prompt
-from ..core.types import LLMClientProtocol
+from ..core.types import LLMClientProtocol, StudentInfo
 from .utils import load_global_config
 
 
@@ -79,7 +79,7 @@ def generate_metadata_file(
     semester: str,
     date_str: Optional[str] = None,
     copy_to_web_folder: bool = True,
-    students: Optional[list[dict]] = None,
+    students: Optional[list[StudentInfo]] = None,
 ) -> str:
     """Create a Jekyll-style Markdown file with frontmatter for a student project.
 

@@ -5,6 +5,7 @@ import os
 from typing import Optional
 
 from ..core.latex import escape_for_latex
+from ..core.types import StudentInfo
 from ..core.utils import get_semester
 
 
@@ -20,7 +21,7 @@ def create_project_grading_letter_tex(
     date: str = r"\today",
     signature_file: str = "signature.png",
     grade_mark: Optional[str] = None,
-    students: Optional[list[dict]] = None,
+    students: Optional[list[StudentInfo]] = None,
 ) -> None:
     """Create a LaTeX file for a project work grading letter with TH Köln footer.
 

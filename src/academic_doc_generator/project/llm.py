@@ -7,9 +7,10 @@ from llm_client import LLMClient
 
 from ..core.pdf import extract_text_per_page
 from ..core.prompts import PromptTemplate, build_prompt
+from ..core.types import ProjectMetadata
 
 
-def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, str]:
+def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> ProjectMetadata:
     """Extract metadata from a project work PDF (title page).
 
     This function reads the first two pages of the PDF and uses an LLM to
@@ -43,7 +44,7 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> dict[str, 
     try:
         metadata = json.loads(content)
     except json.JSONDecodeError:
-        return {"error": "Could not parse JSON", "raw": content}
+        return {"error": "Could not parse JSON", "raw": content, "students": []}
 
     # Ensure "students" list exists
     if "students" not in metadata or not isinstance(metadata["students"], list):

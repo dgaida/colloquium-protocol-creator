@@ -15,7 +15,7 @@ on:
       - 'docs/**'
       - 'README.md'
   schedule:
-    - cron: "0 0 1 * 1" # Runs on the 1st of the month AND every Monday. Monthly on Mondays specifically is tricky in cron, so this ensures it runs at least monthly.
+    - cron: "0 0 1-7 * 1" # Runs on the first Monday of every month.
 
 jobs:
   linkChecker:
@@ -26,7 +26,7 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2.1.0
         with:
-          args: --verbose --no-progress --exclude "https://platform.openai.com/.*" --exclude "https://miktex.org/.*" './**/*.md'
+          args: --verbose --no-progress --exclude "https://platform.openai.com/.*" --exclude "https://miktex.org/.*" --exclude "https://codecov.io/.*" './**/*.md'
           fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

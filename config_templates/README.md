@@ -239,7 +239,7 @@ ValueError: Ungültiger location_type: office
 ## Related Documentation
 
 - [Main README](../README.md)
-- [Installation Guide](../docs/INSTALL.md)
-- [Colloquium Documentation](../docs/COLLOQUIUM.md)
-- [Project Documentation](../docs/PROJECT.md)
-- [Review Documentation](../docs/REVIEW.md)
+- [Installation Guide](../docs/INSTALL.de.md)
+- [Colloquium Documentation](../docs/COLLOQUIUM.de.md)
+- [Project Documentation](../docs/PROJECT.de.md)
+- [Review Documentation](../docs/REVIEW.de.md)

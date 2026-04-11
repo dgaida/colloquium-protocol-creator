@@ -6,25 +6,25 @@ This tool generates formal grading letters for project work (Praxisprojekt), WAS
 
 ## Generated Files (Results)
 
-A detailed overview with images can be found on the [Examples](EXAMPLES.md#project-wasp1) page.
+A detailed overview with images can be found on the [Examples](EXAMPLES.en.md#project-wasp1) page.
 
-### 1. [LaTeX Grading Letter](EXAMPLES.md#latex-grading-letter)
+### 1. [LaTeX Grading Letter](EXAMPLES.en.md#latex-grading-letter)
 **Filename:** `projektarbeit_brief_<matrikelnr>.tex`
 A formal `scrlttr2` letter with TH Köln letterhead and footer.
 
-### 2. [Compiled PDF](EXAMPLES.md#compiled-pdf-project)
+### 2. [Compiled PDF](EXAMPLES.en.md#compiled-pdf-project)
 **Filename:** `projektarbeit_brief_<matrikelnr>.pdf`
 The ready-to-print PDF of the grading letter (requires LuaLaTeX).
 
-### 3. [Email for Examination Office](EXAMPLES.md#email-for-examination-office)
+### 3. [Email for Examination Office](EXAMPLES.en.md#email-for-examination-office)
 **Filename:** `projekt_anmeldung_<name>_<matrikelnr>.md`
 A ready-to-use email template for submitting the grade to the examination office.
 
-### 4. [Student Feedback Email](EXAMPLES.md#student-feedback-email)
+### 4. [Student Feedback Email](EXAMPLES.en.md#student-feedback-email)
 **Filename:** `feedback_student_<name>_<matrikelnr>.md`
 An automatically generated draft containing a summary of strengths/weaknesses and the final grade.
 
-### 5. [Web Metadata (Profile)](EXAMPLES.md#web-metadata-profile)
+### 5. [Web Metadata (Profile)](EXAMPLES.en.md#web-metadata-profile)
 **Filename:** `YYYY-MM-DD-title.md`
 A Jekyll-compatible profile of the work for your own website. The path can be defined globally in `config.yaml`.
 
@@ -39,7 +39,7 @@ A Jekyll-compatible profile of the work for your own website. The path can be de
 
 ## Usage
 
-The recommended way is to use a [configuration file](configuration.md).
+The recommended way is to use a [configuration file](configuration.en.md).
 
 ### Command Line (CLI)
 
@@ -53,7 +53,7 @@ academic-doc-generator project /path/to/Praxisprojekt_Mueller.pdf
 
 ### Usage via main.py
 
-You can also run the tool via `main.py` by specifying the path to the project folder there. Details can be found in the [Configuration Guide](configuration.md#3-run-the-tool).
+You can also run the tool via `main.py` by specifying the path to the project folder there. Details can be found in the [Configuration Guide](configuration.en.md#3-run-the-tool).
 
 ## Feedback & Student Email
 
@@ -86,6 +86,6 @@ When `create_feedback_mail` is enabled (default), the tool:
 
 ## Related Documentation
 
-- [Installation Guide](INSTALL.md)
-- [Colloquium Protocols](COLLOQUIUM.md)
-- [Configuration Guide](configuration.md)
+- [Installation Guide](INSTALL.en.md)
+- [Colloquium Protocols](COLLOQUIUM.en.md)
+- [Configuration Guide](configuration.en.md)

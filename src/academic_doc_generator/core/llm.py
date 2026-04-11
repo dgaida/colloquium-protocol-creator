@@ -216,7 +216,6 @@ def extract_document_metadata(
         print("   🔄 Versuche Bestimmung über Dateinamen...")
         degree_from_filename = detect_degree_from_filename(pdf_path, llm_client)
         if degree_from_filename:
-
             metadata["bachelor_master"] = degree_from_filename  # type: ignore[typeddict-item]
             print(f"   ✅ Aus Dateinamen bestimmt: {degree_from_filename}")
         else:

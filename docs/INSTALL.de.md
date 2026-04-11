@@ -110,7 +110,7 @@ pytest
 
 ## Nächste Schritte
 
-1. [Kolloquium-Protokolle](COLLOQUIUM.md)
-2. [Praxisprojekt-Benotung](PROJECT.md)
-3. [Peer-Review-Kommentare](REVIEW.md)
-4. [Klausur-Übersetzung](TRANSLATOR.md)
+1. [Kolloquium-Protokolle](COLLOQUIUM.de.md)
+2. [Praxisprojekt-Benotung](PROJECT.de.md)
+3. [Peer-Review-Kommentare](REVIEW.de.md)
+4. [Klausur-Übersetzung](TRANSLATOR.de.md)

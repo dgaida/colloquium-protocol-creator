@@ -30,7 +30,7 @@ Generate formal protocol letters for Bachelor/Master thesis colloquiums:
 - Pre-fill official grading forms with dates and checkboxes (automatically mapped to course of study)
 - Generate registration emails and Outlook drafts for the Prüfungsservice
 
-[**→ Full Documentation**](docs/COLLOQUIUM.md)
+[**→ Full Documentation**](docs/COLLOQUIUM.de.md)
 
 ```bash
 academic-doc-generator colloquium thesis.pdf --date 20.01.2026 --time 14:00 --room 3.217
@@ -43,7 +43,7 @@ Generate grading letters for project work (Praxisprojekt):
 - Create LaTeX grading letter template
 - Automatically generate feedback summary and student email
 
-[**→ Full Documentation**](docs/PROJECT.md)
+[**→ Full Documentation**](docs/PROJECT.de.md)
 
 ```bash
 academic-doc-generator project /path/to/Praxisprojekt.pdf
@@ -57,7 +57,7 @@ Generate professional peer review feedback for papers:
 - Generate Markdown review document with page/line references
 - Always output in English for international publications
 
-[**→ Full Documentation**](docs/REVIEW.md)
+[**→ Full Documentation**](docs/REVIEW.de.md)
 
 ```bash
 academic-doc-generator review paper.pdf
@@ -71,7 +71,7 @@ Automatically translate LaTeX exam documents from German to English:
 - Masks and preserves LaTeX comments during translation
 - Automatically handles preambles and question structures
 
-[**→ Full Documentation**](docs/TRANSLATOR.md)
+[**→ Full Documentation**](docs/TRANSLATOR.de.md)
 
 ```python
 from llm_client import LLMClient
@@ -109,7 +109,7 @@ cd colloquium-protocol-creator
 pip install -e .
 ```
 
-[**→ Full Installation Guide**](docs/INSTALL.md)
+[**→ Full Installation Guide**](docs/INSTALL.de.md)
 
 ### API Configuration
 
@@ -231,14 +231,14 @@ The tool now supports JSON configuration files for easier workflow management:
 ## Documentation
 
 ### Use Cases
-- [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.md)
-- [🎓 Project Work Grading Letters](docs/PROJECT.md)
-- [📄 Peer Review Comments](docs/REVIEW.md)
-- [🔤 LaTeX Exam Translator](docs/TRANSLATOR.md)
+- [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.de.md)
+- [🎓 Project Work Grading Letters](docs/PROJECT.de.md)
+- [📄 Peer Review Comments](docs/REVIEW.de.md)
+- [🔤 LaTeX Exam Translator](docs/TRANSLATOR.de.md)
 
 ### Guides
-- [💿 Installation Guide](docs/INSTALL.md)
-- [🧪 Testing Guide](docs/TESTING.md)
+- [💿 Installation Guide](docs/INSTALL.de.md)
+- [🧪 Testing Guide](docs/TESTING.de.md)
 - [⚙️ Configuration Templates](config_templates/README.md)
 
 ## Project Structure

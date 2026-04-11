@@ -6,25 +6,25 @@ Dieses Tool automatisiert die Erstellung formeller Benotungsbriefe für Praxispr
 
 ## Erzeugte Dateien (Ergebnisse)
 
-Eine detaillierte Übersicht mit Bildern finden Sie auf der Seite [Beispiele](EXAMPLES.md#projekt-wasp1).
+Eine detaillierte Übersicht mit Bildern finden Sie auf der Seite [Beispiele](EXAMPLES.de.md#projekt-wasp1).
 
-### 1. [LaTeX-Benotungsbrief](EXAMPLES.md#latex-benotungsbrief)
+### 1. [LaTeX-Benotungsbrief](EXAMPLES.de.md#latex-benotungsbrief)
 **Dateiname:** `projektarbeit_brief_<matrikelnr>.tex`
 Ein formeller `scrlttr2`-Brief mit dem Briefkopf und Fußzeile der TH Köln.
 
-### 2. [Kompiliertes PDF](EXAMPLES.md#kompiliertes-pdf-projekt)
+### 2. [Kompiliertes PDF](EXAMPLES.de.md#kompiliertes-pdf-projekt)
 **Dateiname:** `projektarbeit_brief_<matrikelnr>.pdf`
 Das druckfertige PDF des Benotungsbriefs (erfordert LuaLaTeX).
 
-### 3. [E-Mail für den Prüfungsservice](EXAMPLES.md#e-mail-prufungsservice)
+### 3. [E-Mail für den Prüfungsservice](EXAMPLES.de.md#e-mail-prufungsservice)
 **Dateiname:** `projekt_anmeldung_<name>_<matrikelnr>.md`
 Eine fertige E-Mail-Vorlage zur Einreichung der Note beim Prüfungsservice.
 
-### 4. [Feedback-E-Mails für Studierende](EXAMPLES.md#feedback-e-mail-studierende)
+### 4. [Feedback-E-Mails für Studierende](EXAMPLES.de.md#feedback-e-mail-studierende)
 **Dateiname:** `feedback_student_<name>_<matrikelnr>.md`
 Ein automatisch generierter Entwurf mit einer Zusammenfassung der Stärken und Schwächen sowie der Note.
 
-### 5. [Web-Metadaten (Steckbrief)](EXAMPLES.md#web-metadaten-steckbrief)
+### 5. [Web-Metadaten (Steckbrief)](EXAMPLES.de.md#web-metadaten-steckbrief)
 **Dateiname:** `YYYY-MM-DD-titel.md`
 Ein Jekyll-kompatibler Steckbrief der Arbeit für die eigene Webseite. Der Pfad kann global in der `config.yaml` definiert werden.
 
@@ -39,7 +39,7 @@ Ein Jekyll-kompatibler Steckbrief der Arbeit für die eigene Webseite. Der Pfad 
 
 ## Benutzung
 
-Der empfohlene Weg ist die Nutzung einer [Konfigurationsdatei](configuration.md).
+Der empfohlene Weg ist die Nutzung einer [Konfigurationsdatei](configuration.de.md).
 
 ### Kommandozeile (CLI)
 
@@ -53,7 +53,7 @@ academic-doc-generator project /pfad/zu/Praxisprojekt_Mueller.pdf
 
 ### Nutzung über main.py
 
-Sie können das Tool auch über die `main.py` ausführen, indem Sie dort den Pfad zum Projekt-Ordner angeben. Details dazu finden Sie im [Konfigurations-Handbuch](configuration.md#3-tool-ausfuhren).
+Sie können das Tool auch über die `main.py` ausführen, indem Sie dort den Pfad zum Projekt-Ordner angeben. Details dazu finden Sie im [Konfigurations-Handbuch](configuration.de.md#3-tool-ausfuhren).
 
 ## Feedback & Studierenden-E-Mail
 
@@ -86,6 +86,6 @@ Wenn `create_feedback_mail` aktiviert ist (Standard), führt das Tool folgende S
 
 ## Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.md)
-- [Kolloquium-Protokolle](COLLOQUIUM.md)
-- [Konfigurations-Handbuch](configuration.md)
+- [Installationsanleitung](INSTALL.de.md)
+- [Kolloquium-Protokolle](COLLOQUIUM.de.md)
+- [Konfigurations-Handbuch](configuration.de.md)

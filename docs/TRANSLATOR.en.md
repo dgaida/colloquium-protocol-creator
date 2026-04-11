@@ -68,5 +68,5 @@ To prevent the AI from translating or deleting LaTeX comments, they are replaced
 
 ## Related Documentation
 
-- [Main Documentation](index.md)
-- [Configuration Guide](configuration.md)
+- [Main Documentation](index.en.md)
+- [Configuration Guide](configuration.en.md)

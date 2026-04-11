@@ -1,0 +1,32 @@
+name: Link Checker
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/link-checker.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  schedule:
+    - cron: "0 0 1-7 * 1" # Runs on the first Monday of every month.
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2.1.0
+        with:
+          args: --verbose --no-progress --exclude "https://platform.openai.com/.*" --exclude "https://miktex.org/.*" --exclude "https://codecov.io/.*" './**/*.md'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

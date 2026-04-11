@@ -68,5 +68,5 @@ Um zu verhindern, dass die KI LaTeX-Kommentare übersetzt oder löscht, werden d
 
 ## Weitere Dokumentation
 
-- [Haupt-Dokumentation](index.md)
-- [Konfigurations-Handbuch](configuration.md)
+- [Haupt-Dokumentation](index.de.md)
+- [Konfigurations-Handbuch](configuration.de.md)

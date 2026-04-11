@@ -6,25 +6,25 @@ This tool generates a formal LaTeX protocol letter for thesis colloquiums (Bache
 
 ## Generated Files (Results)
 
-A detailed overview with images can be found on the [Examples](EXAMPLES.md#thesis-colloquium) page.
+A detailed overview with images can be found on the [Examples](EXAMPLES.en.md#thesis-colloquium) page.
 
-### 1. [LaTeX Protocol Letter](EXAMPLES.md#latex-protocol-letter)
+### 1. [LaTeX Protocol Letter](EXAMPLES.en.md#latex-protocol-letter)
 **Filename:** `bewertung_brief_<matrikelnr>.tex`
 A formal `scrlttr2` letter with TH Köln letterhead and footer.
 
-### 2. [Compiled PDF](EXAMPLES.md#compiled-pdf)
+### 2. [Compiled PDF](EXAMPLES.en.md#compiled-pdf)
 **Filename:** `bewertung_brief_<matrikelnr>.pdf`
 The ready-to-print PDF of the protocol letter (requires LuaLaTeX).
 
-### 3. [Pre-filled Grading Form](EXAMPLES.md#pre-filled-grading-form)
+### 3. [Pre-filled Grading Form](EXAMPLES.en.md#pre-filled-grading-form)
 **Filename:** `Bewertung <Bachelor/Master>arbeit_Kolloq Inf_<stud_name>.pdf`
 The official TH Köln grading form, automatically filled with student data and correct checkboxes.
 
-### 4. [Email & Outlook Draft](EXAMPLES.md#email-outlook-draft)
+### 4. [Email & Outlook Draft](EXAMPLES.en.md#email-outlook-draft)
 **Filename:** `kolloquium_anmeldung_<name>_<matrikelnr>.md`
 A ready-to-send email for the examination office. If Outlook is open, a draft is created automatically with an ICS calendar attachment.
 
-### 5. [Web Metadata (Profile)](EXAMPLES.md#web-metadata-profile)
+### 5. [Web Metadata (Profile)](EXAMPLES.en.md#web-metadata-profile)
 **Filename:** `YYYY-MM-DD-title.md`
 A Jekyll-compatible profile of the work (summary, keywords, etc.) for your own website. The path where these files should be copied can be defined globally in `config.yaml`.
 
@@ -39,7 +39,7 @@ A Jekyll-compatible profile of the work (summary, keywords, etc.) for your own w
 
 ## Usage
 
-The recommended way is to use a [configuration file](configuration.md).
+The recommended way is to use a [configuration file](configuration.en.md).
 
 ### Command Line (CLI)
 
@@ -53,7 +53,7 @@ academic-doc-generator colloquium /path/to/Bachelorarbeit_Mueller.pdf --date 20.
 
 ### Usage via main.py
 
-You can also run the tool via `main.py` by specifying the path to the thesis folder there. Details can be found in the [Configuration Guide](configuration.md#3-run-the-tool).
+You can also run the tool via `main.py` by specifying the path to the thesis folder there. Details can be found in the [Configuration Guide](configuration.en.md#3-run-the-tool).
 
 ## Metadata & Course of Study
 
@@ -114,6 +114,6 @@ For those interested in the technical process:
 
 ## Related Documentation
 
-- [Installation Guide](INSTALL.md)
-- [Project Grading](PROJECT.md)
-- [Configuration Guide](configuration.md)
+- [Installation Guide](INSTALL.en.md)
+- [Project Grading](PROJECT.en.md)
+- [Configuration Guide](configuration.en.md)

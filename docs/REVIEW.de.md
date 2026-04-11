@@ -56,6 +56,6 @@ academic-doc-generator review paper.pdf --out ./reviews
 
 ## Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.md)
-- [Kolloquium-Protokolle](COLLOQUIUM.md)
-- [Konfigurations-Handbuch](configuration.md)
+- [Installationsanleitung](INSTALL.de.md)
+- [Kolloquium-Protokolle](COLLOQUIUM.de.md)
+- [Konfigurations-Handbuch](configuration.de.md)

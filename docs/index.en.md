@@ -24,7 +24,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
     - Form pre-filling
     - Email generation
 
-    [:octicons-arrow-right-24: Documentation](COLLOQUIUM.md)
+    [:octicons-arrow-right-24: Documentation](COLLOQUIUM.en.md)
 
 -   :material-file-document:{ .lg .middle } __📊 Project Work Grading__
 
@@ -36,7 +36,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
     - Feedback summary
     - Student email
 
-    [:octicons-arrow-right-24: Documentation](PROJECT.md)
+    [:octicons-arrow-right-24: Documentation](PROJECT.en.md)
 
 -   :material-pencil:{ .lg .middle } __✍️ Peer Review Comments__
 
@@ -48,7 +48,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
     - Always in English
     - Scientific tone
 
-    [:octicons-arrow-right-24: Documentation](REVIEW.md)
+    [:octicons-arrow-right-24: Documentation](REVIEW.en.md)
 
 -   :material-translate:{ .lg .middle } __🔤 LaTeX Exam Translator__
 
@@ -60,7 +60,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
     - Protected comments
     - Structure-aware
 
-    [:octicons-arrow-right-24: Documentation](TRANSLATOR.md)
+    [:octicons-arrow-right-24: Documentation](TRANSLATOR.en.md)
 
 </div>
 
@@ -76,7 +76,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     Get started in minutes with our installation guide
 
-    [:octicons-arrow-right-24: Installation](INSTALL.md)
+    [:octicons-arrow-right-24: Installation](INSTALL.en.md)
 
 -   :material-cog:{ .lg .middle } __Configuration__
 
@@ -84,7 +84,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     Configure your LLM APIs and templates
 
-    [:octicons-arrow-right-24: Configuration Guide](configuration.md)
+    [:octicons-arrow-right-24: Configuration Guide](configuration.en.md)
 
 -   :material-file-find:{ .lg .middle } __Examples__
 
@@ -92,7 +92,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     View examples of generated documents
 
-    [:octicons-arrow-right-24: Example Outputs](EXAMPLES.md)
+    [:octicons-arrow-right-24: Example Outputs](EXAMPLES.en.md)
 
 -   :material-code-braces:{ .lg .middle } __API Reference__
 
@@ -125,7 +125,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.en.md](CONTRIBUTING.en.md) for guidelines.
 
 ## 📄 License
 

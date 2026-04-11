@@ -24,7 +24,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
     - Formular-Ausfüllung
     - E-Mail-Generierung
 
-    [:octicons-arrow-right-24: Dokumentation](COLLOQUIUM.md)
+    [:octicons-arrow-right-24: Dokumentation](COLLOQUIUM.de.md)
 
 -   :material-file-document:{ .lg .middle } __📊 Praxisprojekt-Benotung__
 
@@ -36,7 +36,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
     - Feedback-Zusammenfassung
     - Studierenden-E-Mail
 
-    [:octicons-arrow-right-24: Dokumentation](PROJECT.md)
+    [:octicons-arrow-right-24: Dokumentation](PROJECT.de.md)
 
 -   :material-pencil:{ .lg .middle } __✍️ Peer Review Kommentare__
 
@@ -48,7 +48,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
     - Immer auf Englisch
     - Wissenschaftlicher Ton
 
-    [:octicons-arrow-right-24: Dokumentation](REVIEW.md)
+    [:octicons-arrow-right-24: Dokumentation](REVIEW.de.md)
 
 -   :material-translate:{ .lg .middle } __🔤 LaTeX-Klausur-Übersetzer__
 
@@ -60,7 +60,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
     - Kommentare geschützt
     - Struktur-bewusst
 
-    [:octicons-arrow-right-24: Dokumentation](TRANSLATOR.md)
+    [:octicons-arrow-right-24: Dokumentation](TRANSLATOR.de.md)
 
 </div>
 
@@ -76,7 +76,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     In wenigen Minuten startklar mit unserer Installationsanleitung
 
-    [:octicons-arrow-right-24: Installation](INSTALL.md)
+    [:octicons-arrow-right-24: Installation](INSTALL.de.md)
 
 -   :material-cog:{ .lg .middle } __Konfiguration__
 
@@ -84,7 +84,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     Konfigurieren Sie Ihre LLM-APIs und Vorlagen
 
-    [:octicons-arrow-right-24: Konfigurations-Guide](configuration.md)
+    [:octicons-arrow-right-24: Konfigurations-Guide](configuration.de.md)
 
 -   :material-file-find:{ .lg .middle } __Beispiele__
 
@@ -92,7 +92,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     Sehen Sie sich Beispiele für erzeugte Dokumente an
 
-    [:octicons-arrow-right-24: Beispiel-Ausgaben](EXAMPLES.md)
+    [:octicons-arrow-right-24: Beispiel-Ausgaben](EXAMPLES.de.md)
 
 -   :material-code-braces:{ .lg .middle } __API-Referenz__
 
@@ -125,7 +125,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
 ## 🤝 Mitwirken
 
-Beiträge sind willkommen! Bitte lesen Sie die [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
+Beiträge sind willkommen! Bitte lesen Sie die [CONTRIBUTING.de.md](CONTRIBUTING.de.md) für Richtlinien.
 
 ## 📄 Lizenz
 

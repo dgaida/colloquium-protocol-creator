@@ -130,7 +130,7 @@ first_examiner: "Prof. Dr. Vorname Nachname"
 
 ## 📚 Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.md)
-- [Kolloquium-Dokumentation](COLLOQUIUM.md)
-- [Projekt-Dokumentation](PROJECT.md)
-- [Review-Dokumentation](REVIEW.md)
+- [Installationsanleitung](INSTALL.de.md)
+- [Kolloquium-Dokumentation](COLLOQUIUM.de.md)
+- [Projekt-Dokumentation](PROJECT.de.md)
+- [Review-Dokumentation](REVIEW.de.md)

@@ -168,7 +168,7 @@ first_examiner: "Prof. Dr. Firstname Lastname"
 
 ## 📚 Related Documentation
 
-- [Installation Guide](INSTALL.md)
-- [Colloquium Documentation](COLLOQUIUM.md)
-- [Project Documentation](PROJECT.md)
-- [Review Documentation](REVIEW.md)
+- [Installation Guide](INSTALL.en.md)
+- [Colloquium Documentation](COLLOQUIUM.en.md)
+- [Project Documentation](PROJECT.en.md)
+- [Review Documentation](REVIEW.en.md)

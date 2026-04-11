@@ -110,7 +110,7 @@ pytest
 
 ## Next Steps
 
-1. [Colloquium Protocols](COLLOQUIUM.md)
-2. [Project Grading Letters](PROJECT.md)
-3. [Peer Review Comments](REVIEW.md)
-4. [Exam Translation](TRANSLATOR.md)
+1. [Colloquium Protocols](COLLOQUIUM.en.md)
+2. [Project Grading Letters](PROJECT.en.md)
+3. [Peer Review Comments](REVIEW.en.md)
+4. [Exam Translation](TRANSLATOR.en.md)

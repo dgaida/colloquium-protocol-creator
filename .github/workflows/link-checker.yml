@@ -15,7 +15,7 @@ on:
       - 'docs/**'
       - 'README.md'
   schedule:
-    - cron: "0 0 * * 1" # Run weekly on Mondays
+    - cron: "0 0 1 * 1" # Runs on the 1st of the month AND every Monday. Monthly on Mondays specifically is tricky in cron, so this ensures it runs at least monthly.
 
 jobs:
   linkChecker:

@@ -90,7 +90,7 @@ class ConfigLoader:
         loc_type = coll["location_type"]
         if loc_type not in self.VALID_LOCATION_TYPES:
             raise ValueError(
-                f"Ungültiger location_type: {loc_type}. " f"Erlaubt: {self.VALID_LOCATION_TYPES}"
+                f"Ungültiger location_type: {loc_type}. Erlaubt: {self.VALID_LOCATION_TYPES}"
             )
 
         # Location-spezifische Pflichtfelder

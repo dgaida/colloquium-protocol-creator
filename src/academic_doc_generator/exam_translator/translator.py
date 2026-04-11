@@ -137,13 +137,13 @@ def translate_question_to_english(
     translated = llm_client.chat_completion(messages)
 
     if verbose:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("ORIGINAL:")
         print(question_text[:200] + "...")
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("TRANSLATED:")
         print(translated[:200] + "...")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     # Stelle Kommentare wieder her
     return unmask_comments(translated, comment_map).strip()
@@ -171,12 +171,12 @@ def translate_preamble_to_english(
     translated = llm_client.chat_completion(messages)
 
     if verbose:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("PREAMBLE TRANSLATED")
         print(f"Länge Preamble: {len(preamble)}, Länge translated Preamble: {len(translated)}")
         if len(translated) < len(preamble) - 500:
             print(translated)
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     # Stelle Kommentare wieder her
     return unmask_comments(translated, comment_map).strip()
@@ -271,7 +271,7 @@ def translate_latex_exam(
     # Stelle sicher, dass Questions mit Newline beginnen
     questions_text = "\n\n".join(translated_questions)
 
-    translated_content = f"{translated_preamble}\n\n" f"{questions_text}\n\n" f"{postamble}"
+    translated_content = f"{translated_preamble}\n\n{questions_text}\n\n{postamble}"
 
     # Speichere Ergebnis
     print(f"\n💾 Speichere englische Version: {output_path}")

@@ -37,7 +37,6 @@ def test_colloquium_workflow_mocked_llm(mock_llm_client):
         patch("academic_doc_generator.colloquium.orchestrator.OutlookMailGenerator"),
         tempfile.TemporaryDirectory() as tmpdir,
     ):
-
         # Setup mocks
         mock_extract_text.return_value = {0: []}
         mock_extract_annots.return_value = (

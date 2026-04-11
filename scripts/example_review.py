@@ -1,7 +1,9 @@
 # scripts/example_review.py
 
 import os
+
 from llm_client import LLMClient
+
 from academic_doc_generator.review import orchestrator
 
 if __name__ == "__main__":
@@ -17,11 +19,7 @@ if __name__ == "__main__":
 
     # Check if file exists before running
     if os.path.exists(pdf_path):
-        orchestrator.run_review_pipeline(
-            pdf_path=pdf_path,
-            llm_client=llm_client,
-            groq_free=True
-        )
+        orchestrator.run_review_pipeline(pdf_path=pdf_path, llm_client=llm_client, groq_free=True)
     else:
         print(f"File not found: {pdf_path}")
         print("Please adjust the 'folder' and 'pdf_filename' variables in this script.")

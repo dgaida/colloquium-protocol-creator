@@ -225,14 +225,14 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
         if create_feedback_mail:
             if outlook_gen.is_outlook_open():
                 print("\n📧 Erstelle Outlook-Mail für Studierenden...")
-                student_email_addr = metadata.get("student_email")
+                student_email_addr = "; ".join([r.smail_address for r in recipients])
                 try:
                     outlook_gen.create_outlook_mail(
                         student_name=student_name,
                         email_text=student_email_text,
                         attachment_path=None,
                         subject=f"Feedback zu Ihrem {work_type} - {student_name}",
-                        recipient=student_email_addr if student_email_addr else "",
+                        recipient=student_email_addr,
                         verbose=False,
                     )
                 except Exception as e:

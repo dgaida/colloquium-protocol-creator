@@ -86,6 +86,18 @@ class EmailRecipient:
             return self.last_name
         return f"{self.gender} {self.last_name}"
 
+    @property
+    def smail_address(self) -> str:
+        def clean_name(name: str) -> str:
+            name = name.lower()
+            name = name.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+            name = name.replace(" ", "_").replace("-", "_")
+            return name
+
+        first = clean_name(self.first_name)
+        last = clean_name(self.last_name)
+        return f"{first}.{last}@smail.th-koeln.de"
+
     @staticmethod
     def format_recipients_salutation(recipients: list["EmailRecipient"]) -> str:
         """Format joint salutation for multiple recipients.

@@ -73,7 +73,9 @@ def process_folder(folder_path, llm_client):
 
     # 3. Extract metadata and summary using existing core logic
     # We use get_summary_and_metadata_of_pdf as it encapsulates the LLM calls
-    summary_latex, doc_metadata = llm.get_summary_and_metadata_of_pdf(pdf_path, language, llm_client)
+    summary_latex, doc_metadata = llm.get_summary_and_metadata_of_pdf(
+        pdf_path, language, llm_client
+    )
 
     work_type = f"{doc_metadata.get('bachelor_master', 'Bachelor')}thesis"
 

@@ -1,21 +1,22 @@
-import os
 import json
+import os
 import shutil
 import sys
-from pathlib import Path
 from datetime import datetime
 
 # Add src to path to ensure we can import the package
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 try:
-    from academic_doc_generator.core import pdf, llm, metadata, utils
     from llm_client import LLMClient
+
+    from academic_doc_generator.core import llm, metadata, pdf, utils
 except ImportError as e:
     print(f"Error: Could not import required modules. Make sure you are in the project root. {e}")
     sys.exit(1)
 
 TARGET_WEB_FOLDER = r"D:\TH_Koeln\dgaida.github.io\_student_projects"
+
 
 def process_folder(folder_path, llm_client):
     """Process a single folder containing the target config file."""
@@ -25,7 +26,7 @@ def process_folder(folder_path, llm_client):
 
     print(f"\n--- Processing: {folder_path} ---")
     try:
-        with open(config_file, "r", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             config = json.load(f)
     except Exception as e:
         print(f"Error reading config file: {e}")
@@ -64,10 +65,7 @@ def process_folder(folder_path, llm_client):
     if first_page_text:
         prompt = llm.build_prompt(llm.PromptTemplate.DETECT_LANGUAGE, text=first_page_text[:1000])
         language = llm_client.chat_completion([{"role": "user", "content": prompt}]).strip()
-        if "English" in language:
-            language = "English"
-        else:
-            language = "German"
+        language = "English" if "English" in language else "German"
     else:
         language = "German"
 
@@ -90,14 +88,14 @@ def process_folder(folder_path, llm_client):
         work_type=work_type,
         semester=semester,
         date_str=date_str,
-        copy_to_web_folder=False  # We handle manual copy to specific D: path
+        copy_to_web_folder=False,  # We handle manual copy to specific D: path
     )
 
     print(f"✅ Generated web metadata: {md_path}")
 
     # 5. Copy to the specific web folder requested by the user
     # Handle Windows path carefully on non-Windows systems if necessary
-    if os.name == 'nt' or os.path.exists(TARGET_WEB_FOLDER):
+    if os.name == "nt" or os.path.exists(TARGET_WEB_FOLDER):
         try:
             os.makedirs(TARGET_WEB_FOLDER, exist_ok=True)
             shutil.copy2(md_path, os.path.join(TARGET_WEB_FOLDER, os.path.basename(md_path)))
@@ -106,6 +104,7 @@ def process_folder(folder_path, llm_client):
             print(f"⚠️ Could not copy to {TARGET_WEB_FOLDER}: {e}")
     else:
         print(f"ℹ️ Target folder {TARGET_WEB_FOLDER} not reachable (might be on another system).")
+
 
 def main():
     # Allow passing a root directory as argument, default to current dir
@@ -116,13 +115,14 @@ def main():
     llm_client = LLMClient()
 
     found_any = False
-    for root, dirs, files in os.walk(root_dir):
+    for root, _dirs, files in os.walk(root_dir):
         if "config_dgaida.github.json" in files:
             found_any = True
             process_folder(root, llm_client)
 
     if not found_any:
         print("No 'config_dgaida.github.json' files found.")
+
 
 if __name__ == "__main__":
     main()

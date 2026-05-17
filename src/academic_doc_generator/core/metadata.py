@@ -79,6 +79,8 @@ def generate_metadata_file(
     semester: str,
     date_str: Optional[str] = None,
     copy_to_web_folder: bool = True,
+    move_to_web_folder: bool = False,
+    web_metadata_folder: Optional[str] = None,
     students: Optional[list[StudentInfo]] = None,
 ) -> str:
     """Create a Jekyll-style Markdown file with frontmatter for a student project.
@@ -155,16 +157,23 @@ semester: "{semester}"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    # Copy to global web metadata folder if configured and requested
-    if copy_to_web_folder:
-        global_config = load_global_config()
-        web_metadata_folder = global_config.get("web_metadata_folder")
+    # Copy or move to web metadata folder if configured and requested
+    if copy_to_web_folder or move_to_web_folder:
+        if not web_metadata_folder:
+            global_config = load_global_config()
+            web_metadata_folder = global_config.get("web_metadata_folder")
+
         if web_metadata_folder:
             try:
                 os.makedirs(web_metadata_folder, exist_ok=True)
-                shutil.copy2(md_path, os.path.join(web_metadata_folder, md_filename))
-                print(f"✅ Web metadata also copied to: {web_metadata_folder}")
+                target_path = os.path.join(web_metadata_folder, md_filename)
+                if move_to_web_folder:
+                    shutil.move(md_path, target_path)
+                    md_path = target_path
+                    print(f"✅ Web metadata moved to: {web_metadata_folder}")
+                else:
+                    shutil.copy2(md_path, target_path)
+                    print(f"✅ Web metadata copied to: {web_metadata_folder}")
             except Exception as e:
-                print(f"⚠️  Error copying web metadata: {e}")
-
+                print(f"⚠️  Error processing web metadata: {e}")
     return md_path

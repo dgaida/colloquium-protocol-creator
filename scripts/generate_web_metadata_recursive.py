@@ -1,6 +1,6 @@
 import json
 import os
-import shutil
+import re
 import sys
 from datetime import datetime
 
@@ -99,22 +99,12 @@ def process_folder(folder_path):
         work_type=work_type,
         semester=semester,
         date_str=date_str,
-        copy_to_web_folder=False,  # We handle manual copy to specific D: path
+        copy_to_web_folder=False,
+        move_to_web_folder=True,
+        web_metadata_folder=TARGET_WEB_FOLDER,
     )
 
     print(f"✅ Generated web metadata: {md_path}")
-
-    # 5. Copy to the specific web folder requested by the user
-    # Handle Windows path carefully on non-Windows systems if necessary
-    if os.name == "nt" or os.path.exists(TARGET_WEB_FOLDER):
-        try:
-            os.makedirs(TARGET_WEB_FOLDER, exist_ok=True)
-            shutil.copy2(md_path, os.path.join(TARGET_WEB_FOLDER, os.path.basename(md_path)))
-            print(f"✅ Copied to: {TARGET_WEB_FOLDER}")
-        except Exception as e:
-            print(f"⚠️ Could not copy to {TARGET_WEB_FOLDER}: {e}")
-    else:
-        print(f"ℹ️ Target folder {TARGET_WEB_FOLDER} not reachable (might be on another system).")
 
 
 def main():
@@ -126,6 +116,11 @@ def main():
     found_any = False
     for root, _dirs, files in os.walk(root_dir):
         if "config_dgaida.github.json" in files:
+            # Check for existing .md file with pattern NNNN_....md
+            existing_md = [f for f in files if re.match(r"^\d{4}_.*\.md$", f)]
+            if existing_md:
+                print(f"Skipping {root} because {existing_md[0]} already exists.")
+                continue
             found_any = True
             process_folder(root)
 

@@ -91,33 +91,33 @@ def test_generate_metadata_file_with_copy(mocker):
             copied_path = os.path.join(target_dir, filename)
             assert os.path.exists(copied_path)
 
+
 def test_generate_metadata_file_with_move(mocker):
     """Test generation and moving of web metadata file."""
     mock_client = MagicMock()
     mock_client.chat_completion.return_value = "Summary"
 
-    with tempfile.TemporaryDirectory() as target_dir:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            md_path = metadata.generate_metadata_file(
-                output_folder=tmpdir,
-                title="Test Move",
-                author="Max Mustermann",
-                pages_text={0: "text"},
-                llm_client=mock_client,
-                work_type="Bachelorthesis",
-                semester="WS 24/25",
-                date_str="2025-01-20",
-                copy_to_web_folder=False,
-                move_to_web_folder=True,
-                web_metadata_folder=target_dir,
-            )
+    with tempfile.TemporaryDirectory() as target_dir, tempfile.TemporaryDirectory() as tmpdir:
+        md_path = metadata.generate_metadata_file(
+            output_folder=tmpdir,
+            title="Test Move",
+            author="Max Mustermann",
+            pages_text={0: "text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="WS 24/25",
+            date_str="2025-01-20",
+            copy_to_web_folder=False,
+            move_to_web_folder=True,
+            web_metadata_folder=target_dir,
+        )
 
-            # Check that the file was moved to the target directory
-            filename = os.path.basename(md_path)
-            moved_path = os.path.join(target_dir, filename)
-            assert md_path == moved_path
-            assert os.path.exists(moved_path)
+        # Check that the file was moved to the target directory
+        filename = os.path.basename(md_path)
+        moved_path = os.path.join(target_dir, filename)
+        assert md_path == moved_path
+        assert os.path.exists(moved_path)
 
-            # Check that the original file in tmpdir is gone
-            original_path = os.path.join(tmpdir, filename)
-            assert not os.path.exists(original_path)
+        # Check that the original file in tmpdir is gone
+        original_path = os.path.join(tmpdir, filename)
+        assert not os.path.exists(original_path)

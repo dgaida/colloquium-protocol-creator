@@ -20,4 +20,4 @@ jobs:
           fetch-depth: 0
 
       - name: Run Auto Versioning
-        uses: dgaida/auto-version-action@v1
+        uses: dgaida/auto-version-action@main

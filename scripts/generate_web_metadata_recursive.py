@@ -107,8 +107,6 @@ def process_folder(folder_path):
     print(f"✅ Generated web metadata: {md_path}")
 
 
-
-
 def main():
     # Allow passing a root directory as argument, default to current dir
     root_dir = sys.argv[1] if len(sys.argv) > 1 else "."

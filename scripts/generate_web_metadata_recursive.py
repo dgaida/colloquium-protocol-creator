@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -18,9 +19,9 @@ except ImportError as e:
 TARGET_WEB_FOLDER = r"D:\TH_Koeln\dgaida.github.io\_student_projects"
 
 
-def process_folder(folder_path):
+def process_folder(folder_path, config_filename):
     """Process a single folder containing the target config file."""
-    config_file = os.path.join(folder_path, "config_dgaida2.github.json")
+    config_file = os.path.join(folder_path, config_filename)
     if not os.path.exists(config_file):
         return
 
@@ -108,24 +109,37 @@ def process_folder(folder_path):
 
 
 def main():
-    # Allow passing a root directory as argument, default to current dir
-    root_dir = sys.argv[1] if len(sys.argv) > 1 else "."
+    parser = argparse.ArgumentParser(
+        description="Recursively generate web metadata for student projects."
+    )
+    parser.add_argument(
+        "root_dir", nargs="?", default=".", help="Root directory to search in (default: '.')"
+    )
+    parser.add_argument(
+        "--config",
+        default="config_dgaida.github.json",
+        help="Configuration filename to search for (default: 'config_dgaida.github.json')",
+    )
+    args = parser.parse_args()
 
-    print(f"Starting recursive search in: {os.path.abspath(root_dir)}")
+    print(f"Starting recursive search in: {os.path.abspath(args.root_dir)}")
 
     found_any = False
-    for root, _dirs, files in os.walk(root_dir):
-        if "config_dgaida2.github.json" in files:
+    for root, _dirs, files in os.walk(args.root_dir):
+        if args.config in files:
             # Check for existing .md file with pattern NNNN_....md
             existing_md = [f for f in files if re.match(r"^\d{4}_.*\.md$", f)]
             if existing_md:
                 print(f"Skipping {root} because {existing_md[0]} already exists.")
                 continue
             found_any = True
-            process_folder(root)
+            try:
+                process_folder(root, args.config)
+            except Exception as e:
+                print(f"❌ Error processing folder {root}: {e}")
 
     if not found_any:
-        print("No 'config_dgaida.github.json' files found.")
+        print(f"No '{args.config}' files found.")
 
 
 if __name__ == "__main__":

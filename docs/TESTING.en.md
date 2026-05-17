@@ -40,12 +40,12 @@ pytest -v
 
 The test suite is organized in the `tests/` directory:
 
-- `test_colloquium_creator.py`: Tests for PDF parsing, annotation extraction, and LaTeX generation for colloquiums.
-- `test_project_creator.py`: Tests for metadata extraction and gender detection in project work.
-- `test_review_creator.py`: Tests for line number detection and Markdown generation for peer reviews.
-- `test_pipelines.py`: Integration tests for the high-level orchestrators.
-- `test_outlook_mail_generator.py`: Platform-independent tests for email generation (using mocking for Windows/macOS specific COM/AppleScript calls).
-- `test_utils.py`: Unit tests for helper functions like name splitting.
+- `test_colloquium_creator.py`: Tests for PDF parsing, annotation extraction, and LaTeX generation for colloquiums.  
+- `test_project_creator.py`: Tests for metadata extraction and gender detection in project work.  
+- `test_review_creator.py`: Tests for line number detection and Markdown generation for peer reviews.  
+- `test_pipelines.py`: Integration tests for the high-level orchestrators.  
+- `test_outlook_mail_generator.py`: Platform-independent tests for email generation (using mocking for Windows/macOS specific COM/AppleScript calls).  
+- `test_utils.py`: Unit tests for helper functions like name splitting.  
 
 ## Key Features Tested
 

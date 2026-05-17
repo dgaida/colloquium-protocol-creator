@@ -37,16 +37,16 @@ graph TD
 Each major task (colloquium, project, review) is managed by an orchestrator that coordinates between various core services and domain logic. Orchestrators accept consolidated configuration dataclasses.
 
 ### 2. Pipeline Stages
-Workflows generally follow these stages:
-1. **Extract**: Retrieve text, annotations, and metadata from source documents (PDF/LaTeX).
-2. **Transform**: Use LLMs to rewrite, summarize, or translate content.
-3. **Generate**: Create output documents (LaTeX, Markdown, ICS, Emails).
-4. **Compile**: Optionally compile LaTeX to PDF.
+Workflows generally follow these stages:  
+1. **Extract**: Retrieve text, annotations, and metadata from source documents (PDF/LaTeX).  
+2. **Transform**: Use LLMs to rewrite, summarize, or translate content.  
+3. **Generate**: Create output documents (LaTeX, Markdown, ICS, Emails).  
+4. **Compile**: Optionally compile LaTeX to PDF.  
 
-### 3. Centralized Templates
-- **Prompts**: All LLM prompts are centralized in `core/prompts.py` using an Enum.
-- **Emails**: Email templates are defined in `core/email.py` using a Protocol-based system.
-- **LaTeX**: Document templates are implemented as raw f-strings in `core/latex.py`.
+### 3. Centralized Templates  
+- **Prompts**: All LLM prompts are centralized in `core/prompts.py` using an Enum.  
+- **Emails**: Email templates are defined in `core/email.py` using a Protocol-based system.  
+- **LaTeX**: Document templates are implemented as raw f-strings in `core/latex.py`.  
 
 ### 4. Dependency Injection
 LLM clients are injected into orchestrators and core functions, allowing for easier testing with mocks and supporting multiple LLM providers (OpenAI, Groq, Gemini, Ollama).

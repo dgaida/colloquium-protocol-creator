@@ -32,10 +32,10 @@ A Jekyll-compatible profile of the work (summary, keywords, etc.) for your own w
 
 ## Requirements
 
-- Annotated thesis PDF (with comments/highlights)
-- At least one configured LLM API key (OpenAI, Groq, Google Gemini) or local Ollama
-- LaTeX installation (LuaLaTeX recommended)
-- (Optional) Signature image at `data/signature.png`
+- Annotated thesis PDF (with comments/highlights)  
+- At least one configured LLM API key (OpenAI, Groq, Google Gemini) or local Ollama  
+- LaTeX installation (LuaLaTeX recommended)  
+- (Optional) Signature image at `data/signature.png`  
 
 ## Usage
 
@@ -92,28 +92,28 @@ Special markers for own orientation.
 
 For those interested in the technical process:
 
-1. **Annotation Extraction**: Reads comments and highlights from the PDF.
-2. **Context-Aware Processing**: Maps each comment to the exactly highlighted text and surrounding paragraph.
-3. **Intelligent Categorization**: Sorts comments by type (question, source, language).
-4. **LLM Refinement**: Rewrites terse notes into full examination questions.
-5. **Metadata Extraction**: Automatically detects student name, ID, title, and examiners.
-6. **Thesis Summary**: Generates a concise summary based on the first 10 pages.
-7. **Signature Integration**: Automatically includes your signature image if available.
+1. **Annotation Extraction**: Reads comments and highlights from the PDF.  
+2. **Context-Aware Processing**: Maps each comment to the exactly highlighted text and surrounding paragraph.  
+3. **Intelligent Categorization**: Sorts comments by type (question, source, language).  
+4. **LLM Refinement**: Rewrites terse notes into full examination questions.  
+5. **Metadata Extraction**: Automatically detects student name, ID, title, and examiners.  
+6. **Thesis Summary**: Generates a concise summary based on the first 10 pages.  
+7. **Signature Integration**: Automatically includes your signature image if available.  
 
 ---
 
 ## Troubleshooting
 
-### Outlook Draft Not Created
-- Ensure Outlook is open before running the tool.
-- On macOS, ensure the application has permissions to control Outlook.
+### Outlook Draft Not Created  
+- Ensure Outlook is open before running the tool.  
+- On macOS, ensure the application has permissions to control Outlook.  
 
-### Course of Study Not Detected
-- Ensure the course name appears clearly on the title page.
-- Alternatively, you can manually set `course_of_study` in the JSON config.
+### Course of Study Not Detected  
+- Ensure the course name appears clearly on the title page.  
+- Alternatively, you can manually set `course_of_study` in the JSON config.  
 
 ## Related Documentation
 
-- [Installation Guide](INSTALL.en.md)
-- [Project Grading](PROJECT.en.md)
-- [Configuration Guide](configuration.en.md)
+- [Installation Guide](INSTALL.en.md)  
+- [Project Grading](PROJECT.en.md)  
+- [Configuration Guide](configuration.en.md)  

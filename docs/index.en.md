@@ -14,51 +14,51 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
 <div class="grid cards" markdown>
 
--   :material-school:{ .lg .middle } __🎓 Colloquium Protocols__
+-   :material-school:{ .lg .middle } __🎓 Colloquium Protocols__  
 
     ---
 
-    - Notes → clear questions
-    - Auto-metadata extraction
-    - Thesis summary
-    - Form pre-filling
-    - Email generation
+    - Notes → clear questions  
+    - Auto-metadata extraction  
+    - Thesis summary  
+    - Form pre-filling  
+    - Email generation  
 
     [:octicons-arrow-right-24: Documentation](COLLOQUIUM.en.md)
 
--   :material-file-document:{ .lg .middle } __📊 Project Work Grading__
+-   :material-file-document:{ .lg .middle } __📊 Project Work Grading__  
 
     ---
 
-    - Metadata extraction
-    - Salutation determination (Mr/Ms)
-    - Grading letter template
-    - Feedback summary
-    - Student email
+    - Metadata extraction  
+    - Salutation determination (Mr/Ms)  
+    - Grading letter template  
+    - Feedback summary  
+    - Student email  
 
     [:octicons-arrow-right-24: Documentation](PROJECT.en.md)
 
--   :material-pencil:{ .lg .middle } __✍️ Peer Review Comments__
+-   :material-pencil:{ .lg .middle } __✍️ Peer Review Comments__  
 
     ---
 
-    - Notes → constructive feedback
-    - Auto line number detection
-    - Markdown export
-    - Always in English
-    - Scientific tone
+    - Notes → constructive feedback  
+    - Auto line number detection  
+    - Markdown export  
+    - Always in English  
+    - Scientific tone  
 
     [:octicons-arrow-right-24: Documentation](REVIEW.en.md)
 
--   :material-translate:{ .lg .middle } __🔤 LaTeX Exam Translator__
+-   :material-translate:{ .lg .middle } __🔤 LaTeX Exam Translator__  
 
     ---
 
-    - German → English
-    - Exam class optimized
-    - Preserves math formulas
-    - Protected comments
-    - Structure-aware
+    - German → English  
+    - Exam class optimized  
+    - Preserves math formulas  
+    - Protected comments  
+    - Structure-aware  
 
     [:octicons-arrow-right-24: Documentation](TRANSLATOR.en.md)
 
@@ -70,7 +70,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
 <div class="grid cards" markdown>
 
--   :material-clock-fast:{ .lg .middle } __Quick Start__
+-   :material-clock-fast:{ .lg .middle } __Quick Start__  
 
     ---
 
@@ -78,7 +78,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     [:octicons-arrow-right-24: Installation](INSTALL.en.md)
 
--   :material-cog:{ .lg .middle } __Configuration__
+-   :material-cog:{ .lg .middle } __Configuration__  
 
     ---
 
@@ -86,7 +86,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     [:octicons-arrow-right-24: Configuration Guide](configuration.en.md)
 
--   :material-file-find:{ .lg .middle } __Examples__
+-   :material-file-find:{ .lg .middle } __Examples__  
 
     ---
 
@@ -94,7 +94,7 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
     [:octicons-arrow-right-24: Example Outputs](EXAMPLES.en.md)
 
--   :material-code-braces:{ .lg .middle } __API Reference__
+-   :material-code-braces:{ .lg .middle } __API Reference__  
 
     ---
 
@@ -106,22 +106,22 @@ Transform annotated PDFs into professional LaTeX documents using AI. Generate th
 
 ## ✨ Key Features
 
-- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks
-- 🔍 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
-- 🤖 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
-- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs
-- ✍️ **Intelligent Comment Refinement** - Rewrites terse notes into full questions
-- 📝 **LaTeX Generation** - Creates professional letters with TH Köln formatting
-- ✒️ **Automatic Signature Detection** - Automatically includes signature from `data/signature.png`
-- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms (auto-mapped to course of study)
-- 📧 **Email & Outlook Integration** - Creates registration emails and Outlook drafts
-- 🌐 **Unicode Support** - Handles German special characters correctly
+- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks  
+- 🔍 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF  
+- 🤖 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama  
+- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs  
+- ✍️ **Intelligent Comment Refinement** - Rewrites terse notes into full questions  
+- 📝 **LaTeX Generation** - Creates professional letters with TH Köln formatting  
+- ✒️ **Automatic Signature Detection** - Automatically includes signature from `data/signature.png`  
+- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms (auto-mapped to course of study)  
+- 📧 **Email & Outlook Integration** - Creates registration emails and Outlook drafts  
+- 🌐 **Unicode Support** - Handles German special characters correctly  
 
 ## 🛠️ Requirements
 
-- **Python**: 3.9 or higher
-- **LaTeX**: LuaLaTeX recommended (for Unicode support)
-- **LLM API**: At least one of OpenAI, Groq, Gemini, or Ollama
+- **Python**: 3.9 or higher  
+- **LaTeX**: LuaLaTeX recommended (for Unicode support)  
+- **LLM API**: At least one of OpenAI, Groq, Gemini, or Ollama  
 
 ## 🤝 Contributing
 

@@ -36,37 +36,37 @@ output_path = translate_latex_exam("Exam.tex", client)
 
 ## Key Features
 
-- ✅ **Structured Translation**: Intelligently splits the document into preamble and individual questions.
-- ✅ **LaTeX Preservation**: Maintains all LaTeX commands and environments.
-- ✅ **Math Protection**: Mathematical formulas remain untouched.
-- ✅ **Comment Protection**: Masks LaTeX comments (`%`) to preserve their exact position and content.
+- ✅ **Structured Translation**: Intelligently splits the document into preamble and individual questions.  
+- ✅ **LaTeX Preservation**: Maintains all LaTeX commands and environments.  
+- ✅ **Math Protection**: Mathematical formulas remain untouched.  
+- ✅ **Comment Protection**: Masks LaTeX comments (`%`) to preserve their exact position and content.  
 
 ---
 
 ## How It Works (Details)
 
 ### 1. Document Structure Analysis
-The document is split into three parts:
-- **Preamble**: Everything up to the first `\begin{questions}`.
-- **Questions**: Each block starting with `\question`.
-- **Postamble**: Everything after `\end{questions}`.
+The document is split into three parts:  
+- **Preamble**: Everything up to the first `\begin{questions}`.  
+- **Questions**: Each block starting with `\question`.  
+- **Postamble**: Everything after `\end{questions}`.  
 
 ### 2. Comment Masking
 To prevent the AI from translating or deleting LaTeX comments, they are replaced by placeholders before processing and reinserted at the exact location after translation.
 
-### 3. What is Translated?
-- **Translated**: Prose text, task descriptions, multiple-choice options, solution texts, headers/footers.
-- **Unchanged**: Mathematical formulas (`$...$`, `\[...\]`), LaTeX commands (`\question[5]`), environments, comments.
+### 3. What is Translated?  
+- **Translated**: Prose text, task descriptions, multiple-choice options, solution texts, headers/footers.  
+- **Unchanged**: Mathematical formulas (`$...$`, `\[...\]`), LaTeX commands (`\question[5]`), environments, comments.  
 
 ---
 
 ## Limitations & Tips
 
-1. **Exam Class Required**: The tool is specifically optimized for the LaTeX `exam` class.
-2. **AI Choice**: Use **OpenAI (GPT-4o)** for the highest quality in complex academic formulations.
-3. **Speed**: Use **Groq** or **Gemini** for very fast and often free translations.
+1. **Exam Class Required**: The tool is specifically optimized for the LaTeX `exam` class.  
+2. **AI Choice**: Use **OpenAI (GPT-4o)** for the highest quality in complex academic formulations.  
+3. **Speed**: Use **Groq** or **Gemini** for very fast and often free translations.  
 
 ## Related Documentation
 
-- [Main Documentation](index.en.md)
-- [Configuration Guide](configuration.en.md)
+- [Main Documentation](index.en.md)  
+- [Configuration Guide](configuration.en.md)  

@@ -4,10 +4,10 @@ Diese Anleitung erklärt, wie Sie den Academic Document Generator mithilfe von J
 
 ## 📋 Übersicht
 
-Das Tool unterstützt JSON-basierte Konfigurationen für drei Hauptanwendungsfälle:
-- **Kolloquium-Protokolle** (Thesis-Verteidigung)
-- **Praxisprojekt- & WASP1-Benotung**
-- **Peer-Review** Kommentare
+Das Tool unterstützt JSON-basierte Konfigurationen für drei Hauptanwendungsfälle:  
+- **Kolloquium-Protokolle** (Thesis-Verteidigung)  
+- **Praxisprojekt- & WASP1-Benotung**  
+- **Peer-Review** Kommentare  
 
 ## 🎯 Quick Start
 
@@ -54,10 +54,10 @@ Sie können das Tool auch über die `main.py` im Projekt-Stammverzeichnis ausfü
 }
 ```
 
-- `folder`: Ausgabe-Verzeichnis (`null` = Ordner des PDFs)
-- `compile_pdf`: Ob `.tex` zu PDF kompiliert werden soll
-- `signature_file`: Pfad zur Unterschrift (Standard ist `signature.png` oder Suche in `data/`)
-- `create_feedback_mail`: Ob studentisches Feedback generiert werden soll
+- `folder`: Ausgabe-Verzeichnis (`null` = Ordner des PDFs)  
+- `compile_pdf`: Ob `.tex` zu PDF kompiliert werden soll  
+- `signature_file`: Pfad zur Unterschrift (Standard ist `signature.png` oder Suche in `data/`)  
+- `create_feedback_mail`: Ob studentisches Feedback generiert werden soll  
 
 ## 🎓 Kolloquium-Konfiguration
 
@@ -74,9 +74,9 @@ Sie können das Tool auch über die `main.py` im Projekt-Stammverzeichnis ausfü
 ```
 
 **Manuelle Metadaten (Optional):**
-Falls die automatische Extraktion fehlschlägt, können Sie Felder manuell setzen:
-- `course_of_study`: z. B. "Informatik", "Medieninformatik"
-- `author`: Name des Studierenden
+Falls die automatische Extraktion fehlschlägt, können Sie Felder manuell setzen:  
+- `course_of_study`: z. B. "Informatik", "Medieninformatik"  
+- `author`: Name des Studierenden  
 
 ## 📂 Projekt-Konfiguration
 
@@ -106,12 +106,12 @@ GEMINI_API_KEY=AIzaSyxxxxxxxx
 
 Vorgefertigte JSON-Konfigurationen im Ordner `config_templates/`:
 
-- `config_colloquium_campus.json` - Thesis-Kolloquium auf dem Campus
-- `config_colloquium_company.json` - Thesis-Kolloquium im Unternehmen
-- `config_colloquium_online.json` - Online-Kolloquium (Zoom)
-- `config_project_template.json` - Praxisprojekt-Benotung
-- `config_wasp1_template.json` - WASP1-Projekt-Benotung
-- `config_review_template.json` - Peer-Review-Kommentare
+- `config_colloquium_campus.json` - Thesis-Kolloquium auf dem Campus  
+- `config_colloquium_company.json` - Thesis-Kolloquium im Unternehmen  
+- `config_colloquium_online.json` - Online-Kolloquium (Zoom)  
+- `config_project_template.json` - Praxisprojekt-Benotung  
+- `config_wasp1_template.json` - WASP1-Projekt-Benotung  
+- `config_review_template.json` - Peer-Review-Kommentare  
 
 ## ⚙️ Globale Konfiguration (config.yaml)
 
@@ -125,12 +125,12 @@ web_metadata_folder: "/pfad/zu/ihrer/webseite/data/projects/"
 first_examiner: "Prof. Dr. Vorname Nachname"
 ```
 
-- `web_metadata_folder`: Wenn gesetzt, werden die generierten Jekyll-kompatiblen Steckbriefe automatisch in diesen Ordner kopiert.
-- `first_examiner`: Hier kann ein Name hinterlegt werden, der global für alle Dokumente als Erstprüfer verwendet wird.
+- `web_metadata_folder`: Wenn gesetzt, werden die generierten Jekyll-kompatiblen Steckbriefe automatisch in diesen Ordner kopiert.  
+- `first_examiner`: Hier kann ein Name hinterlegt werden, der global für alle Dokumente als Erstprüfer verwendet wird.  
 
 ## 📚 Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.de.md)
-- [Kolloquium-Dokumentation](COLLOQUIUM.de.md)
-- [Projekt-Dokumentation](PROJECT.de.md)
-- [Review-Dokumentation](REVIEW.de.md)
+- [Installationsanleitung](INSTALL.de.md)  
+- [Kolloquium-Dokumentation](COLLOQUIUM.de.md)  
+- [Projekt-Dokumentation](PROJECT.de.md)  
+- [Review-Dokumentation](REVIEW.de.md)  

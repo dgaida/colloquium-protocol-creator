@@ -34,11 +34,11 @@ Die vorliegende Arbeit beschäftigt sich mit der Entwicklung eines...
 Das PDF enthält das TH Köln Logo, die Adresse des Prüfungsservice als Empfänger und Ihre digitale Unterschrift (falls unter `data/signature.png` vorhanden).
 
 ### Vorausgefülltes Bewertungsformular
-Das offizielle PDF-Formular der TH Köln wird automatisch mit folgenden Daten befüllt:
-- Name, Vorname & Matrikelnummer
-- Titel der Arbeit
-- Datum und Uhrzeit des Kolloquiums
-- Korrekte Checkbox für den Studiengang (z.B. Wirtschaftsinformatik -> `KontrollWI`)
+Das offizielle PDF-Formular der TH Köln wird automatisch mit folgenden Daten befüllt:  
+- Name, Vorname & Matrikelnummer  
+- Titel der Arbeit  
+- Datum und Uhrzeit des Kolloquiums  
+- Korrekte Checkbox für den Studiengang (z.B. Wirtschaftsinformatik -> `KontrollWI`)  
 
 ### E-Mail- & Outlook-Entwurf
 Eine Markdown-Datei mit dem Text für den Prüfungsservice:

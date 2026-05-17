@@ -9,43 +9,43 @@ This folder contains JSON configuration templates for different tasks supported 
 #### 1. `config_colloquium_campus.json`
 Configuration for a thesis colloquium taking place on campus.
 
-**Required fields:**
-- `colloquium.date`: Date of colloquium (format: `DD.MM.YYYY`)
-- `colloquium.time`: Time of colloquium (format: `HH:MM`)
-- `colloquium.location_type`: Must be `"campus"`
-- `colloquium.room`: Room number (e.g., `"3.217"`)
+**Required fields:**  
+- `colloquium.date`: Date of colloquium (format: `DD.MM.YYYY`)  
+- `colloquium.time`: Time of colloquium (format: `HH:MM`)  
+- `colloquium.location_type`: Must be `"campus"`  
+- `colloquium.room`: Room number (e.g., `"3.217"`)  
 
 #### 2. `config_colloquium_company.json`
 Configuration for a thesis colloquium taking place at a company.
 
-**Required fields:**
-- `colloquium.date`: Date of colloquium
-- `colloquium.time`: Time of colloquium
-- `colloquium.location_type`: Must be `"company"`
-- `colloquium.company_name`: Name of the company
-- `colloquium.company_address`: (Optional) Full address
+**Required fields:**  
+- `colloquium.date`: Date of colloquium  
+- `colloquium.time`: Time of colloquium  
+- `colloquium.location_type`: Must be `"company"`  
+- `colloquium.company_name`: Name of the company  
+- `colloquium.company_address`: (Optional) Full address  
 
 #### 3. `config_colloquium_online.json`
 Configuration for an online thesis colloquium via Zoom.
 
-**Required fields:**
-- `colloquium.date`: Date of colloquium
-- `colloquium.time`: Time of colloquium
-- `colloquium.location_type`: Must be `"online"`
-- `colloquium.zoom_link`: Zoom meeting URL
-- `colloquium.zcode`: (Optional) Zoom access code
+**Required fields:**  
+- `colloquium.date`: Date of colloquium  
+- `colloquium.time`: Time of colloquium  
+- `colloquium.location_type`: Must be `"online"`  
+- `colloquium.zoom_link`: Zoom meeting URL  
+- `colloquium.zcode`: (Optional) Zoom access code  
 
 ### Project Templates
 
 #### 1. `config_project.json`
 Configuration for generating a project work (Praxisprojekt) grading letter.
 
-**Required fields:**
-- `pdf.filename`: Name of the project PDF file
+**Required fields:**  
+- `pdf.filename`: Name of the project PDF file  
 
-**Optional fields:**
-- `project.work_type`: Custom work type (e.g., "Projektarbeit")
-- `output.signature_file`: Path to signature image
+**Optional fields:**  
+- `project.work_type`: Custom work type (e.g., "Projektarbeit")  
+- `output.signature_file`: Path to signature image  
 
 #### 2. `config_wasp1_template.json`
 Configuration specifically for a **WASP1 project**. It sets the work type to "Projektteil WASP1" as required by the examination service.
@@ -55,8 +55,8 @@ Configuration specifically for a **WASP1 project**. It sets the work type to "Pr
 #### `config_review.json`
 Configuration for generating peer review comments from an annotated paper.
 
-**Required fields:**
-- `pdf.filename`: Name of the paper PDF file
+**Required fields:**  
+- `pdf.filename`: Name of the paper PDF file  
 
 ## Usage
 
@@ -118,37 +118,37 @@ All configuration files follow this basic structure:
 ### Common Fields
 
 #### `task` (required)
-Type of task to execute. Must be one of:
-- `"colloquium"`: Generate thesis colloquium protocol
-- `"project"`: Generate project work grading letter
-- `"review"`: Generate peer review comments
+Type of task to execute. Must be one of:  
+- `"colloquium"`: Generate thesis colloquium protocol  
+- `"project"`: Generate project work grading letter  
+- `"review"`: Generate peer review comments  
 
-#### `pdf` (required)
-- `filename`: Name of the PDF file
+#### `pdf` (required)  
+- `filename`: Name of the PDF file  
 
-#### `llm` (optional)
-- `api_choice`: LLM API to use (`"openai"`, `"groq"`, `"gemini"`, `"ollama"`, or `null` for auto-detection)
-- `model`: Specific model name (or `null` for default)
-- `groq_free`: Enable rate limiting for Groq free tier (default: `false`)
+#### `llm` (optional)  
+- `api_choice`: LLM API to use (`"openai"`, `"groq"`, `"gemini"`, `"ollama"`, or `null` for auto-detection)  
+- `model`: Specific model name (or `null` for default)  
+- `groq_free`: Enable rate limiting for Groq free tier (default: `false`)  
 
-#### `output` (optional)
-- `folder`: Output folder (default: same as PDF folder)
-- `compile_pdf`: Whether to compile LaTeX to PDF (default: `true`)
+#### `output` (optional)  
+- `folder`: Output folder (default: same as PDF folder)  
+- `compile_pdf`: Whether to compile LaTeX to PDF (default: `true`)  
 
 ### Task-Specific Fields
 
-#### Colloquium Task
-- `colloquium.date`: Date (format: `DD.MM.YYYY`)
-- `colloquium.time`: Time (format: `HH:MM`)
-- `colloquium.location_type`: `"campus"`, `"company"`, or `"online"`
-- `colloquium.room`: Room number (for campus)
-- `colloquium.company_name`: Company name (for company)
-- `colloquium.company_address`: Company address (for company, optional)
-- `colloquium.zoom_link`: Zoom URL (for online)
-- `colloquium.zcode`: Zoom access code (for online, optional)
+#### Colloquium Task  
+- `colloquium.date`: Date (format: `DD.MM.YYYY`)  
+- `colloquium.time`: Time (format: `HH:MM`)  
+- `colloquium.location_type`: `"campus"`, `"company"`, or `"online"`  
+- `colloquium.room`: Room number (for campus)  
+- `colloquium.company_name`: Company name (for company)  
+- `colloquium.company_address`: Company address (for company, optional)  
+- `colloquium.zoom_link`: Zoom URL (for online)  
+- `colloquium.zcode`: Zoom access code (for online, optional)  
 
-#### Project Task
-- `output.signature_file`: Path to signature image (optional)
+#### Project Task  
+- `output.signature_file`: Path to signature image (optional)  
 
 ## Examples
 
@@ -204,11 +204,11 @@ Type of task to execute. Must be one of:
 
 ## Tips
 
-1. **Use Relative Paths**: Use `..` for parent directories to keep configs portable
-2. **Set `null` for Defaults**: Use `null` for auto-detection/default values
-3. **Comments**: JSON doesn't support comments, but you can use the `"description"` field
-4. **Version Control**: Keep templates in git, but create personal copies with actual paths
-5. **Validation**: The tool validates all required fields before running
+1. **Use Relative Paths**: Use `..` for parent directories to keep configs portable  
+2. **Set `null` for Defaults**: Use `null` for auto-detection/default values  
+3. **Comments**: JSON doesn't support comments, but you can use the `"description"` field  
+4. **Version Control**: Keep templates in git, but create personal copies with actual paths  
+5. **Validation**: The tool validates all required fields before running  
 
 ## Troubleshooting
 
@@ -238,8 +238,8 @@ ValueError: Ungültiger location_type: office
 
 ## Related Documentation
 
-- [Main README](../README.md)
-- [Installation Guide](../docs/INSTALL.de.md)
-- [Colloquium Documentation](../docs/COLLOQUIUM.de.md)
-- [Project Documentation](../docs/PROJECT.de.md)
-- [Review Documentation](../docs/REVIEW.de.md)
+- [Main README](../README.md)  
+- [Installation Guide](../docs/INSTALL.de.md)  
+- [Colloquium Documentation](../docs/COLLOQUIUM.de.md)  
+- [Project Documentation](../docs/PROJECT.de.md)  
+- [Review Documentation](../docs/REVIEW.de.md)  

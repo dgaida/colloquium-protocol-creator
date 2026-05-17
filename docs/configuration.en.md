@@ -6,9 +6,9 @@ This guide explains how to configure the Academic Document Generator using JSON 
 
 The tool supports JSON-based configuration for three use cases:
 
-- **Colloquium protocols** (thesis defense)
-- **Project work & WASP1 grading** letters
-- **Peer review** comments
+- **Colloquium protocols** (thesis defense)  
+- **Project work & WASP1 grading** letters  
+- **Peer review** comments  
 
 ## 🎯 Quick Start
 
@@ -58,10 +58,10 @@ academic-doc-generator --config /path/to/thesis/config_colloquium_campus.json
 }
 ```
 
-- `folder`: Output directory (`null` = PDF's folder)
-- `compile_pdf`: Whether to compile `.tex` to PDF
-- `signature_file`: Path to signature image (defaults to `signature.png` or auto-detected in `data/`)
-- `create_feedback_mail`: Whether to generate student feedback (mainly used in `project` task)
+- `folder`: Output directory (`null` = PDF's folder)  
+- `compile_pdf`: Whether to compile `.tex` to PDF  
+- `signature_file`: Path to signature image (defaults to `signature.png` or auto-detected in `data/`)  
+- `create_feedback_mail`: Whether to generate student feedback (mainly used in `project` task)  
 
 ## 🎓 Colloquium Configuration
 
@@ -78,9 +78,9 @@ academic-doc-generator --config /path/to/thesis/config_colloquium_campus.json
 ```
 
 **Metadata Overrides (Optional):**
-You can add a `metadata` section to manually set fields if automatic extraction fails:
-- `course_of_study`: e.g., "Informatik", "Medieninformatik"
-- `author`: Student name
+You can add a `metadata` section to manually set fields if automatic extraction fails:  
+- `course_of_study`: e.g., "Informatik", "Medieninformatik"  
+- `author`: Student name  
 
 ## 📂 Project Configuration
 
@@ -144,12 +144,12 @@ GEMINI_API_KEY=AIzaSyxxxxxxxx
 
 Pre-built JSON configurations for common workflows in the `config_templates/` directory:
 
-- `config_colloquium_campus.json` - Thesis colloquium on campus
-- `config_colloquium_company.json` - Thesis colloquium at a company
-- `config_colloquium_online.json` - Online thesis colloquium (Zoom)
-- `config_project_template.json` - Project work grading
-- `config_wasp1_template.json` - WASP1 project grading
-- `config_review_template.json` - Peer review comments
+- `config_colloquium_campus.json` - Thesis colloquium on campus  
+- `config_colloquium_company.json` - Thesis colloquium at a company  
+- `config_colloquium_online.json` - Online thesis colloquium (Zoom)  
+- `config_project_template.json` - Project work grading  
+- `config_wasp1_template.json` - WASP1 project grading  
+- `config_review_template.json` - Peer review comments  
 
 ## ⚙️ Global Configuration (config.yaml)
 
@@ -163,12 +163,12 @@ web_metadata_folder: "/path/to/your/website/data/projects/"
 first_examiner: "Prof. Dr. Firstname Lastname"
 ```
 
-- `web_metadata_folder`: If set, generated Jekyll-compatible project profiles are automatically copied to this folder.
-- `first_examiner`: A name set here will be used as the first examiner for all generated documents.
+- `web_metadata_folder`: If set, generated Jekyll-compatible project profiles are automatically copied to this folder.  
+- `first_examiner`: A name set here will be used as the first examiner for all generated documents.  
 
 ## 📚 Related Documentation
 
-- [Installation Guide](INSTALL.en.md)
-- [Colloquium Documentation](COLLOQUIUM.en.md)
-- [Project Documentation](PROJECT.en.md)
-- [Review Documentation](REVIEW.en.md)
+- [Installation Guide](INSTALL.en.md)  
+- [Colloquium Documentation](COLLOQUIUM.en.md)  
+- [Project Documentation](PROJECT.en.md)  
+- [Review Documentation](REVIEW.en.md)  

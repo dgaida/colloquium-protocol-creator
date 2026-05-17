@@ -32,10 +32,10 @@ Ein Jekyll-kompatibler Steckbrief der Arbeit (Summary, Keywords, etc.) für die 
 
 ## Anforderungen
 
-- Annotiertes Thesis-PDF (mit Kommentaren/Hervorhebungen)
-- Mindestens ein konfigurierter LLM-API-Key (OpenAI, Groq, Google Gemini) oder lokales Ollama
-- LaTeX-Installation (LuaLaTeX empfohlen)
-- (Optional) Unterschrift unter `data/signature.png`
+- Annotiertes Thesis-PDF (mit Kommentaren/Hervorhebungen)  
+- Mindestens ein konfigurierter LLM-API-Key (OpenAI, Groq, Google Gemini) oder lokales Ollama  
+- LaTeX-Installation (LuaLaTeX empfohlen)  
+- (Optional) Unterschrift unter `data/signature.png`  
 
 ## Benutzung
 
@@ -92,28 +92,28 @@ Spezielle Marker zur eigenen Orientierung.
 
 Für Interessierte, hier der technische Ablauf:
 
-1. **Extraktion von PDF-Annotationen**: Liest Ihre Kommentare und Hervorhebungen aus dem PDF.
-2. **Kontext-Analyse**: Ordnet jeden Kommentar dem exakt markierten Text und dem umgebenden Absatz zu.
-3. **Intelligente Kategorisierung**: Sortiert Kommentare nach Typ (Frage, Quelle, Sprache).
-4. **KI-Veredelung**: Schreibt kurze Notizen in präzise Prüfungsfragen um.
-5. **Metadaten-Extraktion**: Erkennt Name, Matrikelnummer, Titel und Prüfer automatisch.
-6. **Thesis-Zusammenfassung**: Erstellt eine Kurzfassung basierend auf den ersten 10 Seiten.
-7. **Signatur-Integration**: Bindet automatisch ein Bild Ihrer Unterschrift ein, falls vorhanden.
+1. **Extraktion von PDF-Annotationen**: Liest Ihre Kommentare und Hervorhebungen aus dem PDF.  
+2. **Kontext-Analyse**: Ordnet jeden Kommentar dem exakt markierten Text und dem umgebenden Absatz zu.  
+3. **Intelligente Kategorisierung**: Sortiert Kommentare nach Typ (Frage, Quelle, Sprache).  
+4. **KI-Veredelung**: Schreibt kurze Notizen in präzise Prüfungsfragen um.  
+5. **Metadaten-Extraktion**: Erkennt Name, Matrikelnummer, Titel und Prüfer automatisch.  
+6. **Thesis-Zusammenfassung**: Erstellt eine Kurzfassung basierend auf den ersten 10 Seiten.  
+7. **Signatur-Integration**: Bindet automatisch ein Bild Ihrer Unterschrift ein, falls vorhanden.  
 
 ---
 
 ## Fehlerbehebung
 
-### Outlook-Entwurf wird nicht erstellt
-- Stellen Sie sicher, dass Outlook geöffnet ist, bevor Sie das Tool starten.
-- Unter macOS müssen Sie ggf. die Berechtigung zur Steuerung von Outlook erteilen.
+### Outlook-Entwurf wird nicht erstellt  
+- Stellen Sie sicher, dass Outlook geöffnet ist, bevor Sie das Tool starten.  
+- Unter macOS müssen Sie ggf. die Berechtigung zur Steuerung von Outlook erteilen.  
 
-### Studiengang wird nicht erkannt
-- Stellen Sie sicher, dass der Name des Studiengangs klar auf dem Titelblatt steht.
-- Alternativ können Sie `course_of_study` manuell in der JSON-Konfiguration setzen.
+### Studiengang wird nicht erkannt  
+- Stellen Sie sicher, dass der Name des Studiengangs klar auf dem Titelblatt steht.  
+- Alternativ können Sie `course_of_study` manuell in der JSON-Konfiguration setzen.  
 
 ## Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.de.md)
-- [Praxisprojekt-Benotung](PROJECT.de.md)
-- [Konfigurations-Handbuch](configuration.de.md)
+- [Installationsanleitung](INSTALL.de.md)  
+- [Praxisprojekt-Benotung](PROJECT.de.md)  
+- [Konfigurations-Handbuch](configuration.de.md)  

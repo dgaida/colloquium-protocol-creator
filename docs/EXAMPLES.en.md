@@ -34,11 +34,11 @@ The present work deals with the development of a...
 The PDF includes the TH Köln logo, the examination office address as the recipient, and your digital signature (if available under `data/signature.png`).
 
 ### Pre-filled Grading Form
-The official TH Köln PDF form is automatically filled with the following data:
-- Name, First name & Student ID
-- Thesis title
-- Date and time of the colloquium
-- Correct checkbox for the course of study (e.g., Business Informatics -> `KontrollWI`)
+The official TH Köln PDF form is automatically filled with the following data:  
+- Name, First name & Student ID  
+- Thesis title  
+- Date and time of the colloquium  
+- Correct checkbox for the course of study (e.g., Business Informatics -> `KontrollWI`)  
 
 ### Email & Outlook Draft
 A Markdown file with the text for the examination office:

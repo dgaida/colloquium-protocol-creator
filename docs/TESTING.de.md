@@ -40,12 +40,12 @@ pytest -v
 
 Die Testsuite ist im Verzeichnis `tests/` organisiert:
 
-- `test_colloquium_creator.py`: Tests für PDF-Parsing, Annotations-Extraktion und LaTeX-Generierung für Kolloquien.
-- `test_project_creator.py`: Tests für Metadaten-Extraktion und Geschlechtserkennung bei Projektarbeiten.
-- `test_review_creator.py`: Tests für Zeilennummer-Erkennung und Markdown-Generierung für Peer-Reviews.
-- `test_pipelines.py`: Integrationstests für die Orchestratoren.
-- `test_outlook_mail_generator.py`: Plattformunabhängige Tests für die E-Mail-Generierung.
-- `test_utils.py`: Unit-Tests für Hilfsfunktionen.
+- `test_colloquium_creator.py`: Tests für PDF-Parsing, Annotations-Extraktion und LaTeX-Generierung für Kolloquien.  
+- `test_project_creator.py`: Tests für Metadaten-Extraktion und Geschlechtserkennung bei Projektarbeiten.  
+- `test_review_creator.py`: Tests für Zeilennummer-Erkennung und Markdown-Generierung für Peer-Reviews.  
+- `test_pipelines.py`: Integrationstests für die Orchestratoren.  
+- `test_outlook_mail_generator.py`: Plattformunabhängige Tests für die E-Mail-Generierung.  
+- `test_utils.py`: Unit-Tests für Hilfsfunktionen.  
 
 ## Mocking externer Abhängigkeiten
 

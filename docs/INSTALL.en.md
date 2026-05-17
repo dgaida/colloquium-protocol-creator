@@ -2,10 +2,10 @@
 
 ## System Requirements
 
-- **Python**: 3.9 or higher
-- **Operating System**: Linux, macOS, or Windows
-- **LaTeX**: LuaLaTeX recommended for full Unicode support
-- **API Access**: At least one of OpenAI, Groq, Google Gemini, or Ollama
+- **Python**: 3.9 or higher  
+- **Operating System**: Linux, macOS, or Windows  
+- **LaTeX**: LuaLaTeX recommended for full Unicode support  
+- **API Access**: At least one of OpenAI, Groq, Google Gemini, or Ollama  
 
 ## Quick Start
 
@@ -110,7 +110,7 @@ pytest
 
 ## Next Steps
 
-1. [Colloquium Protocols](COLLOQUIUM.en.md)
-2. [Project Grading Letters](PROJECT.en.md)
-3. [Peer Review Comments](REVIEW.en.md)
-4. [Exam Translation](TRANSLATOR.en.md)
+1. [Colloquium Protocols](COLLOQUIUM.en.md)  
+2. [Project Grading Letters](PROJECT.en.md)  
+3. [Peer Review Comments](REVIEW.en.md)  
+4. [Exam Translation](TRANSLATOR.en.md)  

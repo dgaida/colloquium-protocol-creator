@@ -2,10 +2,10 @@
 
 ## Systemvoraussetzungen
 
-- **Python**: 3.9 oder höher
-- **Betriebssystem**: Linux, macOS oder Windows
-- **LaTeX**: LuaLaTeX empfohlen für vollständige Unicode-Unterstützung
-- **API-Zugang**: Mindestens eine von OpenAI, Groq, Google Gemini oder Ollama
+- **Python**: 3.9 oder höher  
+- **Betriebssystem**: Linux, macOS oder Windows  
+- **LaTeX**: LuaLaTeX empfohlen für vollständige Unicode-Unterstützung  
+- **API-Zugang**: Mindestens eine von OpenAI, Groq, Google Gemini oder Ollama  
 
 ## Quick Start
 
@@ -110,7 +110,7 @@ pytest
 
 ## Nächste Schritte
 
-1. [Kolloquium-Protokolle](COLLOQUIUM.de.md)
-2. [Praxisprojekt-Benotung](PROJECT.de.md)
-3. [Peer-Review-Kommentare](REVIEW.de.md)
-4. [Klausur-Übersetzung](TRANSLATOR.de.md)
+1. [Kolloquium-Protokolle](COLLOQUIUM.de.md)  
+2. [Praxisprojekt-Benotung](PROJECT.de.md)  
+3. [Peer-Review-Kommentare](REVIEW.de.md)  
+4. [Klausur-Übersetzung](TRANSLATOR.de.md)  

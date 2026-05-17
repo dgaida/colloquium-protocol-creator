@@ -1,6 +1,9 @@
 # Academic Document Generator
 
 ![Academic Document Generator Infografik](docs/infografik.png)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dgaida.github.io/colloquium-protocol-creator/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/dgaida/colloquium-protocol-creator/graphs/commit-activity)
+![Last commit](https://img.shields.io/github/last-commit/dgaida/colloquium-protocol-creator)
 
 **Create LaTeX protocol letters and grading documents for academic work at TH Köln**
 
@@ -22,13 +25,13 @@ A tool that transforms annotated PDFs into professional LaTeX documents using AI
 
 ### 1. 📝 Thesis Colloquium Protocols
 
-Generate formal protocol letters for Bachelor/Master thesis colloquiums:
-- Extract and rewrite your rough annotations in the thesis into clear, polite questions
-- Auto-detect student metadata (name, matriculation number, thesis title, course of study)
-- Generate thesis summary from first pages
-- Create LaTeX letter with TH Köln formatting
-- Pre-fill official grading forms with dates and checkboxes (automatically mapped to course of study)
-- Generate registration emails and Outlook drafts for the Prüfungsservice
+Generate formal protocol letters for Bachelor/Master thesis colloquiums:  
+- Extract and rewrite your rough annotations in the thesis into clear, polite questions  
+- Auto-detect student metadata (name, matriculation number, thesis title, course of study)  
+- Generate thesis summary from first pages  
+- Create LaTeX letter with TH Köln formatting  
+- Pre-fill official grading forms with dates and checkboxes (automatically mapped to course of study)  
+- Generate registration emails and Outlook drafts for the Prüfungsservice  
 
 [**→ Full Documentation**](docs/COLLOQUIUM.de.md)
 
@@ -38,10 +41,10 @@ academic-doc-generator colloquium thesis.pdf --date 20.01.2026 --time 14:00 --ro
 
 ### 2. 🎓 Project Work Grading Letters
 
-Generate grading letters for project work (Praxisprojekt):
-- Auto-extract project metadata from title page (including student email)
-- Create LaTeX grading letter template
-- Automatically generate feedback summary and student email
+Generate grading letters for project work (Praxisprojekt):  
+- Auto-extract project metadata from title page (including student email)  
+- Create LaTeX grading letter template  
+- Automatically generate feedback summary and student email  
 
 [**→ Full Documentation**](docs/PROJECT.de.md)
 
@@ -51,11 +54,11 @@ academic-doc-generator project /path/to/Praxisprojekt.pdf
 
 ### 3. 📄 Peer Review Comments
 
-Generate professional peer review feedback for papers:
-- Extract and rewrite informal reviewer notes into constructive feedback
-- Auto-detect line numbers from PDF margins
-- Generate Markdown review document with page/line references
-- Always output in English for international publications
+Generate professional peer review feedback for papers:  
+- Extract and rewrite informal reviewer notes into constructive feedback  
+- Auto-detect line numbers from PDF margins  
+- Generate Markdown review document with page/line references  
+- Always output in English for international publications  
 
 [**→ Full Documentation**](docs/REVIEW.de.md)
 
@@ -65,11 +68,11 @@ academic-doc-generator review paper.pdf
 
 ### 4. 🔤 LaTeX Exam Translator
 
-Automatically translate LaTeX exam documents from German to English:
-- Specifically designed for the `exam` class
-- Preserves all LaTeX commands, environments, and mathematical formulas
-- Masks and preserves LaTeX comments during translation
-- Automatically handles preambles and question structures
+Automatically translate LaTeX exam documents from German to English:  
+- Specifically designed for the `exam` class  
+- Preserves all LaTeX commands, environments, and mathematical formulas  
+- Masks and preserves LaTeX comments during translation  
+- Automatically handles preambles and question structures  
 
 [**→ Full Documentation**](docs/TRANSLATOR.de.md)
 
@@ -83,18 +86,18 @@ output_path = translate_latex_exam("KIKlausur.tex", client)
 
 ## Key Features
 
-- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks
-- 🔍 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama
-- 🤖 **Automatic API Detection** - Uses available API keys or falls back to local Ollama
-- 📄 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF
-- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs
-- ✍️ **Intelligent Comment Refinement** - Rewrites terse notes (e.g., "Why?") into full questions
-- 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer
-- ✒️ **Automatic Signature Detection** - Automatically includes signature if `data/signature.png` exists
-- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms
-- 📧 **Email Generation** - Creates registration emails and Outlook drafts
-- 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)
-- 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output
+- 🚀 **Unified CLI** - Single `academic-doc-generator` command for all tasks  
+- 🔍 **Multiple LLM Support** - Works with OpenAI, Groq, Google Gemini, or Ollama  
+- 🤖 **Automatic API Detection** - Uses available API keys or falls back to local Ollama  
+- 📄 **PDF Annotation Extraction** - Extract text and annotation positions with Docling + PyPDF  
+- 🎯 **Context-Aware Rewriting** - Maps annotations to exact highlighted text and paragraphs  
+- ✍️ **Intelligent Comment Refinement** - Rewrites terse notes (e.g., "Why?") into full questions  
+- 📝 **LaTeX Generation** - Creates `scrlttr2` letters with TH Köln footer  
+- ✒️ **Automatic Signature Detection** - Automatically includes signature if `data/signature.png` exists  
+- 📋 **PDF Form Pre-filling** - Auto-fills official grading forms  
+- 📧 **Email Generation** - Creates registration emails and Outlook drafts  
+- 🔧 **PDF Compilation** - Optionally compiles to PDF (LuaLaTeX recommended)  
+- 🌐 **Unicode Support** - Handles Unicode dashes and German `ß` for LaTeX-safe output  
 
 ## Quick Start
 
@@ -127,17 +130,17 @@ GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 
 #### Using JSON Configuration (Recommended)
 
-1. Copy a json template file from `config_templates` into the folder in which the thesis/paper is located.
+1. Copy a json template file from `config_templates` into the folder in which the thesis/paper is located.  
 
 ```bash
 # List available templates
 academic-doc-generator --list-templates
 ```
 
-2. Edit the json file.
-3. Open `main.py` from the project folder and set `folder`, e.g.: `folder = os.path.join("..", "BachelorThesen", "2025_26_WS", "Musterfrau")`
-4. Run `main.py` (which calls `cli.run_from_config(folder)`).
-5. All files are being created in the specified folder.
+2. Edit the json file.  
+3. Open `main.py` from the project folder and set `folder`, e.g.: `folder = os.path.join("..", "BachelorThesen", "2025_26_WS", "Musterfrau")`  
+4. Run `main.py` (which calls `cli.run_from_config(folder)`).  
+5. All files are being created in the specified folder.  
 
 Alternative to steps 3 and 4 if you want to run from cli:
 
@@ -168,13 +171,13 @@ tex, pdf, email = run_pipeline(
 
 ## Requirements
 
-- **Python**: 3.9 or higher
-- **LaTeX**: LuaLaTeX recommended (for Unicode support)
-- **LLM API**: At least one of:
-  - [OpenAI API](https://platform.openai.com/api-keys) (paid)
-  - [Groq API](https://console.groq.com/keys) (free tier)
-  - [Google Gemini API](https://aistudio.google.com/apikey) (free tier)
-  - [Ollama](https://ollama.com/) (local, free)
+- **Python**: 3.9 or higher  
+- **LaTeX**: LuaLaTeX recommended (for Unicode support)  
+- **LLM API**: At least one of:  
+  - [OpenAI API](https://platform.openai.com/api-keys) (paid)  
+  - [Groq API](https://console.groq.com/keys) (free tier)  
+  - [Google Gemini API](https://aistudio.google.com/apikey) (free tier)  
+  - [Ollama](https://ollama.com/) (local, free)  
 
 ## Supported APIs
 
@@ -193,11 +196,11 @@ The tool now supports JSON configuration files for easier workflow management:
 
 ### Available Templates
 
-- **`config_colloquium_campus.json`** - Colloquium on campus (requires room number)
-- **`config_colloquium_company.json`** - Colloquium at company location
-- **`config_colloquium_online.json`** - Online colloquium via Zoom
-- **`config_project_template.json`** - Project work grading letter
-- **`config_review_template.json`** - Peer review comments
+- **`config_colloquium_campus.json`** - Colloquium on campus (requires room number)  
+- **`config_colloquium_company.json`** - Colloquium at company location  
+- **`config_colloquium_online.json`** - Online colloquium via Zoom  
+- **`config_project_template.json`** - Project work grading letter  
+- **`config_review_template.json`** - Peer review comments  
 
 ### Configuration Structure
 
@@ -230,16 +233,16 @@ The tool now supports JSON configuration files for easier workflow management:
 
 ## Documentation
 
-### Use Cases
-- [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.de.md)
-- [🎓 Project Work Grading Letters](docs/PROJECT.de.md)
-- [📄 Peer Review Comments](docs/REVIEW.de.md)
-- [🔤 LaTeX Exam Translator](docs/TRANSLATOR.de.md)
+### Use Cases  
+- [📝 Thesis Colloquium Protocols](docs/COLLOQUIUM.de.md)  
+- [🎓 Project Work Grading Letters](docs/PROJECT.de.md)  
+- [📄 Peer Review Comments](docs/REVIEW.de.md)  
+- [🔤 LaTeX Exam Translator](docs/TRANSLATOR.de.md)  
 
-### Guides
-- [💿 Installation Guide](docs/INSTALL.de.md)
-- [🧪 Testing Guide](docs/TESTING.de.md)
-- [⚙️ Configuration Templates](config_templates/README.md)
+### Guides  
+- [💿 Installation Guide](docs/INSTALL.de.md)  
+- [🧪 Testing Guide](docs/TESTING.de.md)  
+- [⚙️ Configuration Templates](config_templates/README.md)  
 
 ## Project Structure
 
@@ -333,7 +336,7 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Related Projects
 
-- [llm_client](https://github.com/dgaida/llm_client) - Universal Python LLM client (OpenAI, Groq, Gemini, Ollama)
+- [llm_client](https://github.com/dgaida/llm_client) - Universal Python LLM client (OpenAI, Groq, Gemini, Ollama)  
 
 ## License
 
@@ -345,17 +348,17 @@ This tool aids in producing document templates — it does not mark or make eval
 
 ## Support
 
-If you encounter issues:
-1. Check the [documentation](docs/)
-2. Search [existing issues](https://github.com/dgaida/colloquium-protocol-creator/issues)
-3. Open a new issue with:
-   - Python version and OS
-   - API choice and model
-   - Full error message
-   - Steps to reproduce
+If you encounter issues:  
+1. Check the [documentation](docs/)  
+2. Search [existing issues](https://github.com/dgaida/colloquium-protocol-creator/issues)  
+3. Open a new issue with:  
+   - Python version and OS  
+   - API choice and model  
+   - Full error message  
+   - Steps to reproduce  
 
 ## Acknowledgments
 
-- Uses [Docling](https://github.com/DS4SD/docling) for PDF processing
-- LaTeX template based on KOMA-Script's `scrlttr2` class
-- LLM interface via [llm_client](https://github.com/dgaida/llm_client)
+- Uses [Docling](https://github.com/DS4SD/docling) for PDF processing  
+- LaTeX template based on KOMA-Script's `scrlttr2` class  
+- LLM interface via [llm_client](https://github.com/dgaida/llm_client)  

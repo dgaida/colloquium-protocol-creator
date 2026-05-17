@@ -37,16 +37,16 @@ graph TD
 Jede Hauptaufgabe (Kolloquium, Projekt, Review) wird von einem Orchestrator verwaltet, der die Koordination zwischen verschiedenen Kerndiensten und der Domänenlogik übernimmt.
 
 ### 2. Pipeline-Phasen
-Workflows folgen im Allgemeinen diesen Phasen:
-1. **Extraktion**: Abrufen von Text, Annotationen und Metadaten aus Quelldokumenten (PDF/LaTeX).
-2. **Transformation**: Nutzung von LLMs zum Umschreiben, Zusammenfassen oder Übersetzen von Inhalten.
-3. **Generierung**: Erstellung von Ausgabedokumenten (LaTeX, Markdown, ICS, E-Mails).
-4. **Kompilierung**: Optionales Kompilieren von LaTeX zu PDF.
+Workflows folgen im Allgemeinen diesen Phasen:  
+1. **Extraktion**: Abrufen von Text, Annotationen und Metadaten aus Quelldokumenten (PDF/LaTeX).  
+2. **Transformation**: Nutzung von LLMs zum Umschreiben, Zusammenfassen oder Übersetzen von Inhalten.  
+3. **Generierung**: Erstellung von Ausgabedokumenten (LaTeX, Markdown, ICS, E-Mails).  
+4. **Kompilierung**: Optionales Kompilieren von LaTeX zu PDF.  
 
-### 3. Zentralisierte Vorlagen
-- **Prompts**: Alle LLM-Prompts sind zentral in `core/prompts.py` definiert.
-- **E-Mails**: E-Mail-Vorlagen befinden sich in `core/email.py`.
-- **LaTeX**: Dokumentvorlagen sind als f-strings in `core/latex.py` implementiert.
+### 3. Zentralisierte Vorlagen  
+- **Prompts**: Alle LLM-Prompts sind zentral in `core/prompts.py` definiert.  
+- **E-Mails**: E-Mail-Vorlagen befinden sich in `core/email.py`.  
+- **LaTeX**: Dokumentvorlagen sind als f-strings in `core/latex.py` implementiert.  
 
 ### 4. Dependency Injection
 LLM-Clients werden in Orchestratoren injiziert, was das Testen mit Mocks erleichtert und die Unterstützung mehrerer LLM-Provider ermöglicht.

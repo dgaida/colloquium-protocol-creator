@@ -32,10 +32,10 @@ Ein Jekyll-kompatibler Steckbrief der Arbeit für die eigene Webseite. Der Pfad 
 
 ## Anforderungen
 
-- Projektarbeit als PDF mit Deckblatt (Text muss selektierbar sein)
-- Mindestens ein konfigurierter LLM-API-Key (OpenAI, Groq, Google Gemini) oder lokales Ollama
-- LaTeX-Installation (LuaLaTeX empfohlen)
-- (Optional) Unterschrift unter `data/signature.png`
+- Projektarbeit als PDF mit Deckblatt (Text muss selektierbar sein)  
+- Mindestens ein konfigurierter LLM-API-Key (OpenAI, Groq, Google Gemini) oder lokales Ollama  
+- LaTeX-Installation (LuaLaTeX empfohlen)  
+- (Optional) Unterschrift unter `data/signature.png`  
 
 ## Benutzung
 
@@ -57,35 +57,35 @@ Sie können das Tool auch über die `main.py` ausführen, indem Sie dort den Pfa
 
 ## Feedback & Studierenden-E-Mail
 
-Wenn `create_feedback_mail` aktiviert ist (Standard), führt das Tool folgende Schritte aus:
-1. Analyse der Projektarbeit mithilfe der KI.
-2. Extraktion der E-Mail-Adresse des Studierenden vom Deckblatt.
-3. Generierung einer Markdown-Datei mit einer Feedback-Zusammenfassung.
-4. Bereitstellung eines E-Mail-Entwurfs für den Studierenden.
+Wenn `create_feedback_mail` aktiviert ist (Standard), führt das Tool folgende Schritte aus:  
+1. Analyse der Projektarbeit mithilfe der KI.  
+2. Extraktion der E-Mail-Adresse des Studierenden vom Deckblatt.  
+3. Generierung einer Markdown-Datei mit einer Feedback-Zusammenfassung.  
+4. Bereitstellung eines E-Mail-Entwurfs für den Studierenden.  
 
 ---
 
 ## Funktionsweise (Details)
 
-1. **Metadaten-Extraktion**: Erkennt automatisch Name, Matrikelnummer, Projekttitel, Prüfer und E-Mail-Adresse des Studierenden.
-2. **Geschlechtserkennung**: Nutzt die KI, um basierend auf dem Vornamen die korrekte deutsche Anrede (Herr/Frau) zu bestimmen.
-3. **Semester-Berechnung**: Ermittelt automatisch das aktuelle Semester (SoSe/WS).
-4. **LaTeX-Generierung**: Erstellt den Brief im Corporate Design der TH Köln.
-5. **Signatur-Integration**: Bindet automatisch ein Bild Ihrer Unterschrift ein, falls vorhanden.
+1. **Metadaten-Extraktion**: Erkennt automatisch Name, Matrikelnummer, Projekttitel, Prüfer und E-Mail-Adresse des Studierenden.  
+2. **Geschlechtserkennung**: Nutzt die KI, um basierend auf dem Vornamen die korrekte deutsche Anrede (Herr/Frau) zu bestimmen.  
+3. **Semester-Berechnung**: Ermittelt automatisch das aktuelle Semester (SoSe/WS).  
+4. **LaTeX-Generierung**: Erstellt den Brief im Corporate Design der TH Köln.  
+5. **Signatur-Integration**: Bindet automatisch ein Bild Ihrer Unterschrift ein, falls vorhanden.  
 
 ---
 
 ## Fehlerbehebung
 
-### E-Mail-Adresse nicht erkannt
-- Stellen Sie sicher, dass die E-Mail-Adresse auf dem Deckblatt steht und als Text kopierbar ist.
-- Falls die Extraktion fehlschlägt, müssen Sie die Adresse manuell im E-Mail-Entwurf ergänzen.
+### E-Mail-Adresse nicht erkannt  
+- Stellen Sie sicher, dass die E-Mail-Adresse auf dem Deckblatt steht und als Text kopierbar ist.  
+- Falls die Extraktion fehlschlägt, müssen Sie die Adresse manuell im E-Mail-Entwurf ergänzen.  
 
-### Falsche Anrede (Herr/Frau)
-- Bei uneindeutigen Vornamen kann die Erkennung fehlschlagen. Sie können die Anrede einfach in der generierten `.tex`-Datei korrigieren.
+### Falsche Anrede (Herr/Frau)  
+- Bei uneindeutigen Vornamen kann die Erkennung fehlschlagen. Sie können die Anrede einfach in der generierten `.tex`-Datei korrigieren.  
 
 ## Weitere Dokumentation
 
-- [Installationsanleitung](INSTALL.de.md)
-- [Kolloquium-Protokolle](COLLOQUIUM.de.md)
-- [Konfigurations-Handbuch](configuration.de.md)
+- [Installationsanleitung](INSTALL.de.md)  
+- [Kolloquium-Protokolle](COLLOQUIUM.de.md)  
+- [Konfigurations-Handbuch](configuration.de.md)  

@@ -14,51 +14,51 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
 <div class="grid cards" markdown>
 
--   :material-school:{ .lg .middle } __🎓 Kolloquium-Protokolle__
+-   :material-school:{ .lg .middle } __🎓 Kolloquium-Protokolle__  
 
     ---
 
-    - Notizen → klare Fragen
-    - Auto-Metadaten-Extraktion
-    - Thesis-Zusammenfassung
-    - Formular-Ausfüllung
-    - E-Mail-Generierung
+    - Notizen → klare Fragen  
+    - Auto-Metadaten-Extraktion  
+    - Thesis-Zusammenfassung  
+    - Formular-Ausfüllung  
+    - E-Mail-Generierung  
 
     [:octicons-arrow-right-24: Dokumentation](COLLOQUIUM.de.md)
 
--   :material-file-document:{ .lg .middle } __📊 Praxisprojekt-Benotung__
+-   :material-file-document:{ .lg .middle } __📊 Praxisprojekt-Benotung__  
 
     ---
 
-    - Metadaten-Extraktion
-    - Anrede-Bestimmung (Herr/Frau)
-    - Bewertungsbrief-Vorlage
-    - Feedback-Zusammenfassung
-    - Studierenden-E-Mail
+    - Metadaten-Extraktion  
+    - Anrede-Bestimmung (Herr/Frau)  
+    - Bewertungsbrief-Vorlage  
+    - Feedback-Zusammenfassung  
+    - Studierenden-E-Mail  
 
     [:octicons-arrow-right-24: Dokumentation](PROJECT.de.md)
 
--   :material-pencil:{ .lg .middle } __✍️ Peer Review Kommentare__
+-   :material-pencil:{ .lg .middle } __✍️ Peer Review Kommentare__  
 
     ---
 
-    - Notizen → konstruktives Feedback
-    - Auto-Zeilennummern-Erkennung
-    - Markdown-Export
-    - Immer auf Englisch
-    - Wissenschaftlicher Ton
+    - Notizen → konstruktives Feedback  
+    - Auto-Zeilennummern-Erkennung  
+    - Markdown-Export  
+    - Immer auf Englisch  
+    - Wissenschaftlicher Ton  
 
     [:octicons-arrow-right-24: Dokumentation](REVIEW.de.md)
 
--   :material-translate:{ .lg .middle } __🔤 LaTeX-Klausur-Übersetzer__
+-   :material-translate:{ .lg .middle } __🔤 LaTeX-Klausur-Übersetzer__  
 
     ---
 
-    - Deutsch → Englisch
-    - Exam-Klasse optimiert
-    - Mathe-Formeln erhalten
-    - Kommentare geschützt
-    - Struktur-bewusst
+    - Deutsch → Englisch  
+    - Exam-Klasse optimiert  
+    - Mathe-Formeln erhalten  
+    - Kommentare geschützt  
+    - Struktur-bewusst  
 
     [:octicons-arrow-right-24: Dokumentation](TRANSLATOR.de.md)
 
@@ -70,7 +70,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
 <div class="grid cards" markdown>
 
--   :material-clock-fast:{ .lg .middle } __Schnellstart__
+-   :material-clock-fast:{ .lg .middle } __Schnellstart__  
 
     ---
 
@@ -78,7 +78,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     [:octicons-arrow-right-24: Installation](INSTALL.de.md)
 
--   :material-cog:{ .lg .middle } __Konfiguration__
+-   :material-cog:{ .lg .middle } __Konfiguration__  
 
     ---
 
@@ -86,7 +86,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     [:octicons-arrow-right-24: Konfigurations-Guide](configuration.de.md)
 
--   :material-file-find:{ .lg .middle } __Beispiele__
+-   :material-file-find:{ .lg .middle } __Beispiele__  
 
     ---
 
@@ -94,7 +94,7 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
     [:octicons-arrow-right-24: Beispiel-Ausgaben](EXAMPLES.de.md)
 
--   :material-code-braces:{ .lg .middle } __API-Referenz__
+-   :material-code-braces:{ .lg .middle } __API-Referenz__  
 
     ---
 
@@ -106,22 +106,22 @@ Verwandeln Sie annotierte PDFs mithilfe von KI in professionelle LaTeX-Dokumente
 
 ## ✨ Hauptmerkmale
 
-- 🚀 **Einheitliche CLI** - Ein einziger `academic-doc-generator`-Befehl für alle Aufgaben
-- 🔍 **Extraktion von PDF-Annotationen** - Extrahiert Text und Annotationspositionen mit Docling + PyPDF
-- 🤖 **Unterstützung mehrerer LLMs** - Funktioniert mit OpenAI, Groq, Google Gemini oder Ollama
-- 🎯 **Kontextsensitive Umformulierung** - Ordnet Annotationen dem exakt markierten Text und den umgebenden Absätzen zu
-- ✍️ **Intelligente Kommentar-Veredelung** - Schreibt kurze Notizen in vollständige Fragen um
-- 📝 **LaTeX-Generierung** - Erzeugt professionelle Briefe mit TH Köln-Formatierung
-- ✒️ **Automatische Signatur-Erkennung** - Bindet Signaturen aus `data/signature.png` automatisch ein
-- 📋 **Vorausfüllen von PDF-Formularen** - Füllt offizielle Bewertungsformulare automatisch aus
-- 📧 **E-Mail- & Outlook-Integration** - Erstellt Anmelde-E-Mails und Outlook-Entwürfe
-- 🌐 **Unicode-Unterstützung** - Korrekte Handhabung deutscher Umlaute
+- 🚀 **Einheitliche CLI** - Ein einziger `academic-doc-generator`-Befehl für alle Aufgaben  
+- 🔍 **Extraktion von PDF-Annotationen** - Extrahiert Text und Annotationspositionen mit Docling + PyPDF  
+- 🤖 **Unterstützung mehrerer LLMs** - Funktioniert mit OpenAI, Groq, Google Gemini oder Ollama  
+- 🎯 **Kontextsensitive Umformulierung** - Ordnet Annotationen dem exakt markierten Text und den umgebenden Absätzen zu  
+- ✍️ **Intelligente Kommentar-Veredelung** - Schreibt kurze Notizen in vollständige Fragen um  
+- 📝 **LaTeX-Generierung** - Erzeugt professionelle Briefe mit TH Köln-Formatierung  
+- ✒️ **Automatische Signatur-Erkennung** - Bindet Signaturen aus `data/signature.png` automatisch ein  
+- 📋 **Vorausfüllen von PDF-Formularen** - Füllt offizielle Bewertungsformulare automatisch aus  
+- 📧 **E-Mail- & Outlook-Integration** - Erstellt Anmelde-E-Mails und Outlook-Entwürfe  
+- 🌐 **Unicode-Unterstützung** - Korrekte Handhabung deutscher Umlaute  
 
 ## 🛠️ Anforderungen
 
-- **Python**: 3.9 oder höher
-- **LaTeX**: LuaLaTeX empfohlen (for Unicode-Unterstützung)
-- **LLM API**: Mindestens eine von OpenAI, Groq, Gemini oder Ollama
+- **Python**: 3.9 oder höher  
+- **LaTeX**: LuaLaTeX empfohlen (for Unicode-Unterstützung)  
+- **LLM API**: Mindestens eine von OpenAI, Groq, Gemini oder Ollama  
 
 ## 🤝 Mitwirken
 

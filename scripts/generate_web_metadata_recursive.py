@@ -20,7 +20,7 @@ TARGET_WEB_FOLDER = r"D:\TH_Koeln\dgaida.github.io\_student_projects"
 
 def process_folder(folder_path):
     """Process a single folder containing the target config file."""
-    config_file = os.path.join(folder_path, "config_dgaida.github.json")
+    config_file = os.path.join(folder_path, "config_dgaida2.github.json")
     if not os.path.exists(config_file):
         return
 
@@ -115,7 +115,7 @@ def main():
 
     found_any = False
     for root, _dirs, files in os.walk(root_dir):
-        if "config_dgaida.github.json" in files:
+        if "config_dgaida2.github.json" in files:
             # Check for existing .md file with pattern NNNN_....md
             existing_md = [f for f in files if re.match(r"^\d{4}_.*\.md$", f)]
             if existing_md:

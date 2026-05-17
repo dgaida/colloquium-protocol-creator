@@ -18,7 +18,7 @@ except ImportError as e:
 TARGET_WEB_FOLDER = r"D:\TH_Koeln\dgaida.github.io\_student_projects"
 
 
-def process_folder(folder_path, llm_client):
+def process_folder(folder_path):
     """Process a single folder containing the target config file."""
     config_file = os.path.join(folder_path, "config_dgaida.github.json")
     if not os.path.exists(config_file):
@@ -31,6 +31,15 @@ def process_folder(folder_path, llm_client):
     except Exception as e:
         print(f"Error reading config file: {e}")
         return
+
+    # Extract LLM configuration from config file
+    llm_cfg = config.get("llm", {})
+    api_choice = llm_cfg.get("api_choice")
+    model = llm_cfg.get("model")
+    groq_free = llm_cfg.get("groq_free", False)
+
+    print(f"Initializing LLMClient with model: {model} (API: {api_choice}, groq_free: {groq_free})")
+    llm_client = LLMClient(api_choice=api_choice, llm=model)
 
     pdf_filename = config.get("pdf", {}).get("filename")
     if not pdf_filename:
@@ -74,7 +83,7 @@ def process_folder(folder_path, llm_client):
     # 3. Extract metadata and summary using existing core logic
     # We use get_summary_and_metadata_of_pdf as it encapsulates the LLM calls
     summary_latex, doc_metadata = llm.get_summary_and_metadata_of_pdf(
-        pdf_path, language, llm_client
+        pdf_path, language, llm_client, groq_free=groq_free
     )
 
     work_type = f"{doc_metadata.get('bachelor_master', 'Bachelor')}thesis"
@@ -114,13 +123,11 @@ def main():
 
     print(f"Starting recursive search in: {os.path.abspath(root_dir)}")
 
-    llm_client = LLMClient()
-
     found_any = False
     for root, _dirs, files in os.walk(root_dir):
         if "config_dgaida.github.json" in files:
             found_any = True
-            process_folder(root, llm_client)
+            process_folder(root)
 
     if not found_any:
         print("No 'config_dgaida.github.json' files found.")

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<questestinterop>
+  <item ident="il_0_quest_123" title="Question 1">
+    <presentation>
+      <flow>
+        <material>
+          <mattext texttype="text/xhtml">&lt;p&gt;Betrachten Sie die folgende Konfusionsmatrix, die die Vorhersagen eines Modells anzeigt:&lt;/p&gt;&#13;&#10;&lt;p&gt;&lt;img alt=&quot;&quot; height=&quot;528&quot; src=&quot;il_13890_mob_1186557&quot; title=&quot;konfusion_matrix.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;&#13;&#10;&lt;p&gt;Wie oft wurde die Klasse 8 richtig erkannt?&lt;/p&gt;</mattext>
+        </material>
+      </flow>
+    </presentation>
+  </item>
+  <item ident="il_0_quest_124" title="Question 2">
+    <presentation>
+      <flow>
+        <material>
+          <mattext texttype="text/xhtml">&lt;p&gt;Welche der folgenden Aussagen ist korrekt?&lt;/p&gt;</mattext>
+        </material>
+      </flow>
+    </presentation>
+  </item>
+</questestinterop>

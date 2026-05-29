@@ -1,4 +1,3 @@
-# src/academic_doc_generator/exam_translator/cli.py
 """CLI interface for the exam translator."""
 
 import argparse
@@ -8,6 +7,7 @@ from pathlib import Path
 from llm_client import LLMClient
 
 from .translator import translate_latex_exam
+from .xml_translator import translate_xml_exam
 
 
 def exam_translator_main() -> None:
@@ -17,18 +17,18 @@ def exam_translator_main() -> None:
     """
     parser = argparse.ArgumentParser(
         prog="exam-translator",
-        description="Translate LaTeX exam documents from German to English",
+        description="Translate LaTeX or XML exam documents from German to English",
     )
 
     parser.add_argument(
         "input",
-        help="Path to the German LaTeX exam file (.tex)",
+        help="Path to the German LaTeX (.tex) or XML (.xml) exam file",
     )
 
     parser.add_argument(
         "-o",
         "--output",
-        help="Output path for English exam (default: input_engl.tex)",
+        help="Output path for English exam (default: input_engl.ext)",
         default=None,
     )
 
@@ -58,8 +58,12 @@ def exam_translator_main() -> None:
         print(f"❌ Fehler: Datei nicht gefunden: {input_path}")
         sys.exit(1)
 
-    if input_path.suffix != ".tex":
-        print("⚠️  Warnung: Datei hat keine .tex Endung")
+    # Determine file type
+    is_xml = input_path.suffix.lower() == ".xml"
+    is_tex = input_path.suffix.lower() == ".tex"
+
+    if not is_xml and not is_tex:
+        print(f"⚠️  Warnung: Datei hat keine .tex oder .xml Endung: {input_path.suffix}")
 
     # Create LLM client
     try:
@@ -74,19 +78,28 @@ def exam_translator_main() -> None:
 
     # Translate exam
     try:
-        output_path = translate_latex_exam(
-            input_path=args.input,
-            llm_client=llm_client,
-            output_path=args.output,
-            verbose=args.verbose,
-        )
+        if is_xml:
+            output_path = translate_xml_exam(
+                input_path=args.input,
+                llm_client=llm_client,
+                output_path=args.output,
+                verbose=args.verbose,
+            )
+        else:
+            # Default to LaTeX if not explicitly XML (backward compatibility)
+            output_path = translate_latex_exam(
+                input_path=args.input,
+                llm_client=llm_client,
+                output_path=args.output,
+                verbose=args.verbose,
+            )
 
         print("\n✅ Übersetzung erfolgreich!")
         print(f"📄 Original: {args.input}")
         print(f"📄 Übersetzt: {output_path}")
 
     except ValueError as e:
-        print(f"❌ Fehler in der LaTeX-Struktur: {e}")
+        print(f"❌ Fehler in der Dokumentstruktur: {e}")
         sys.exit(1)
     except Exception as e:
         print(f"❌ Unerwarteter Fehler: {e}")

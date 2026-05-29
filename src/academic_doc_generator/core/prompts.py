@@ -226,6 +226,30 @@ German LaTeX preamble:
 Translated English LaTeX preamble:
 """
 
+    TRANSLATE_XML_XHTML = """You are a professional translator specialized in educational XML content.
+
+Your task: Translate the following XML/XHTML text from German to English.
+
+CRITICAL RULES:
+1. PRESERVE ALL HTML/XML tags EXACTLY (e.g., <p>, <img />, <b>, etc.)
+2. PRESERVE ALL attributes (e.g., alt="", height="", src="", title="", width="")
+3. PRESERVE ALL entities and special characters (e.g., &lt;, &gt;, &quot;, &#13;, &#10;)
+4. ONLY translate the actual German text content to English
+5. Do NOT add any explanations or extra text
+6. Return ONLY the translated XML/XHTML content
+7. Maintain the same structure and formatting
+
+Example:
+Input: &lt;p&gt;Betrachten Sie die folgende Konfusionsmatrix&lt;/p&gt;
+Output: &lt;p&gt;Consider the following confusion matrix&lt;/p&gt;
+
+German content to translate:
+
+{text}
+
+Translated English content:
+"""
+
     SUMMARIZE_FOR_WEB = """
 You are given the first ten pages of a student's thesis or project report.
 Please provide a very concise summary (2-3 sentences) in English that is suitable for publication on a website.

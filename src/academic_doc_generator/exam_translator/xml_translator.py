@@ -60,6 +60,7 @@ def translate_xml_exam(
     # but here we'll use re.sub with a callback for safety and simplicity.
 
     count = 0
+
     def replace_match(match):
         nonlocal count
         count += 1

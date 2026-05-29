@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
-import pytest
 from unittest.mock import MagicMock
+
 from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
 
 def test_translate_xml_exam(tmp_path):
     # Setup test file
@@ -24,7 +24,9 @@ def test_translate_xml_exam(tmp_path):
 
     # Mock LLM Client
     mock_llm = MagicMock()
-    mock_llm.chat_completion.return_value = "&lt;p&gt;Consider the following confusion matrix&lt;/p&gt;"
+    mock_llm.chat_completion.return_value = (
+        "&lt;p&gt;Consider the following confusion matrix&lt;/p&gt;"
+    )
     mock_llm.api_choice = "mock"
     mock_llm.llm = "mock-model"
 
@@ -32,13 +34,14 @@ def test_translate_xml_exam(tmp_path):
 
     # Verify result
     assert os.path.exists(output_path)
-    with open(output_path, "r", encoding="utf-8") as f:
+    with open(output_path, encoding="utf-8") as f:
         translated_xml = f.read()
 
     assert "&lt;p&gt;Consider the following confusion matrix&lt;/p&gt;" in translated_xml
-    assert "<mattext texttype=\"text/xhtml\">" in translated_xml
+    assert '<mattext texttype="text/xhtml">' in translated_xml
     assert "</mattext>" in translated_xml
     assert "il_0_quest_123" in translated_xml
+
 
 def test_translate_xml_exam_complex(tmp_path):
     # Setup test file with complex content
@@ -56,7 +59,7 @@ def test_translate_xml_exam_complex(tmp_path):
 
     output_path = translate_xml_exam(input_file, llm_client=mock_llm)
 
-    with open(output_path, "r", encoding="utf-8") as f:
+    with open(output_path, encoding="utf-8") as f:
         result = f.read()
 
     assert translated_inner in result

@@ -10,6 +10,8 @@ from ..colloquium.orchestrator import run_pipeline
 from ..config_loader import ConfigLoader, load_config
 from ..core.types import ColloquiumWorkflowConfig, ProjectWorkflowConfig
 from ..core.validation import validate_pdf_path
+from ..exam_translator.translator import translate_latex_exam
+from ..exam_translator.xml_translator import translate_xml_exam
 from ..project.orchestrator import run_project_pipeline
 from ..review.orchestrator import run_review_pipeline
 
@@ -251,3 +253,62 @@ def run_review_direct(args: argparse.Namespace) -> None:
 
     print("\n✓ Review-Pipeline abgeschlossen:")
     print(f"  • Markdown: {md_path}")
+
+
+def run_translator_direct(args: argparse.Namespace) -> None:
+    """Execute exam translation with direct CLI arguments."""
+    # Validate input file
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"❌ Fehler: Datei nicht gefunden: {input_path}")
+        sys.exit(1)
+
+    # Determine file type
+    is_xml = input_path.suffix.lower() == ".xml"
+    is_tex = input_path.suffix.lower() == ".tex"
+
+    if not is_xml and not is_tex:
+        print(f"⚠️  Warnung: Datei hat keine .tex oder .xml Endung: {input_path.suffix}")
+
+    # Create LLM client
+    try:
+        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
+    except Exception as e:
+        print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
+        print(
+            "Stelle sicher, dass die API-Keys in secrets.env oder als Umgebungsvariablen gesetzt sind."
+        )
+        sys.exit(1)
+
+    # Translate exam
+    try:
+        if is_xml:
+            output_path = translate_xml_exam(
+                input_path=args.input,
+                llm_client=llm_client,
+                output_path=args.output,
+                verbose=args.verbose,
+            )
+        else:
+            # Default to LaTeX if not explicitly XML (backward compatibility)
+            output_path = translate_latex_exam(
+                input_path=args.input,
+                llm_client=llm_client,
+                output_path=args.output,
+                verbose=args.verbose,
+            )
+
+        print("\n✅ Übersetzung erfolgreich!")
+        print(f"📄 Original: {args.input}")
+        print(f"📄 Übersetzt: {output_path}")
+
+    except ValueError as e:
+        print(f"❌ Fehler in der Dokumentstruktur: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unerwarteter Fehler: {e}")
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)

@@ -119,6 +119,36 @@ def create_parser() -> argparse.ArgumentParser:
     review_parser.add_argument("--groq-free", action="store_true", help="Use free-tier pacing")
     review_parser.add_argument("--out", help="Output folder")
 
+    # --- Translator Subcommand ---
+    translator_parser = subparsers.add_parser(
+        "translator", help="Translate LaTeX or XML exam documents"
+    )
+    translator_parser.add_argument(
+        "input",
+        help="Path to the German LaTeX (.tex) or XML (.xml) exam file",
+    )
+    translator_parser.add_argument(
+        "-o",
+        "--output",
+        help="Output path for English exam (default: input_engl.ext)",
+        default=None,
+    )
+    translator_parser.add_argument(
+        "--api",
+        choices=["openai", "groq", "gemini", "ollama"],
+        help="LLM API to use (auto-detected if omitted)",
+    )
+    translator_parser.add_argument(
+        "--model",
+        help="LLM model to use",
+    )
+    translator_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show detailed translation progress",
+    )
+
     return parser
 
 
@@ -169,6 +199,8 @@ def main() -> None:
         handlers.run_project_direct(args)
     elif args.command == "review":
         handlers.run_review_direct(args)
+    elif args.command == "translator":
+        handlers.run_translator_direct(args)
     else:
         # No subcommand → show help
         parser.print_help()

@@ -1,7 +1,10 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from academic_doc_generator.cli.main import main
+import argparse
 import sys
+from unittest.mock import patch
+
+from academic_doc_generator.cli.handlers import run_translator_direct
+from academic_doc_generator.cli.main import main
+
 
 class TestTranslatorIntegration:
     @patch("academic_doc_generator.cli.handlers.run_translator_direct")
@@ -22,18 +25,11 @@ class TestTranslatorIntegration:
     @patch("academic_doc_generator.cli.handlers.translate_xml_exam")
     @patch("academic_doc_generator.cli.handlers.LLMClient")
     def test_run_translator_direct_xml(self, mock_llm, mock_translate_xml, tmp_path):
-        from academic_doc_generator.cli.handlers import run_translator_direct
-        import argparse
-
         xml_file = tmp_path / "test.xml"
         xml_file.write_text("<root></root>")
 
         args = argparse.Namespace(
-            input=str(xml_file),
-            output=None,
-            api="openai",
-            model="gpt-4",
-            verbose=False
+            input=str(xml_file), output=None, api="openai", model="gpt-4", verbose=False
         )
 
         run_translator_direct(args)

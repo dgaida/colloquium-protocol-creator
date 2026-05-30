@@ -44,20 +44,20 @@ translate_xml_exam("KIKlausur.xml", client)
 
 ## Hauptmerkmale
 
-- ✅ **Format-Erhalt**: Behält die gesamte Struktur und alle technischen Tags bei.
-- ✅ **LaTeX-Spezialisierung**: Intelligente Aufteilung von LaTeX-Dokumenten (`exam`-Klasse) in Fragen.
-- ✅ **XML/ILIAS-Unterstützung**: Übersetzt gezielt Inhalte in `<mattext>`-Tags und schützt HTML-Entities.
+- ✅ **Format-Erhalt**: Behält die gesamte Struktur und alle technischen Tags bei.  
+- ✅ **LaTeX-Spezialisierung**: Intelligente Aufteilung von LaTeX-Dokumenten (`exam`-Klasse) in Fragen.  
+- ✅ **XML/ILIAS-Unterstützung**: Übersetzt gezielt Inhalte in `<mattext>`-Tags und schützt HTML-Entities.  
 - ✅ **Mathematik-Schutz**: Mathematische Formeln werden nicht verändert.  
-- ✅ **Kommentar-Schutz**: Maskiert LaTeX-Kommentare, um deren Position zu bewahren.
+- ✅ **Kommentar-Schutz**: Maskiert LaTeX-Kommentare, um deren Position zu bewahren.  
 
 ---
 
 ## Funktionsweise (Details)
 
-### LaTeX-Übersetzung
-1. **Struktur-Analyse**: Das Dokument wird in Präambel, Fragen und Postamble zerlegt.
-2. **Maskierung**: Kommentare werden vorübergehend maskiert.
-3. **Übersetzung**: Fließtext und Aufgabenstellungen werden übersetzt, Befehle bleiben erhalten.
+### LaTeX-Übersetzung  
+1. **Struktur-Analyse**: Das Dokument wird in Präambel, Fragen und Postamble zerlegt.  
+2. **Maskierung**: Kommentare werden vorübergehend maskiert.  
+3. **Übersetzung**: Fließtext und Aufgabenstellungen werden übersetzt, Befehle bleiben erhalten.  
 
 ### XML-Übersetzung (z.B. ILIAS)
 Das Tool sucht nach `<mattext texttype="text/xhtml">...</mattext>` Tags. Der darin enthaltene Text wird übersetzt, wobei interne HTML-Tags und XML-Entities (z.B. `&lt;`, `&#13;`) erhalten bleiben.
@@ -66,7 +66,7 @@ Das Tool sucht nach `<mattext texttype="text/xhtml">...</mattext>` Tags. Der dar
 
 ## Einschränkungen & Tipps
 
-1. **Dateiendungen**: Nutzen Sie `.tex` für LaTeX und `.xml` für ILIAS-Exporte.
+1. **Dateiendungen**: Nutzen Sie `.tex` für LaTeX und `.xml` für ILIAS-Exporte.  
 2. **KI-Wahl**: Nutzen Sie **OpenAI (GPT-4o)** für die höchste Qualität bei komplexen fachlichen Formulierungen.  
 3. **Schnelligkeit**: Nutzen Sie **Groq** oder **Gemini** für sehr schnelle und oft kostenlose Übersetzungen.  
 

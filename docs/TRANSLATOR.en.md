@@ -44,20 +44,20 @@ translate_xml_exam("Exam.xml", client)
 
 ## Key Features
 
-- ✅ **Format Preservation**: Maintains the entire structure and all technical tags.
-- ✅ **LaTeX Specialization**: Intelligently splits LaTeX documents (`exam` class) into questions.
-- ✅ **XML/ILIAS Support**: Specifically translates content in `<mattext>` tags and protects HTML entities.
+- ✅ **Format Preservation**: Maintains the entire structure and all technical tags.  
+- ✅ **LaTeX Specialization**: Intelligently splits LaTeX documents (`exam` class) into questions.  
+- ✅ **XML/ILIAS Support**: Specifically translates content in `<mattext>` tags and protects HTML entities.  
 - ✅ **Math Protection**: Mathematical formulas remain untouched.  
-- ✅ **Comment Protection**: Masks LaTeX comments to preserve their exact position.
+- ✅ **Comment Protection**: Masks LaTeX comments to preserve their exact position.  
 
 ---
 
 ## How It Works (Details)
 
-### LaTeX Translation
-1. **Structure Analysis**: The document is split into preamble, questions, and postamble.
-2. **Masking**: Comments are temporarily masked.
-3. **Translation**: Prose text and task descriptions are translated, commands remain unchanged.
+### LaTeX Translation  
+1. **Structure Analysis**: The document is split into preamble, questions, and postamble.  
+2. **Masking**: Comments are temporarily masked.  
+3. **Translation**: Prose text and task descriptions are translated, commands remain unchanged.  
 
 ### XML Translation (e.g., ILIAS)
 The tool searches for `<mattext texttype="text/xhtml">...</mattext>` tags. The text within is translated, while internal HTML tags and XML entities (e.g., `&lt;`, `&#13;`) are preserved.
@@ -66,7 +66,7 @@ The tool searches for `<mattext texttype="text/xhtml">...</mattext>` tags. The t
 
 ## Limitations & Tips
 
-1. **File Extensions**: Use `.tex` for LaTeX and `.xml` for ILIAS exports.
+1. **File Extensions**: Use `.tex` for LaTeX and `.xml` for ILIAS exports.  
 2. **AI Choice**: Use **OpenAI (GPT-4o)** for the highest quality in complex academic formulations.  
 3. **Speed**: Use **Groq** or **Gemini** for very fast and often free translations.  
 

@@ -95,7 +95,9 @@ def process_folder(folder_path, config_filename):
     if task == "project":
         doc_metadata = extract_project_metadata(pdf_path, llm_client)
         summary_latex = llm.summarize_thesis(pages_text, language, llm_client)
-        work_type = config.get("project", {}).get("work_type") or doc_metadata.get("work_type", "Praxisprojekt")
+        work_type = config.get("project", {}).get("work_type") or doc_metadata.get(
+            "work_type", "Praxisprojekt"
+        )
     else:
         # We use get_summary_and_metadata_of_pdf as it encapsulates the LLM calls
         summary_latex, doc_metadata = llm.get_summary_and_metadata_of_pdf(
@@ -117,7 +119,7 @@ def process_folder(folder_path, config_filename):
         copy_to_web_folder=False,
         move_to_web_folder=True,
         web_metadata_folder=TARGET_WEB_FOLDER,
-        students=doc_metadata.get("students")
+        students=doc_metadata.get("students"),
     )
 
     print(f"✅ Generated web metadata: {md_path}")

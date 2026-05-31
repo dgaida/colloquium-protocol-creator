@@ -45,15 +45,15 @@ def test_process_folder_project(tmp_path):
     pdf_path = folder / "RAG Chatbot Report.pdf"
     pdf_path.write_text("%PDF-1.4 dummy")
 
-    with patch("scripts.generate_web_metadata_recursive.pdf.extract_text_per_page") as mock_pdf, patch(
-        "scripts.generate_web_metadata_recursive.extract_project_metadata"
-    ) as mock_extract, patch(
-        "scripts.generate_web_metadata_recursive.llm.summarize_thesis"
-    ) as mock_summarize, patch(
-        "scripts.generate_web_metadata_recursive.metadata.generate_metadata_file"
-    ) as mock_gen_md, patch(
-        "scripts.generate_web_metadata_recursive.LLMClient"
-    ) as mock_llm_client_class:
+    with (
+        patch("scripts.generate_web_metadata_recursive.pdf.extract_text_per_page") as mock_pdf,
+        patch("scripts.generate_web_metadata_recursive.extract_project_metadata") as mock_extract,
+        patch("scripts.generate_web_metadata_recursive.llm.summarize_thesis") as mock_summarize,
+        patch(
+            "scripts.generate_web_metadata_recursive.metadata.generate_metadata_file"
+        ) as mock_gen_md,
+        patch("scripts.generate_web_metadata_recursive.LLMClient") as mock_llm_client_class,
+    ):
         mock_pdf.return_value = {0: "Sample text"}
         mock_extract.return_value = {
             "title": "Test Project",

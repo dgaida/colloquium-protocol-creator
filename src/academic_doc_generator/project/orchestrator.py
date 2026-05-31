@@ -18,7 +18,7 @@ from ..core.types import (
     ProjectWorkflowResult,
     StudentInfo,
 )
-from ..core.utils import get_semester, load_global_config, split_student_name
+from ..core.utils import get_german_dative_your, get_semester, load_global_config, split_student_name
 from .feedback_generator import generate_feedback_summary
 from .latex import create_project_grading_letter_tex
 from .llm import (
@@ -231,7 +231,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
                         student_name=student_name,
                         email_text=student_email_text,
                         attachment_path=None,
-                        subject=f"Feedback zu Ihrem {work_type} - {student_name}",
+                        subject=f"Feedback zu {get_german_dative_your(work_type)} {work_type} - {student_name}",
                         recipient=student_email_addr,
                         verbose=False,
                     )

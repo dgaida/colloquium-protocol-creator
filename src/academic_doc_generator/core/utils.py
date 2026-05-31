@@ -118,3 +118,48 @@ def find_latest_tex(folder: str, pattern: str = "bewertung_brief_*.tex") -> Opti
     if not matches:
         return None
     return max(matches, key=os.path.getmtime)
+
+def get_german_possessive_pronoun(work_type: str, salutation: str, plural: bool = False) -> str:
+    """Get the correct German possessive pronoun in Accusative (for 'etwas machen').
+
+    Args:
+        work_type: The type of work (e.g., "Praxisprojekt", "Projektarbeit").
+        salutation: "Herr", "Frau", or "Herr/Frau".
+        plural: Whether there are multiple students.
+
+    Returns:
+        The correct pronoun (e.g., "sein", "seine", "seinen", "ihre", "ihr").
+    """
+    wt_lower = work_type.lower()
+    if any(x in wt_lower for x in ["arbeit", "thesis"]):
+        gender = "feminine"
+    elif "teil" in wt_lower:
+        gender = "masculine"
+    else:
+        gender = "neuter"
+
+    if plural:
+        base = "ihr"
+    else:
+        base = "sein" if salutation == "Herr" else "ihr"
+
+    if gender == "feminine":
+        return base + "e"
+    if gender == "masculine":
+        return base + "en"
+    return base
+
+
+def get_german_dative_your(work_type: str) -> str:
+    """Get 'Ihrem' or 'Ihrer' (Dative) for 'Feedback zu ...'.
+
+    Args:
+        work_type: The type of work.
+
+    Returns:
+        "Ihrem" (masculine/neuter) or "Ihrer" (feminine).
+    """
+    wt_lower = work_type.lower()
+    if any(x in wt_lower for x in ["arbeit", "thesis"]):
+        return "Ihrer"
+    return "Ihrem"

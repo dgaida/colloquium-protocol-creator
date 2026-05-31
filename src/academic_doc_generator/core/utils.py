@@ -119,6 +119,7 @@ def find_latest_tex(folder: str, pattern: str = "bewertung_brief_*.tex") -> Opti
         return None
     return max(matches, key=os.path.getmtime)
 
+
 def get_german_possessive_pronoun(work_type: str, salutation: str, plural: bool = False) -> str:
     """Get the correct German possessive pronoun in Accusative (for 'etwas machen').
 
@@ -138,10 +139,7 @@ def get_german_possessive_pronoun(work_type: str, salutation: str, plural: bool 
     else:
         gender = "neuter"
 
-    if plural:
-        base = "ihr"
-    else:
-        base = "sein" if salutation == "Herr" else "ihr"
+    base = "ihr" if plural else "sein" if salutation == "Herr" else "ihr"
 
     if gender == "feminine":
         return base + "e"

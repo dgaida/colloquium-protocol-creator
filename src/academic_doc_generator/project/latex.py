@@ -6,7 +6,7 @@ from typing import Optional
 
 from ..core.latex import escape_for_latex
 from ..core.types import StudentInfo
-from ..core.utils import get_semester, get_german_possessive_pronoun
+from ..core.utils import get_german_possessive_pronoun, get_semester
 
 
 def create_project_grading_letter_tex(

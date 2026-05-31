@@ -18,7 +18,12 @@ from ..core.types import (
     ProjectWorkflowResult,
     StudentInfo,
 )
-from ..core.utils import get_german_dative_your, get_semester, load_global_config, split_student_name
+from ..core.utils import (
+    get_german_dative_your,
+    get_semester,
+    load_global_config,
+    split_student_name,
+)
 from .feedback_generator import generate_feedback_summary
 from .latex import create_project_grading_letter_tex
 from .llm import (

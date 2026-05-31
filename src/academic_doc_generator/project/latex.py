@@ -6,7 +6,7 @@ from typing import Optional
 
 from ..core.latex import escape_for_latex
 from ..core.types import StudentInfo
-from ..core.utils import get_semester
+from ..core.utils import get_german_possessive_pronoun, get_semester
 
 
 def create_project_grading_letter_tex(
@@ -64,8 +64,12 @@ def create_project_grading_letter_tex(
         subject_authors_safe = escape_for_latex(subject_authors, preserve_latex=False)
 
         body_intro = f"{authors_str_safe},"
+
+        # Use helper for pronoun (plural)
+        possessive = get_german_possessive_pronoun(work_type, "Herr/Frau", plural=True)
+
         body_main = (
-            f"haben im {semester} ihr {work_type_safe} bei mir gemacht. "
+            f"haben im {semester} {possessive} {work_type_safe} bei mir gemacht. "
             f"Sie haben die Note {mark_tex} erhalten."
         )
         subject_line = f"{work_type_safe} {subject_authors_safe}"
@@ -82,12 +86,13 @@ def create_project_grading_letter_tex(
         author_safe = escape_for_latex(current_author, preserve_latex=False)
         salutation_safe = escape_for_latex(current_salutation, preserve_latex=False)
 
-        sein_ihr = "sein" if current_salutation == "Herr" else "ihr"
+        # Use helper for pronoun
+        possessive = get_german_possessive_pronoun(work_type, current_salutation, plural=False)
         er_sie = "Er" if current_salutation == "Herr" else "Sie"
 
         body_intro = f"{salutation_safe}\\\\ \\\\ {author_safe},"
         body_main = (
-            f"hat im {semester} {sein_ihr} {work_type_safe} bei mir gemacht. "
+            f"hat im {semester} {possessive} {work_type_safe} bei mir gemacht. "
             f"{er_sie} hat die Note {mark_tex} erhalten."
         )
         subject_line = f"{work_type_safe} {salutation_safe} {author_safe}"

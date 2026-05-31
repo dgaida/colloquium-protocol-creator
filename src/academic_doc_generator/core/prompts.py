@@ -128,7 +128,7 @@ at TH Köln University. Extract the following information if available:
 - First examiner (Erstprüfer/Betreuer)
 - Christian name of first examiner
 - Family name of first examiner
-- Type of work (e.g., "Praxisprojekt", "Projektarbeit", "Projektteil WASP1")
+- Type of work (e.g., "Praxisprojekt", "Projektarbeit", "Informatikprojekt", "Projektteil WASP1")
 - Student's email address(es)
 - Course of study (Studiengang). Often find "Studiengang" followed by either "Informatik", "Wirtschaftsinformatik", "Medieninformatik" or "IT-Management".
 

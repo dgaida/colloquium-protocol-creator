@@ -95,13 +95,16 @@ class TestGeminiThesisEvaluator:
         assert mock_llm_client.chat_completion.called
 
     @patch.object(GeminiThesisEvaluator, "_remove_first_page")
+    @patch.object(GeminiThesisEvaluator, "_extract_text_from_pdf")
     @patch("os.path.exists")
     @patch("os.unlink")
     def test_evaluate_thesis_exception(
-        self, mock_unlink, mock_exists, mock_remove_page, mock_llm_client
+        self, mock_unlink, mock_exists, mock_extract, mock_remove_page, mock_llm_client
     ):
         mock_llm_client.api_choice = "gemini"
-        mock_llm_client.chat_completion_with_files.side_effect = Exception("API Error")
+        # The code will default to text extraction (GeminiThesisEvaluator:111),
+        # so we need to mock chat_completion, not chat_completion_with_files.
+        mock_llm_client.chat_completion.side_effect = Exception("API Error")
         evaluator = GeminiThesisEvaluator(mock_llm_client)
         mock_remove_page.return_value = "temp.pdf"
         mock_exists.return_value = True

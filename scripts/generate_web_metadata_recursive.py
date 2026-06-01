@@ -59,11 +59,12 @@ def process_folder(folder_path, config_filename):
     colloquium_date_str = config.get("colloquium", {}).get("date")
     if not colloquium_date_str:
         if task == "project":
-            # For project tasks, use current date as fallback
-            dt_now = datetime.now()
-            date_str = dt_now.strftime("%Y-%m-%d")
-            semester = utils.get_semester(dt_now)
-            print(f"No colloquium date found for project, using today's date: {date_str}")
+            # For project tasks, use modification date of PDF as fallback
+            mtime = os.path.getmtime(pdf_path)
+            dt_pdf = datetime.fromtimestamp(mtime)
+            date_str = dt_pdf.strftime("%Y-%m-%d")
+            semester = utils.get_semester(dt_pdf)
+            print(f"No colloquium date found for project, using PDF modification date: {date_str}")
         else:
             print(f"No colloquium date found in {config_file}")
             return

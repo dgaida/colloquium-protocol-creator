@@ -45,6 +45,9 @@ def test_process_folder_project(tmp_path):
     pdf_path = folder / "RAG Chatbot Report.pdf"
     pdf_path.write_text("%PDF-1.4 dummy")
 
+    # Mock modification time to a specific date: 2024-05-20
+    mock_mtime = datetime(2024, 5, 20).timestamp()
+
     with (
         patch("scripts.generate_web_metadata_recursive.pdf.extract_text_per_page") as mock_pdf,
         patch("scripts.generate_web_metadata_recursive.extract_project_metadata") as mock_extract,
@@ -53,6 +56,7 @@ def test_process_folder_project(tmp_path):
             "scripts.generate_web_metadata_recursive.metadata.generate_metadata_file"
         ) as mock_gen_md,
         patch("scripts.generate_web_metadata_recursive.LLMClient") as mock_llm_client_class,
+        patch("os.path.getmtime") as mock_getmtime,
     ):
         mock_pdf.return_value = {0: "Sample text"}
         mock_extract.return_value = {
@@ -63,6 +67,7 @@ def test_process_folder_project(tmp_path):
         }
         mock_summarize.return_value = "Summary text"
         mock_gen_md.return_value = "generated.md"
+        mock_getmtime.return_value = mock_mtime
 
         mock_llm_client = MagicMock()
         mock_llm_client.chat_completion.return_value = "German"
@@ -74,9 +79,9 @@ def test_process_folder_project(tmp_path):
         mock_summarize.assert_called_once()
         mock_gen_md.assert_called_once()
 
-        # Verify it used current date
+        # Verify it used PDF modification date
         _args, kwargs = mock_gen_md.call_args
-        assert kwargs["date_str"] == datetime.now().strftime("%Y-%m-%d")
+        assert kwargs["date_str"] == "2024-05-20"
 
 
 def test_process_folder_colloquium_missing_date(tmp_path):

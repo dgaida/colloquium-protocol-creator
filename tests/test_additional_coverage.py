@@ -257,6 +257,50 @@ class TestCorePdf:
         assert len(result) == 1
         assert result[0] == "Hello"
 
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    @patch("pymupdf.open")
+    def test_extract_text_with_positions_fallback(self, mock_pymupdf_open, mock_parser_cls):
+        # Force docling parser to fail
+        mock_parser = MagicMock()
+        mock_parser.load.side_effect = MemoryError("Simulated std::bad_alloc")
+        mock_parser_cls.return_value = mock_parser
+
+        # Set up pymupdf mock
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_page.rect.y1 = 800.0
+        mock_page.get_text.return_value = [(10.0, 100.0, 50.0, 120.0, "Hello", 0, 0, 0)]
+        mock_doc.__iter__.return_value = [mock_page]
+        mock_pymupdf_open.return_value = mock_doc
+
+        result = pdf.extract_text_with_positions("dummy.pdf")
+
+        assert 0 in result
+        assert len(result[0]) == 1
+        assert result[0][0]["text"] == "Hello"
+        # Expected bbox: (10.0, 800 - 120, 50.0, 800 - 100) -> (10.0, 680.0, 50.0, 700.0)
+        assert result[0][0]["bbox"] == (10.0, 680.0, 50.0, 700.0)
+
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    @patch("pymupdf.open")
+    def test_extract_text_per_page_fallback(self, mock_pymupdf_open, mock_parser_cls):
+        # Force docling parser to fail
+        mock_parser = MagicMock()
+        mock_parser.load.side_effect = Exception("Simulated Docling Crash")
+        mock_parser_cls.return_value = mock_parser
+
+        # Set up pymupdf mock
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_page.get_text.return_value = [(10.0, 100.0, 50.0, 120.0, "Hello", 0, 0, 0)]
+        mock_doc.__iter__.return_value = [mock_page]
+        mock_pymupdf_open.return_value = mock_doc
+
+        result = pdf.extract_text_per_page("dummy.pdf", max_pages=1)
+
+        assert 0 in result
+        assert result[0] == "Hello"
+
 
 # --- Tests for exam_translator.translator ---
 

@@ -42,31 +42,72 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
         >>> words[0][0]
         {'text': 'Introduction', 'bbox': (72.0, 720.0, 150.0, 735.0)}
     """
-    parser = DoclingPdfParser()
-    pdf_doc = parser.load(path_or_stream=pdf_path)
+    try:
+        # Quick validation of PDF header to prevent low-level docling C++ segfaults on invalid PDFs
+        import os
 
-    pages_words: dict[int, list[WordBox]] = {}
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                header = f.read(4)
+                if header != b"%PDF":
+                    raise ValueError("Invalid PDF header")
 
-    # Enumerate to force 0-based indexing, regardless of docling's page_no (1-based)
-    for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
-        words: list[WordBox] = []
-        for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
-            r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+        parser = DoclingPdfParser()
+        pdf_doc = parser.load(path_or_stream=pdf_path)
 
-            words.append(
-                {
-                    "text": cell.text,
-                    "bbox": (
-                        float(r.r_x0),
-                        float(r.r_y0),
-                        float(r.r_x1),
-                        float(r.r_y1),
-                    ),
-                }
-            )
-        pages_words[zero_idx] = words
+        pages_words: dict[int, list[WordBox]] = {}
 
-    return pages_words
+        # Enumerate to force 0-based indexing, regardless of docling's page_no (1-based)
+        for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
+            words: list[WordBox] = []
+            for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
+                r = cell.rect  # BoundingRectangle with r_x0, r_y0, r_x1, r_y1 (bottom-left origin)
+
+                words.append(
+                    {
+                        "text": cell.text,
+                        "bbox": (
+                            float(r.r_x0),
+                            float(r.r_y0),
+                            float(r.r_x1),
+                            float(r.r_y1),
+                        ),
+                    }
+                )
+            pages_words[zero_idx] = words
+
+        return pages_words
+    except (Exception, MemoryError) as e:
+        print(f"⚠️  Docling parser failed ({type(e).__name__}: {e}). Falling back to PyMuPDF...")
+        try:
+            import pymupdf
+
+            doc = pymupdf.open(pdf_path)
+            pages_words = {}
+            for page_idx, page in enumerate(doc):
+                rect = page.rect
+                page_height = rect.y1
+                words_list = page.get_text("words")
+                words = []
+                for w in words_list:
+                    # w is (x0, y0, x1, y1, text, block_no, line_no, word_no)
+                    x0, y0, x1, y1, text = w[0], w[1], w[2], w[3], w[4]
+                    words.append(
+                        {
+                            "text": text,
+                            "bbox": (
+                                float(x0),
+                                float(page_height - y1),
+                                float(x1),
+                                float(page_height - y0),
+                            ),
+                        }
+                    )
+                pages_words[page_idx] = words
+            return pages_words
+        except Exception as fallback_err:
+            print(f"❌ Both Docling and PyMuPDF fallback failed to parse PDF: {fallback_err}")
+            return {}
 
 
 def is_quelle_comment(text: str, max_length: int = 20) -> bool:
@@ -432,14 +473,40 @@ def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[
         >>> text[0][:50]
         'Introduction This thesis examines the impact of...'
     """
-    parser = DoclingPdfParser()
-    pdf_doc = parser.load(path_or_stream=pdf_path)
+    try:
+        # Quick validation of PDF header to prevent low-level docling C++ segfaults on invalid PDFs
+        import os
 
-    pages_text: dict[int, str] = {}
-    for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
-        if max_pages is not None and zero_idx >= max_pages:
-            break
-        words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
-        page_text = " ".join(words)
-        pages_text[zero_idx] = page_text
-    return pages_text
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                header = f.read(4)
+                if header != b"%PDF":
+                    raise ValueError("Invalid PDF header")
+
+        parser = DoclingPdfParser()
+        pdf_doc = parser.load(path_or_stream=pdf_path)
+
+        pages_text: dict[int, str] = {}
+        for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
+            if max_pages is not None and zero_idx >= max_pages:
+                break
+            words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
+            page_text = " ".join(words)
+            pages_text[zero_idx] = page_text
+        return pages_text
+    except (Exception, MemoryError) as e:
+        print(f"⚠️  Docling parser failed ({type(e).__name__}: {e}). Falling back to PyMuPDF...")
+        try:
+            import pymupdf
+
+            doc = pymupdf.open(pdf_path)
+            pages_text = {}
+            for page_idx, page in enumerate(doc):
+                if max_pages is not None and page_idx >= max_pages:
+                    break
+                words = [w[4] for w in page.get_text("words")]
+                pages_text[page_idx] = " ".join(words)
+            return pages_text
+        except Exception as fallback_err:
+            print(f"❌ Both Docling and PyMuPDF fallback failed to parse PDF: {fallback_err}")
+            return {}

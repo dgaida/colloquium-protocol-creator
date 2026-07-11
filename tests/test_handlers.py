@@ -313,3 +313,228 @@ class TestRunReviewDirect:
             groq_free=False,
             output_folder="/output",
         )
+
+
+# ==============================================================================
+# Additional Comprehensive Unit Tests to achieve >90% code coverage on handlers.py
+# ==============================================================================
+
+
+class TestRunFromConfigAdditional:
+    """Zusätzliche Tests für run_from_config."""
+
+    @patch("academic_doc_generator.cli.handlers.load_config")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    def test_run_from_config_colloquium_missing_coll_config(
+        self, mock_validate_pdf, mock_llm_class, mock_load_config
+    ):
+        """Testet Fehlerbehandlung bei fehlender Kolloquium-Konfiguration."""
+        mock_config = MagicMock()
+        mock_config.folder_path = Path("/test")
+        mock_config.get_task.return_value = "colloquium"
+        mock_config.config = {"pdf": {"filename": "test.pdf"}}
+        mock_config.get_llm_config.return_value = {}
+        mock_config.get_output_config.return_value = {}
+        mock_config.get_colloquium_config.return_value = None
+        mock_load_config.return_value = mock_config
+
+        mock_llm_class.return_value = MagicMock()
+        mock_validate_pdf.return_value = Path("/test/test.pdf")
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_from_config("/test/config.json")
+
+        assert exc_info.value.code == 1
+
+
+class TestRunColloquiumDirectAdditional:
+    """Zusätzliche Tests für run_colloquium_direct."""
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.validate_pdf_path")
+    @patch("academic_doc_generator.cli.handlers.run_pipeline")
+    def test_run_colloquium_direct_printing(
+        self, mock_run_pipeline, mock_validate_pdf, mock_llm_class
+    ):
+        """Testet das Printing bei run_colloquium_direct."""
+        args = Namespace(
+            pdf="/test/thesis.pdf",
+            date="20.01.2026",
+            time="14:00",
+            location_type="campus",
+            room="3.217",
+            api="openai",
+            model="gpt-4o",
+            groq_free=False,
+            gemini_eval=False,
+            gemini_model="gemini-2.0-flash-exp",
+            gemini_upload_pdf=False,
+            out="/output",
+            no_compile=False,
+            company_name=None,
+            company_address=None,
+            zoom_link=None,
+            zcode=None,
+        )
+
+        mock_llm_class.return_value = MagicMock()
+        mock_validate_pdf.return_value = Path("/test/thesis.pdf")
+
+        mock_result = MagicMock()
+        mock_result.tex_path = "/output/test.tex"
+        mock_result.pdf_path = "/output/test.pdf"
+        mock_result.email_path = "/output/email.md"
+        mock_result.metadata_path = "/output/metadata.md"
+        mock_run_pipeline.return_value = mock_result
+
+        handlers.run_colloquium_direct(args)
+        assert mock_run_pipeline.called
+
+
+class TestRunProjectDirectAdditional:
+    """Zusätzliche Tests für run_project_direct."""
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    def test_run_project_direct_llm_error(self, mock_llm_class):
+        """Testet Fehlerbehandlung bei LLM-Initialisierungsfehler."""
+        args = Namespace(
+            pdf="/test/project.pdf",
+            api="invalid",
+            model=None,
+            out="/output",
+            no_compile=False,
+            signature="signature.png",
+            create_feedback_mail=True,
+        )
+
+        mock_llm_class.side_effect = Exception("Invalid API")
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_project_direct(args)
+
+        assert exc_info.value.code == 1
+
+
+class TestRunTranslatorDirect:
+    """Tests für die Übersetzungs-CLI-Handler."""
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.translate_latex_exam")
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_success_tex(self, mock_exists, mock_translate, mock_llm_class):
+        """Testet erfolgreiche Tex-Übersetzung."""
+        mock_exists.return_value = True
+        mock_translate.return_value = "exam_translated.tex"
+
+        args = Namespace(
+            input="exam.tex",
+            output="exam_translated.tex",
+            api="openai",
+            model="gpt-4o",
+            verbose=False,
+        )
+
+        mock_llm_class.return_value = MagicMock()
+
+        handlers.run_translator_direct(args)
+        mock_translate.assert_called_once()
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.translate_xml_exam")
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_success_xml(self, mock_exists, mock_translate, mock_llm_class):
+        """Testet erfolgreiche XML-Übersetzung."""
+        mock_exists.return_value = True
+        mock_translate.return_value = "exam_translated.xml"
+
+        args = Namespace(
+            input="exam.xml",
+            output="exam_translated.xml",
+            api="openai",
+            model="gpt-4o",
+            verbose=False,
+        )
+
+        mock_llm_class.return_value = MagicMock()
+
+        handlers.run_translator_direct(args)
+        mock_translate.assert_called_once()
+
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_file_not_found(self, mock_exists):
+        """Testet Fehlerbehandlung bei nicht gefundener Datei."""
+        mock_exists.return_value = False
+
+        args = Namespace(input="nonexistent.tex")
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_translator_direct(args)
+
+        assert exc_info.value.code == 1
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_llm_error(self, mock_exists, mock_llm_class):
+        """Testet Fehlerbehandlung bei LLM-Initialisierungsfehler."""
+        mock_exists.return_value = True
+        mock_llm_class.side_effect = Exception("LLM init failed")
+
+        args = Namespace(
+            input="exam.tex",
+            api="invalid",
+            model=None,
+        )
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_translator_direct(args)
+
+        assert exc_info.value.code == 1
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.translate_latex_exam")
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_value_error(self, mock_exists, mock_translate, mock_llm_class):
+        """Testet Fehlerbehandlung bei ValueError in Übersetzung."""
+        mock_exists.return_value = True
+        mock_translate.side_effect = ValueError("Structure error")
+
+        args = Namespace(
+            input="exam.tex",
+            output=None,
+            api="openai",
+            model="gpt-4o",
+            verbose=False,
+        )
+
+        mock_llm_class.return_value = MagicMock()
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_translator_direct(args)
+
+        assert exc_info.value.code == 1
+
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    @patch("academic_doc_generator.cli.handlers.translate_latex_exam")
+    @patch("pathlib.Path.exists")
+    def test_run_translator_direct_unexpected_error(
+        self, mock_exists, mock_translate, mock_llm_class
+    ):
+        """Testet Fehlerbehandlung bei unerwartetem Fehler."""
+        mock_exists.return_value = True
+        mock_translate.side_effect = Exception("Unexpected error")
+
+        args = Namespace(
+            input="exam.tex",
+            output=None,
+            api="openai",
+            model="gpt-4o",
+            verbose=False,
+        )
+
+        mock_llm_class.return_value = MagicMock()
+
+        with pytest.raises(SystemExit) as exc_info:
+            handlers.run_translator_direct(args)
+
+        assert exc_info.value.code == 1

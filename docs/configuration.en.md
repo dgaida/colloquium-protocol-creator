@@ -166,6 +166,15 @@ first_examiner: "Prof. Dr. Firstname Lastname"
 - `web_metadata_folder`: If set, generated Jekyll-compatible project profiles are automatically copied to this folder.  
 - `first_examiner`: A name set here will be used as the first examiner for all generated documents.  
 
+## 🔍 PDF Parser & Web Metadata Behavior
+
+### Default PDF Parser (LiteParse)
+[LiteParse](https://github.com/run-llama/liteparse) is now utilized as the default PDF parser for fast and reliable extraction of text and annotation coordinates from PDFs.
+If parsing with LiteParse fails (e.g., due to environment issues or corrupt documents), the tool automatically falls back to **Docling** and then to **PyMuPDF**.
+
+### Handling of Unknown Authors
+If the author of a thesis or project cannot be identified (i.e., is marked as `Unknown`, `Unknown Author`, or `Unbekannt`), the generated `*.md` project profile with the summary is **not** copied or moved to the configured `web_metadata_folder`. It remains only in your local output folder. This prevents incomplete or invalid profiles from being published on academic pages.
+
 ## 📚 Related Documentation
 
 - [Installation Guide](INSTALL.en.md)  

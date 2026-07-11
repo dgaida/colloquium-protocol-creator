@@ -100,6 +100,23 @@ def generate_metadata_file(
     Returns:
         Path to the generated .md file.
     """
+    # Check if author is unknown
+    is_author_unknown = False
+    if students:
+        if all(
+            not s.get("name") or s.get("name") in ["Unknown Author", "Unknown", "Unbekannt"]
+            for s in students
+        ):
+            is_author_unknown = True
+    else:
+        if not author or author in ["Unknown Author", "Unknown", "Unbekannt"]:
+            is_author_unknown = True
+
+    if is_author_unknown:
+        print("⚠️  Author is Unknown. Omitting copy/move to web metadata folder.")
+        copy_to_web_folder = False
+        move_to_web_folder = False
+
     if not date_str:
         date_str = datetime.now().strftime("%Y-%m-%d")
 

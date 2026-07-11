@@ -90,14 +90,14 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
 
     if is_valid_pdf:
         try:
-            parser = DoclingPdfParser()
-            pdf_doc = parser.load(path_or_stream=pdf_path)
+            docling_parser = DoclingPdfParser()
+            doc_pdf_doc = docling_parser.load(path_or_stream=pdf_path)
 
-            pages_words: dict[int, list[WordBox]] = {}
+            pages_words = {}
 
             # Enumerate to force 0-based indexing, regardless of docling's page_no (1-based)
-            for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
-                words: list[WordBox] = []
+            for zero_idx, (_page_no, pred_page) in enumerate(doc_pdf_doc.iterate_pages(), start=0):
+                words = []
                 for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD):
                     r = (
                         cell.rect
@@ -542,11 +542,11 @@ def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[
 
     if is_valid_pdf:
         try:
-            parser = DoclingPdfParser()
-            pdf_doc = parser.load(path_or_stream=pdf_path)
+            docling_parser = DoclingPdfParser()
+            doc_pdf_doc = docling_parser.load(path_or_stream=pdf_path)
 
-            pages_text: dict[int, str] = {}
-            for zero_idx, (_page_no, pred_page) in enumerate(pdf_doc.iterate_pages(), start=0):
+            pages_text = {}
+            for zero_idx, (_page_no, pred_page) in enumerate(doc_pdf_doc.iterate_pages(), start=0):
                 if max_pages is not None and zero_idx >= max_pages:
                     break
                 words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]

@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/ARCHITECTURE/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/ARCHITECTURE/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/ARCHITECTURE/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/COLLOQUIUM/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/COLLOQUIUM/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/COLLOQUIUM/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/CONTRIBUTING/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/CONTRIBUTING/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/CONTRIBUTING/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/EXAMPLES/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/EXAMPLES/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/EXAMPLES/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/INSTALL/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/INSTALL/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/INSTALL/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/PROJECT/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/PROJECT/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/PROJECT/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/REVIEW/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/REVIEW/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/REVIEW/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/TESTING/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/TESTING/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/TESTING/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/TRANSLATOR/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/TRANSLATOR/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/TRANSLATOR/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/configuration/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/configuration/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/SUMMARY/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/SUMMARY/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/SUMMARY/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/config_loader/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/config_loader/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/config_loader/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/handlers/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/handlers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/handlers/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/main/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/main/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/main/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/calendar_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/calendar_generator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/calendar_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/email_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/email_generator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/email_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/gemini_thesis_evaluator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/gemini_thesis_evaluator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/gemini_thesis_evaluator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/orchestrator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/outlook_mail_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/outlook_mail_generator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/outlook_mail_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/pdf_form_filler/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/pdf_form_filler/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/pdf_form_filler/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/email/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/email/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/email/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/latex/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/latex/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/latex/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/llm/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/llm/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/llm/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/metadata/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/metadata/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/metadata/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/pdf/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/pdf/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/pdf/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/prompts/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/prompts/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/prompts/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/types/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/types/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/types/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/utils/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/utils/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/validation/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/validation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/validation/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/cli/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/cli/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/cli/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/translator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/xml_translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/xml_translator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/xml_translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/feedback_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/feedback_generator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/feedback_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/latex/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/latex/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/latex/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/llm/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/llm/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/llm/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/orchestrator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/md_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/md_generator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/md_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/orchestrator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/ARCHITECTURE/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/ARCHITECTURE/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/ARCHITECTURE/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/COLLOQUIUM/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/COLLOQUIUM/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/COLLOQUIUM/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/CONTRIBUTING/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/CONTRIBUTING/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/CONTRIBUTING/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/EXAMPLES/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/EXAMPLES/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/EXAMPLES/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/INSTALL/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/INSTALL/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/INSTALL/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/PROJECT/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/PROJECT/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/PROJECT/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/REVIEW/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/REVIEW/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/REVIEW/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/TESTING/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/TESTING/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/TESTING/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/TRANSLATOR/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/TRANSLATOR/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/TRANSLATOR/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/configuration/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/configuration/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/SUMMARY/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/SUMMARY/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/SUMMARY/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/config_loader/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/config_loader/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/config_loader/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/handlers/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/handlers/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/handlers/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/main/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/cli/main/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/cli/main/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/calendar_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/calendar_generator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/calendar_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/email_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/email_generator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/email_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/gemini_thesis_evaluator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/gemini_thesis_evaluator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/gemini_thesis_evaluator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/orchestrator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/outlook_mail_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/outlook_mail_generator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/outlook_mail_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/pdf_form_filler/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/colloquium/pdf_form_filler/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/colloquium/pdf_form_filler/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/email/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/email/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/email/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/latex/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/latex/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/latex/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/llm/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/llm/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/llm/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/metadata/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/metadata/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/metadata/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/pdf/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/pdf/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/pdf/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/prompts/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/prompts/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/prompts/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/types/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/types/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/types/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/utils/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/utils/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/validation/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/core/validation/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/core/validation/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/cli/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/cli/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/cli/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/translator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/xml_translator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/exam_translator/xml_translator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/exam_translator/xml_translator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/feedback_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/feedback_generator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/feedback_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/latex/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/latex/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/latex/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/llm/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/llm/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/llm/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/project/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/project/orchestrator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/md_generator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/md_generator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/md_generator/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/orchestrator/</loc>
+        <lastmod>2026-07-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/colloquium-protocol-creator/en/api_reference/review/orchestrator/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/colloquium-protocol-creator/api_reference/review/orchestrator/"/>
+    </url>
+</urlset>

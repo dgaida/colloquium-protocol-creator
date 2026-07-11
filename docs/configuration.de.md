@@ -128,6 +128,15 @@ first_examiner: "Prof. Dr. Vorname Nachname"
 - `web_metadata_folder`: Wenn gesetzt, werden die generierten Jekyll-kompatiblen Steckbriefe automatisch in diesen Ordner kopiert.  
 - `first_examiner`: Hier kann ein Name hinterlegt werden, der global für alle Dokumente als Erstprüfer verwendet wird.  
 
+## 🔍 PDF-Parser & Web-Metadaten Verhalten
+
+### Standard PDF-Parser (LiteParse)
+Als Standard PDF-Parser wird nun [LiteParse](https://github.com/run-llama/liteparse) verwendet. LiteParse ermöglicht eine schnelle und zuverlässige Extraktion von PDF-Texten und Annotationen (Kommentaren).
+Sollte die Verarbeitung mit LiteParse fehlschlagen (z. B. durch fehlende Abhängigkeiten oder korrupte Dokumente), greift das Tool automatisch auf **Docling** und danach auf **PyMuPDF** als Fallbacks zurück.
+
+### Verhalten bei unbekannten Autoren (Unknown)
+Wenn der Autor einer Arbeit nicht eindeutig identifiziert werden kann (also als `Unknown`, `Unknown Author` oder `Unbekannt` markiert ist), wird die generierte `*.md` Steckbrief-Datei mit der Kurzzusammenfassung **nicht** in den globalen Zielpfad (`web_metadata_folder`) kopiert oder verschoben. Sie verbleibt lediglich im lokalen Ausgabeordner. Dies verhindert, dass unvollständige oder fehlerhafte Steckbriefe auf den Academic Pages veröffentlicht werden.
+
 ## 📚 Weitere Dokumentation
 
 - [Installationsanleitung](INSTALL.de.md)  

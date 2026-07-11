@@ -1,7 +1,13 @@
 """Test-Skript für die neuen Kalender- und Mail-Features."""
 
+import contextlib
 import os
 import sys
+import tempfile
+from unittest.mock import MagicMock, patch
+
+from academic_doc_generator.core import pdf
+from academic_doc_generator.core.metadata import generate_metadata_file
 
 # Füge das src-Verzeichnis zum Python-Path hinzu
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
@@ -147,3 +153,121 @@ if __name__ == "__main__":
     print("=" * 60)
     print("\nGenerierte Dateien befinden sich in: ./test_output/")
     print("ICS-Dateien können jetzt in einen Kalender importiert werden.")
+
+# ==============================================================================
+# Pytest Unit Tests for Fallback PDF Parser and Unknown Author behavior
+# ==============================================================================
+
+
+def test_pdf_parser_fallback_chain_success_liteparse():
+    """Test that extract_text_with_positions successfully uses liteparse first."""
+    with patch("liteparse.LiteParse") as mock_liteparse:
+        mock_instance = MagicMock()
+        mock_page = MagicMock()
+        mock_page.height = 800
+        mock_page.width = 600
+
+        mock_item_1 = MagicMock()
+        mock_item_1.text = "Hello World"
+        mock_item_1.x = 10
+        mock_item_1.y = 20
+        mock_item_1.width = 100
+        mock_item_1.height = 15
+        mock_item_1.words = []
+
+        mock_page.text_items = [mock_item_1]
+        mock_instance.parse.return_value.pages = [mock_page]
+        mock_liteparse.return_value = mock_instance
+
+        # Call with a dummy PDF file that has valid %PDF header
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            f.write(b"%PDF-1.4\n")
+            f.flush()
+            temp_path = f.name
+
+        try:
+            res = pdf.extract_text_with_positions(temp_path)
+            assert len(res) == 1
+            # Hello World split into parts
+            assert res[0][0]["text"] == "Hello"
+        finally:
+            with contextlib.suppress(OSError):
+                os.remove(temp_path)
+
+
+def test_pdf_parser_fallback_chain_liteparse_fails():
+    """Test that extract_text_with_positions falls back to docling when liteparse fails."""
+    with (
+        patch("liteparse.LiteParse", side_effect=Exception("LiteParse failed")),
+        patch("academic_doc_generator.core.pdf.DoclingPdfParser") as mock_docling,
+    ):
+
+        mock_instance = MagicMock()
+        mock_page = MagicMock()
+        mock_cell = MagicMock()
+        mock_cell.text = "Docling text"
+        mock_cell.rect.r_x0 = 10
+        mock_cell.rect.r_y0 = 20
+        mock_cell.rect.r_x1 = 50
+        mock_cell.rect.r_y1 = 30
+
+        mock_page.iterate_cells.return_value = [mock_cell]
+        mock_instance.iterate_pages.return_value = [(1, mock_page)]
+        mock_docling.return_value.load.return_value = mock_instance
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            f.write(b"%PDF-1.4\n")
+            f.flush()
+            temp_path = f.name
+
+        try:
+            res = pdf.extract_text_with_positions(temp_path)
+            assert len(res) == 1
+            assert res[0][0]["text"] == "Docling text"
+        finally:
+            with contextlib.suppress(OSError):
+                os.remove(temp_path)
+
+
+def test_unknown_author_metadata_not_copied():
+    """Test that metadata file is not copied to web folder if author is Unknown."""
+    mock_client = MagicMock()
+    mock_client.chat_completion.return_value = "Concise summary for web"
+
+    with tempfile.TemporaryDirectory() as tmp_out, tempfile.TemporaryDirectory() as tmp_web:
+
+        # Case 1: Unknown Author
+        md_path = generate_metadata_file(
+            output_folder=tmp_out,
+            title="A Great Thesis",
+            author="Unknown",
+            pages_text={0: "Page text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="Wintersemester 24/25",
+            date_str="2026-02-15",
+            copy_to_web_folder=True,
+            web_metadata_folder=tmp_web,
+        )
+
+        # Verify local file is created but not copied to the web metadata folder
+        assert os.path.exists(md_path)
+        assert len(os.listdir(tmp_web)) == 0
+
+        # Case 2: Known Author
+        md_path_2 = generate_metadata_file(
+            output_folder=tmp_out,
+            title="A Great Thesis",
+            author="Max Mustermann",
+            pages_text={0: "Page text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="Wintersemester 24/25",
+            date_str="2026-02-15",
+            copy_to_web_folder=True,
+            web_metadata_folder=tmp_web,
+        )
+
+        # Verify copied file is created in tmp_web
+        assert os.path.exists(md_path_2)
+        assert len(os.listdir(tmp_web)) == 1

@@ -368,7 +368,8 @@ class TestExamTranslator:
             )
             assert str(output_path) == result
 
-    def test_translate_latex_exam_file_not_found(self):
+    @patch("academic_doc_generator.exam_translator.translator.LLMClient")
+    def test_translate_latex_exam_file_not_found(self, mock_llm):
         with pytest.raises(FileNotFoundError):
             translator.translate_latex_exam("nonexistent.tex")
 

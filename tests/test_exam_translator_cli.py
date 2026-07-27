@@ -89,7 +89,7 @@ class TestExamTranslatorMain:
             with patch.object(sys, "argv", test_args):
                 cli.exam_translator_main()
 
-            mock_llm_class.assert_called_once_with(api_choice="groq", llm=None)
+            mock_llm_class.assert_called_once_with(api_choice="groq", llm="openai-gpt-oss-120b")
 
         finally:
             Path(tex_file).unlink(missing_ok=True)
@@ -112,7 +112,32 @@ class TestExamTranslatorMain:
             with patch.object(sys, "argv", test_args):
                 cli.exam_translator_main()
 
-            mock_llm_class.assert_called_once_with(api_choice=None, llm="gpt-4o-mini")
+            mock_llm_class.assert_called_once_with(api_choice="kiconnect", llm="gpt-4o-mini")
+
+        finally:
+            Path(tex_file).unlink(missing_ok=True)
+
+    @patch("academic_doc_generator.exam_translator.cli.LLMClient")
+    @patch("academic_doc_generator.exam_translator.cli.translate_latex_exam")
+    def test_exam_translator_main_default_kiconnect(self, mock_translate, mock_llm_class):
+        """Test defaults are kiconnect and openai-gpt-oss-120b."""
+        with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
+            f.write("\\documentclass{exam}")
+            tex_file = f.name
+
+        try:
+            mock_client = MagicMock()
+            mock_llm_class.return_value = mock_client
+            mock_translate.return_value = tex_file.replace(".tex", "_engl.tex")
+
+            test_args = ["exam-translator", tex_file]
+
+            with patch.object(sys, "argv", test_args):
+                cli.exam_translator_main()
+
+            mock_llm_class.assert_called_once_with(
+                api_choice="kiconnect", llm="openai-gpt-oss-120b"
+            )
 
         finally:
             Path(tex_file).unlink(missing_ok=True)

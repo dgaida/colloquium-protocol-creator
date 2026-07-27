@@ -272,7 +272,9 @@ def run_translator_direct(args: argparse.Namespace) -> None:
 
     # Create LLM client
     try:
-        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        api_choice = args.api if args.api is not None else "kiconnect"
+        llm_model = args.model if args.model is not None else "openai-gpt-oss-120b"
+        llm_client = LLMClient(api_choice=api_choice, llm=llm_model)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")

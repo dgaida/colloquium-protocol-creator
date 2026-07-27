@@ -161,3 +161,123 @@ def test_translate_exam_preserves_comments(mock_llm_class):
             assert "% Question Comment" in written_content
             assert "Translated Preamble" in written_content
             assert "Translated Question" in written_content
+
+
+def test_setup_exam_translator_logger(tmp_path):
+    import logging
+
+    from academic_doc_generator.exam_translator.translator import setup_exam_translator_logger
+
+    log_file = tmp_path / "test_logger.log"
+    # Ensure any existing handlers from previous tests are cleared to avoid contamination
+    logger = logging.getLogger("exam_translator")
+    logger.handlers.clear()
+
+    logger = setup_exam_translator_logger(log_file=str(log_file))
+    assert logger.name == "exam_translator"
+    assert logger.level == logging.INFO
+    assert len(logger.handlers) == 1
+    assert isinstance(logger.handlers[0], logging.FileHandler)
+    assert logger.handlers[0].baseFilename == str(log_file.resolve())
+
+
+@patch("academic_doc_generator.exam_translator.translator.LLMClient")
+def test_translate_latex_exam_logging(mock_llm_class, tmp_path):
+    import logging
+    from pathlib import Path
+
+    from academic_doc_generator.exam_translator.translator import translate_latex_exam
+
+    mock_llm = mock_llm_class.return_value
+    mock_llm.api_choice = "kiconnect"
+    mock_llm.llm = "openai-gpt-oss-120b"
+    mock_llm.chat_completion.return_value = "Translated section content"
+
+    input_file = tmp_path / "exam.tex"
+    output_file = tmp_path / "exam_engl.tex"
+    log_file = Path("exam_translator.log")
+
+    # Clean log file if exists before test
+    log_file.unlink(missing_ok=True)
+
+    # Clear handlers before test
+    logging.getLogger("exam_translator").handlers.clear()
+
+    latex_content = r"""\documentclass{exam}
+\begin{questions}
+\question Erste Frage
+\end{questions}
+\end{document}"""
+
+    input_file.write_text(latex_content, encoding="utf-8")
+
+    try:
+        translate_latex_exam(input_file, llm_client=mock_llm, output_path=output_file)
+
+        # Verify log file exists and contains expected log messages
+        assert log_file.exists()
+        log_content = log_file.read_text(encoding="utf-8")
+        assert "Starte Übersetzung von LaTeX-Klausur" in log_content
+        assert "Original Frage 1:" in log_content
+        assert "Erste Frage" in log_content
+        assert "Übersetzte Frage 1:" in log_content
+        assert "Translated section content" in log_content
+        assert "LaTeX-Übersetzung erfolgreich abgeschlossen" in log_content
+
+    finally:
+        # Cleanup
+        log_file.unlink(missing_ok=True)
+        logging.getLogger("exam_translator").handlers.clear()
+
+
+@patch("academic_doc_generator.exam_translator.xml_translator.LLMClient")
+def test_translate_xml_exam_logging(mock_llm_class, tmp_path):
+    import logging
+    from pathlib import Path
+
+    from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
+    mock_llm = mock_llm_class.return_value
+    mock_llm.api_choice = "kiconnect"
+    mock_llm.llm = "openai-gpt-oss-120b"
+    mock_llm.chat_completion.return_value = "Translated XML content"
+
+    input_file = tmp_path / "exam.xml"
+    output_file = tmp_path / "exam_engl.xml"
+    log_file = Path("exam_translator.log")
+
+    # Clean log file if exists before test
+    log_file.unlink(missing_ok=True)
+
+    # Clear handlers before test
+    logging.getLogger("exam_translator").handlers.clear()
+
+    xml_content = """<questestinterop>
+<item>
+<presentation>
+<material>
+<mattext texttype="text/xhtml">Erste XML Aufgabe</mattext>
+</material>
+</presentation>
+</item>
+</questestinterop>"""
+
+    input_file.write_text(xml_content, encoding="utf-8")
+
+    try:
+        translate_xml_exam(input_file, llm_client=mock_llm, output_path=output_file)
+
+        # Verify log file exists and contains expected log messages
+        assert log_file.exists()
+        log_content = log_file.read_text(encoding="utf-8")
+        assert "Starte Übersetzung von XML-Klausur" in log_content
+        assert "Original XML-Abschnitt:" in log_content
+        assert "Erste XML Aufgabe" in log_content
+        assert "Übersetzter XML-Abschnitt:" in log_content
+        assert "Translated XML content" in log_content
+        assert "XML-Übersetzung erfolgreich abgeschlossen" in log_content
+
+    finally:
+        # Cleanup
+        log_file.unlink(missing_ok=True)
+        logging.getLogger("exam_translator").handlers.clear()

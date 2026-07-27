@@ -50,7 +50,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     colloquium_parser.add_argument(
         "--api",
-        choices=["openai", "groq", "gemini", "ollama"],
+        choices=["openai", "groq", "gemini", "ollama", "kiconnect"],
         help="LLM API to use (auto-detected if omitted)",
     )
     colloquium_parser.add_argument("--model", help="LLM model to use")
@@ -82,7 +82,7 @@ def create_parser() -> argparse.ArgumentParser:
     project_parser.add_argument("--work-type", help="Type of work (e.g., 'Projektteil WASP1')")
     project_parser.add_argument(
         "--api",
-        choices=["openai", "groq", "gemini", "ollama"],
+        choices=["openai", "groq", "gemini", "ollama", "kiconnect"],
         help="LLM API to use (auto-detected if omitted)",
     )
     project_parser.add_argument("--model", help="LLM model to use")
@@ -112,7 +112,7 @@ def create_parser() -> argparse.ArgumentParser:
     review_parser.add_argument("pdf", help="Path to the paper PDF")
     review_parser.add_argument(
         "--api",
-        choices=["openai", "groq", "gemini", "ollama"],
+        choices=["openai", "groq", "gemini", "ollama", "kiconnect"],
         help="LLM API to use (auto-detected if omitted)",
     )
     review_parser.add_argument("--model", help="LLM model to use")
@@ -135,7 +135,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     translator_parser.add_argument(
         "--api",
-        choices=["openai", "groq", "gemini", "ollama"],
+        choices=["openai", "groq", "gemini", "ollama", "kiconnect"],
         help="LLM API to use (auto-detected if omitted)",
     )
     translator_parser.add_argument(

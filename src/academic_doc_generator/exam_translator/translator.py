@@ -1,12 +1,39 @@
 # src/academic_doc_generator/exam_translator/translator.py
 """Modul zur Übersetzung von LaTeX-Klausuren (exam-Klasse) von Deutsch nach Englisch."""
 
+import logging
 import re
 from pathlib import Path
 
 from llm_client import LLMClient
 
 from ..core.prompts import PromptTemplate, build_prompt
+
+
+def setup_exam_translator_logger(log_file: str = "exam_translator.log") -> logging.Logger:
+    """Sets up and configures the 'exam_translator' logger.
+
+    Logs are written to the specified file (default: 'exam_translator.log')
+    in the current working directory.
+
+    Args:
+        log_file: Path to the log file.
+
+    Returns:
+        logging.Logger: The configured Logger instance.
+    """
+    logger = logging.getLogger("exam_translator")
+    logger.setLevel(logging.INFO)
+
+    # Avoid duplicate handlers if the logger is already initialized
+    if not logger.handlers:
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
 
 
 def mask_comments(text: str) -> tuple[str, dict[str, str]]:
@@ -218,15 +245,20 @@ def translate_latex_exam(
         >>> print(output)
         KIKlausurSoSe25_1_engl.tex
     """
+    logger = setup_exam_translator_logger()
+    logger.info("=== Starte Übersetzung von LaTeX-Klausur ===")
+    logger.info(f"Input: {input_path}")
+
     # Erstelle LLMClient falls nicht vorhanden
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(api_choice="kiconnect", llm="openai-gpt-oss-120b")
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
 
     # Konvertiere zu Path-Objekten
     input_path = Path(input_path)
 
     if not input_path.exists():
+        logger.error(f"Datei nicht gefunden: {input_path}")
         raise FileNotFoundError(f"Datei nicht gefunden: {input_path}")
 
     # Bestimme Output-Pfad
@@ -237,6 +269,7 @@ def translate_latex_exam(
     else:
         output_path = Path(output_path)
 
+    logger.info(f"Output: {output_path}")
     print(f"\n📄 Lese LaTeX-Datei: {input_path}")
 
     # Lese Input-Datei
@@ -252,6 +285,11 @@ def translate_latex_exam(
     print(f"   • Anzahl Fragen: {len(questions)}")
     print(f"   • Postamble: {len(postamble)} Zeichen")
 
+    logger.info("Abschnittsaufteilung:")
+    logger.info(f"  - Präambel: {len(preamble)} Zeichen")
+    logger.info(f"  - Anzahl Fragen: {len(questions)}")
+    logger.info(f"  - Postamble: {len(postamble)} Zeichen")
+
     # Übersetze Präambel
     print("\n🌍 Übersetze Präambel...")
     translated_preamble = translate_preamble_to_english(preamble, llm_client, verbose=verbose)
@@ -262,7 +300,13 @@ def translate_latex_exam(
 
     for i, question in enumerate(questions, start=1):
         print(f"   [{i}/{len(questions)}] Übersetze Frage {i}...")
+        logger.info(f"--- Starte Übersetzung von Frage {i}/{len(questions)} ---")
+        logger.info(f"Original Frage {i}:\n{question}")
+
         translated = translate_question_to_english(question, llm_client, verbose=verbose)
+
+        logger.info(f"Übersetzte Frage {i}:\n{translated}")
+        logger.info(f"--- Ende Übersetzung von Frage {i}/{len(questions)} ---\n")
         translated_questions.append(translated)
 
     # Füge alles zusammen
@@ -282,5 +326,9 @@ def translate_latex_exam(
     print("✅ Übersetzung abgeschlossen!")
     print(f"   Original: {input_path}")
     print(f"   Übersetzt: {output_path}")
+
+    logger.info("✅ LaTeX-Übersetzung erfolgreich abgeschlossen!")
+    logger.info(f"Gespeichert unter: {output_path}")
+    logger.info("============================================\n")
 
     return str(output_path)

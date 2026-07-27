@@ -8,6 +8,7 @@ from typing import Optional, Union
 from llm_client import LLMClient
 
 from ..core.prompts import PromptTemplate, build_prompt
+from .translator import setup_exam_translator_logger
 
 
 def translate_xml_exam(
@@ -30,12 +31,17 @@ def translate_xml_exam(
     Returns:
         Path to the saved English XML file.
     """
+    logger = setup_exam_translator_logger()
+    logger.info("=== Starte Übersetzung von XML-Klausur ===")
+    logger.info(f"Input: {input_path}")
+
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(api_choice="kiconnect", llm="openai-gpt-oss-120b")
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
 
     input_path = Path(input_path)
     if not input_path.exists():
+        logger.error(f"File not found: {input_path}")
         raise FileNotFoundError(f"File not found: {input_path}")
 
     if output_path is None:
@@ -45,6 +51,7 @@ def translate_xml_exam(
     else:
         output_path = Path(output_path)
 
+    logger.info(f"Output: {output_path}")
     print(f"\n📄 Reading XML file: {input_path}")
     with open(input_path, encoding="utf-8") as f:
         content = f.read()
@@ -55,6 +62,7 @@ def translate_xml_exam(
 
     matches = list(pattern.finditer(content))
     print(f"🔍 Found {len(matches)} sections to translate.")
+    logger.info(f"Anzahl gefundener XML-Abschnitte: {len(matches)}")
 
     # We process in reverse to not mess up indices if we were doing string slicing,
     # but here we'll use re.sub with a callback for safety and simplicity.
@@ -72,10 +80,15 @@ def translate_xml_exam(
             return match.group(0)
 
         print(f"   [{count}/{len(matches)}] Translating section...")
+        logger.info(f"--- Starte Übersetzung von XML-Abschnitt {count}/{len(matches)} ---")
+        logger.info(f"Original XML-Abschnitt:\n{inner_text}")
 
         prompt = build_prompt(PromptTemplate.TRANSLATE_XML_XHTML, text=inner_text)
         messages = [{"role": "user", "content": prompt}]
         translated_text = llm_client.chat_completion(messages).strip()
+
+        logger.info(f"Übersetzter XML-Abschnitt:\n{translated_text}")
+        logger.info(f"--- Ende Übersetzung von XML-Abschnitt {count}/{len(matches)} ---\n")
 
         if verbose:
             print(f"--- Original ---\n{inner_text}\n--- Translated ---\n{translated_text}\n")
@@ -89,4 +102,7 @@ def translate_xml_exam(
         f.write(final_content)
 
     print("✅ Translation completed!")
+    logger.info("✅ XML-Übersetzung erfolgreich abgeschlossen!")
+    logger.info(f"Gespeichert unter: {output_path}")
+    logger.info("============================================\n")
     return str(output_path)

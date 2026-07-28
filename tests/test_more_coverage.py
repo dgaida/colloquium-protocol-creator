@@ -261,7 +261,8 @@ class TestGeminiThesisEvaluatorMissingLines:
             patch.object(
                 GeminiThesisEvaluator, "_remove_first_page", return_value="/dummy/temp.pdf"
             ),
-            patch("os.unlink"),patch("builtins.print") as mock_print
+            patch("os.unlink"),
+            patch("builtins.print") as mock_print,
         ):
             evaluator.evaluate_thesis(
                 pdf_path="/dummy/path.pdf",

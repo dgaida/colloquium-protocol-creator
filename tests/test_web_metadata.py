@@ -121,3 +121,94 @@ def test_generate_metadata_file_with_move(mocker):
         # Check that the original file in tmpdir is gone
         original_path = os.path.join(tmpdir, filename)
         assert not os.path.exists(original_path)
+
+
+def test_get_author_slug_empty_parts():
+    """Test get_author_slug when split results in no parts."""
+    assert metadata.get_author_slug("   ") == "unkn"
+
+
+def test_generate_metadata_file_unknown_students():
+    """Test unknown author with group project students."""
+    mock_client = MagicMock()
+    mock_client.chat_completion.return_value = "Summary"
+    with tempfile.TemporaryDirectory() as tmpdir:
+        md_path = metadata.generate_metadata_file(
+            output_folder=tmpdir,
+            title="Test",
+            author="Unknown",
+            pages_text={0: "text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="WS 24/25",
+            students=[{"name": "Unknown Author"}, {"name": "Unbekannt"}],
+            copy_to_web_folder=True,
+        )
+        assert os.path.exists(md_path)
+
+
+def test_generate_metadata_file_unknown_author():
+    """Test unknown author without group project students."""
+    mock_client = MagicMock()
+    mock_client.chat_completion.return_value = "Summary"
+    with tempfile.TemporaryDirectory() as tmpdir:
+        md_path = metadata.generate_metadata_file(
+            output_folder=tmpdir,
+            title="Test",
+            author="Unknown",
+            pages_text={0: "text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="WS 24/25",
+            copy_to_web_folder=True,
+        )
+        assert os.path.exists(md_path)
+
+
+def test_generate_metadata_file_group_project():
+    """Test group project metadata generation."""
+    mock_client = MagicMock()
+    mock_client.chat_completion.return_value = "This work by Alice Smith and Bob Jones is great."
+    students = [
+        {"name": "Alice Smith"},
+        {"name": "Bob Jones"},
+    ]
+    with tempfile.TemporaryDirectory() as tmpdir:
+        md_path = metadata.generate_metadata_file(
+            output_folder=tmpdir,
+            title="Group Thesis",
+            author="Alice Smith",
+            pages_text={0: "text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="Wintersemester 24/25",
+            date_str="2025-01-20",
+            students=students,
+            copy_to_web_folder=False,
+        )
+        assert os.path.exists(md_path)
+        assert md_path.endswith("2025_ws2425_ba_alsm_bojo.md")
+        with open(md_path, encoding="utf-8") as f:
+            content = f.read()
+        assert 'author: "A. S. & B. J."' in content
+        assert "This work by A. S. and B. J. is great." in content
+
+
+def test_generate_metadata_file_copy_exception(mocker):
+    """Test exception handling during file copying."""
+    mock_client = MagicMock()
+    mock_client.chat_completion.return_value = "Summary"
+    mocker.patch("shutil.copy2", side_effect=OSError("Simulated file error"))
+    with tempfile.TemporaryDirectory() as tmpdir:
+        md_path = metadata.generate_metadata_file(
+            output_folder=tmpdir,
+            title="Test Exception",
+            author="Max Mustermann",
+            pages_text={0: "text"},
+            llm_client=mock_client,
+            work_type="Bachelorthesis",
+            semester="WS 24/25",
+            web_metadata_folder="some_folder",
+            copy_to_web_folder=True,
+        )
+        assert os.path.exists(md_path)

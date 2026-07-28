@@ -301,6 +301,167 @@ class TestCorePdf:
         assert 0 in result
         assert result[0] == "Hello"
 
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    @patch("os.path.exists", return_value=True)
+    @patch("builtins.open", new_callable=mock_open, read_data=b"test")
+    def test_extract_text_with_positions_invalid_pdf(self, mock_file, mock_exists, mock_parser_cls):
+        with patch("pymupdf.open", side_effect=Exception("Simulated pymupdf fail")):
+            result = pdf.extract_text_with_positions("dummy.pdf")
+            assert result == {}
+
+    @patch("liteparse.LiteParse")
+    def test_extract_text_with_positions_liteparse_success(self, mock_liteparse):
+        mock_doc = MagicMock()
+        mock_page = MagicMock()
+        mock_page.height = 1000
+
+        mock_item_with_words = MagicMock()
+        mock_word = MagicMock()
+        mock_word.text = "Word1"
+        mock_word.x = 10
+        mock_word.y = 10
+        mock_word.width = 50
+        mock_word.height = 20
+        mock_item_with_words.words = [mock_word]
+
+        mock_item_no_words_single = MagicMock()
+        mock_item_no_words_single.words = []
+        mock_item_no_words_single.text = "Single"
+        mock_item_no_words_single.x = 100
+        mock_item_no_words_single.y = 100
+        mock_item_no_words_single.width = 40
+        mock_item_no_words_single.height = 20
+
+        mock_item_no_words_multi = MagicMock()
+        mock_item_no_words_multi.words = []
+        mock_item_no_words_multi.text = "Multi Word Item"
+        mock_item_no_words_multi.x = 200
+        mock_item_no_words_multi.y = 200
+        mock_item_no_words_multi.width = 120
+        mock_item_no_words_multi.height = 20
+
+        mock_page.text_items = [
+            mock_item_with_words,
+            mock_item_no_words_single,
+            mock_item_no_words_multi,
+        ]
+        mock_doc.pages = [mock_page]
+
+        mock_parser = MagicMock()
+        mock_parser.parse.return_value = mock_doc
+        mock_liteparse.return_value = mock_parser
+
+        with patch("os.path.exists", return_value=False):
+            result = pdf.extract_text_with_positions("dummy.pdf")
+            assert 0 in result
+            assert result[0][0]["text"] == "Word1"
+            assert result[0][1]["text"] == "Single"
+            assert result[0][2]["text"] == "Multi"
+
+    @patch("academic_doc_generator.core.pdf.PdfReader")
+    def test_extract_annotations_with_positions_disallowed_subtype(self, mock_reader_cls):
+        mock_reader = MagicMock()
+        mock_page = MagicMock()
+        mock_annot = MagicMock()
+        mock_annot.get_object.return_value = {
+            "/Subtype": "/Link",
+            "/Rect": [0, 0, 10, 10],
+            "/Contents": "Ignore this link",
+        }
+        mock_page.__contains__.side_effect = lambda x: x == "/Annots"
+        mock_page.__getitem__.side_effect = lambda x: [mock_annot] if x == "/Annots" else None
+        mock_reader.pages = [mock_page]
+        mock_reader_cls.return_value = mock_reader
+
+        annots, stats = pdf.extract_annotations_with_positions("test.pdf")
+        assert len(annots) == 0
+
+    def test_get_words_for_annotation_on_page_no_hits(self):
+        pages_words = {0: [{"text": "Hello", "bbox": (10, 10, 20, 20)}]}
+        rect = (50, 50, 60, 60)
+        idx, hits = pdf.get_words_for_annotation_on_page(pages_words, 0, rect)
+        assert idx == 0
+        assert hits == []
+
+    def test_find_annotation_context_quadpoints_and_none(self):
+        pages_words = {
+            0: [
+                {"text": "Target", "bbox": (10, 10, 20, 20)},
+            ]
+        }
+        annotations = {
+            0: [
+                {
+                    "comment": "Note1",
+                    "rect": None,
+                    "category": "llm",
+                    "quadpoints": [10, 10, 20, 10, 10, 20, 20, 20],
+                },
+                {"comment": "Note2", "rect": None, "category": "llm", "quadpoints": None},
+            ]
+        }
+        context = pdf.find_annotation_context(pages_words, annotations)
+        assert len(context[1]) == 1
+        assert context[1][0]["comment"] == "Note1"
+        assert context[1][0]["highlighted"] == "Target"
+
+    @patch("liteparse.LiteParse")
+    def test_extract_text_per_page_liteparse_success(self, mock_liteparse):
+        mock_doc = MagicMock()
+        mock_page1 = MagicMock()
+        mock_page1.text = "Hello LiteParse Page 1"
+        mock_page2 = MagicMock()
+        mock_page2.text = "Hello LiteParse Page 2"
+        mock_doc.pages = [mock_page1, mock_page2]
+
+        mock_parser = MagicMock()
+        mock_parser.parse.return_value = mock_doc
+        mock_liteparse.return_value = mock_parser
+
+        with patch("os.path.exists", return_value=False):
+            result = pdf.extract_text_per_page("dummy.pdf", max_pages=1)
+            assert len(result) == 1
+            assert result[0] == "Hello LiteParse Page 1"
+
+        with (
+            patch("os.path.exists", return_value=True),
+            patch("builtins.open", new_callable=mock_open, read_data=b"test"),
+            patch("pymupdf.open", side_effect=Exception("Simulated pymupdf fail")),
+        ):
+            result = pdf.extract_text_per_page("dummy.pdf")
+            assert result == {}
+
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    @patch("os.path.exists", return_value=False)
+    def test_extract_text_per_page_all_fail(self, mock_exists, mock_parser_cls):
+        mock_parser = MagicMock()
+        mock_parser.load.side_effect = Exception("Simulated Docling Crash")
+        mock_parser_cls.return_value = mock_parser
+
+        with patch("pymupdf.open", side_effect=Exception("Simulated PyMuPDF Crash")):
+            result = pdf.extract_text_per_page("dummy.pdf")
+            assert result == {}
+
+    @patch("academic_doc_generator.core.pdf.DoclingPdfParser")
+    @patch("pymupdf.open")
+    def test_extract_text_per_page_fallback_max_pages(self, mock_pymupdf_open, mock_parser_cls):
+        mock_parser = MagicMock()
+        mock_parser.load.side_effect = Exception("Simulated Docling Crash")
+        mock_parser_cls.return_value = mock_parser
+
+        mock_doc = MagicMock()
+        mock_page1 = MagicMock()
+        mock_page1.get_text.return_value = [(10.0, 100.0, 50.0, 120.0, "Hello1", 0, 0, 0)]
+        mock_page2 = MagicMock()
+        mock_page2.get_text.return_value = [(10.0, 100.0, 50.0, 120.0, "Hello2", 0, 0, 0)]
+        mock_doc.__iter__.return_value = [mock_page1, mock_page2]
+        mock_pymupdf_open.return_value = mock_doc
+
+        result = pdf.extract_text_per_page("dummy.pdf", max_pages=1)
+
+        assert len(result) == 1
+        assert result[0] == "Hello1"
+
 
 # --- Tests for exam_translator.translator ---
 
@@ -394,11 +555,20 @@ class TestExamTranslator:
 class TestCoreLlm:
     def test_rewrite_comments(self, mock_llm_client):
         context = {
-            1: [{"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"}]
+            1: [
+                {"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"},
+                {
+                    "comment": "Quelle?",
+                    "highlighted": "text",
+                    "paragraph": "para",
+                    "category": "quelle",
+                },
+            ]
         }
         mock_llm_client.chat_completion.return_value = "Rewritten"
         result = llm.rewrite_comments(context, mock_llm_client)
         assert result[1][0]["rewritten"] == "Rewritten"
+        assert len(result[1]) == 1
 
     def test_rewrite_comments_groq_free(self, mock_llm_client):
         context = {
@@ -507,6 +677,90 @@ class TestCoreLlm:
             llm.detect_language(comments, mock_llm_client, groq_free=False, sample_size=3)
             == "English"
         )
+
+    def test_rewrite_comments_verbose(self, mock_llm_client):
+        context = {
+            1: [{"comment": "Why?", "highlighted": "text", "paragraph": "para", "category": "llm"}]
+        }
+        mock_llm_client.chat_completion.return_value = "Rewritten"
+        result = llm.rewrite_comments(context, mock_llm_client, verbose=True)
+        assert result[1][0]["rewritten"] == "Rewritten"
+
+    def test_extract_document_metadata_filename_fallback_fails(self, mock_llm_client):
+        mock_llm_client.chat_completion.side_effect = [
+            json.dumps({"author": "John Doe"}),
+            "Something else",
+        ]
+        pages_text = {0: "Sample Text"}
+        result = llm.extract_document_metadata(
+            pages_text, "English", mock_llm_client, pdf_path="Thesis.pdf"
+        )
+        assert result["author"] == "John Doe"
+        assert "bachelor_master" not in result
+
+    def test_detect_language_groq_free(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = "German"
+        comments = {1: [{"rewritten": "Was ist das?"}]}
+        with patch("time.sleep") as mock_sleep:
+            res = llm.detect_language(comments, mock_llm_client, groq_free=True)
+            assert res == "German"
+            mock_sleep.assert_called_once_with(2)
+
+    @patch("academic_doc_generator.core.llm.LLMClient")
+    def test_rewrite_comments_in_pdf_no_client(self, mock_llm_cls):
+        mock_client = MagicMock()
+        mock_llm_cls.return_value = mock_client
+        mock_processor = MagicMock()
+        mock_processor.extract_text_with_positions.return_value = {}
+        mock_processor.extract_annotations_with_positions.return_value = (
+            {},
+            {"quelle": 0, "language": 0, "ignore": 0},
+        )
+        mock_processor.find_annotation_context.return_value = {}
+
+        result, stats = llm.rewrite_comments_in_pdf(
+            "test.pdf", llm_client=None, pdf_processor=mock_processor
+        )
+        assert result == {}
+        mock_llm_cls.assert_called_once()
+
+    @patch("academic_doc_generator.core.llm.LLMClient")
+    @patch("academic_doc_generator.core.pdf.extract_text_with_positions")
+    @patch("academic_doc_generator.core.pdf.extract_annotations_with_positions")
+    @patch("academic_doc_generator.core.pdf.find_annotation_context")
+    def test_rewrite_comments_in_pdf_no_processor(
+        self, mock_find, mock_extract_ann, mock_extract_text, mock_llm_cls
+    ):
+        mock_client = MagicMock()
+        mock_llm_cls.return_value = mock_client
+        mock_extract_text.return_value = {}
+        mock_extract_ann.return_value = ({}, {"quelle": 0, "language": 0, "ignore": 0})
+        mock_find.return_value = {}
+
+        result, stats = llm.rewrite_comments_in_pdf(
+            "test.pdf", llm_client=mock_client, pdf_processor=None
+        )
+        assert result == {}
+
+    @patch("academic_doc_generator.core.llm.LLMClient")
+    @patch("academic_doc_generator.core.pdf.extract_text_per_page")
+    @patch("academic_doc_generator.core.llm.extract_document_metadata")
+    @patch("academic_doc_generator.core.llm.summarize_thesis")
+    def test_get_summary_and_metadata_of_pdf_no_client(
+        self, mock_summarize, mock_extract, mock_pdf_extract, mock_llm_cls
+    ):
+        mock_client = MagicMock()
+        mock_llm_cls.return_value = mock_client
+        mock_pdf_extract.return_value = {0: "text"}
+        mock_extract.return_value = {"author": "Jane Doe"}
+        mock_summarize.return_value = "Summary text"
+
+        summary, metadata = llm.get_summary_and_metadata_of_pdf(
+            "test.pdf", "German", llm_client=None
+        )
+        assert summary == "Summary text"
+        assert metadata["author"] == "Jane Doe"
+        mock_llm_cls.assert_called_once()
 
 
 # --- Tests for colloquium.orchestrator ---

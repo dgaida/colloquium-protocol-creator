@@ -208,6 +208,45 @@ class TestProjectLatexGeneration:
             if os.path.exists(tex_path):
                 os.unlink(tex_path)
 
+    def test_create_project_grading_letter_tex_single_student_in_list(self):
+        """Test project grading letter generation with exactly one student in the list."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".tex", delete=False) as f:
+            tex_path = f.name
+
+        try:
+            latex.create_project_grading_letter_tex(
+                filename=tex_path,
+                author="Should be ignored",
+                title="Single Student Project",
+                examiner="Prof. Test",
+                contact="test@example.com",
+                salutation="Frau",  # should be overridden by student salutation
+                work_type="Praxisprojekt",
+                students=[
+                    {
+                        "salutation": "Herr",
+                        "name": "Correct Student Name",
+                        "id_number": "54321",
+                    }
+                ],
+            )
+
+            assert os.path.exists(tex_path)
+
+            with open(tex_path, encoding="utf-8") as f:
+                content = f.read()
+
+            assert "Correct Student Name" in content
+            assert "54321" in content
+            assert "Herr" in content
+            # check that male pronoun was used since "Herr" overrides
+            assert "sein" in content
+            assert "Er" in content
+
+        finally:
+            if os.path.exists(tex_path):
+                os.unlink(tex_path)
+
 
 # ============================================================================
 # Tests for project_creator/llm.py
@@ -330,6 +369,27 @@ class TestProjectLLMInterface:
         assert "error" in result
         assert result["error"] == "Could not parse JSON"
         assert "raw" in result
+
+    @patch("academic_doc_generator.project.llm.extract_text_per_page")
+    def test_extract_project_metadata_no_students_fallback(self, mock_extract):
+        """Test metadata extraction when students and student_name are completely missing."""
+        mock_extract.return_value = {0: "Empty text"}
+
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = json.dumps(
+            {
+                "title": "A project without students",
+                "first_examiner": "Prof. Dr. Hans Meyer",
+                "first_examiner_christian": "Hans",
+                "first_examiner_family": "Meyer",
+                "work_type": "Praxisprojekt",
+            }
+        )
+
+        result = llm.extract_project_metadata("test.pdf", mock_client)
+
+        assert result["students"] == []
+        assert "student_name" not in result
 
 
 # ============================================================================

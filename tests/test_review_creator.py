@@ -384,6 +384,28 @@ class TestMdGenerator:
             if os.path.exists(md_path):
                 os.unlink(md_path)
 
+    @patch("academic_doc_generator.review.md_generator.time.sleep")
+    def test_rewrite_comments_markdown_groq_free_throttle_trigger(self, mock_sleep):
+        """Test that groq_free throttle triggers sleep on 5th page."""
+        context_dict = {
+            1: [{"comment": "Test 1", "category": "llm", "line": 1}],
+            2: [{"comment": "Test 2", "category": "llm", "line": 2}],
+            3: [{"comment": "Test 3", "category": "llm", "line": 3}],
+            4: [{"comment": "Test 4", "category": "llm", "line": 4}],
+            5: [{"comment": "Test 5", "category": "llm", "line": 5}],
+        }
+
+        mock_client = MagicMock()
+        mock_client.chat_completion.return_value = "Rewritten"
+
+        res = md_generator.rewrite_comments_markdown(
+            context_dict, mock_client, groq_free=True, verbose=True
+        )
+
+        # Should sleep once because we reached 5th page (len(rewritten) was 4)
+        mock_sleep.assert_called_once_with(10)
+        assert len(res) == 5
+
 
 # ============================================================================
 # Integration Tests
@@ -457,6 +479,45 @@ class TestReviewIntegration:
         finally:
             if os.path.exists(md_path):
                 os.unlink(md_path)
+
+    @patch("academic_doc_generator.review.orchestrator.extract_text_with_positions")
+    @patch("academic_doc_generator.review.orchestrator.extract_annotations_with_positions")
+    @patch("academic_doc_generator.review.orchestrator.PdfReader")
+    @patch("academic_doc_generator.review.orchestrator.find_annotation_context_with_lines")
+    @patch("academic_doc_generator.review.orchestrator.rewrite_comments_markdown")
+    @patch("academic_doc_generator.review.orchestrator.create_review_markdown")
+    def test_run_review_pipeline_default_output_folder(
+        self,
+        mock_create_md,
+        mock_rewrite,
+        mock_context,
+        mock_reader_class,
+        mock_annot,
+        mock_text,
+    ):
+        from academic_doc_generator.review.orchestrator import run_review_pipeline
+
+        mock_text.return_value = {}
+        mock_annot.return_value = ({}, {})
+
+        mock_reader = MagicMock()
+        mock_page = MagicMock()
+        mock_page.mediabox.top = 792.0
+        mock_reader.pages = [mock_page]
+        mock_reader_class.return_value = mock_reader
+
+        mock_context.return_value = {}
+        mock_rewrite.return_value = {}
+
+        mock_client = MagicMock()
+
+        run_review_pipeline("dummy_folder/paper.pdf", llm_client=mock_client, output_folder=None)
+
+        # Check that it tried to use "dummy_folder" as output_folder because pdf_path is "dummy_folder/paper.pdf"
+        mock_create_md.assert_called_once()
+        call_args = mock_create_md.call_args[0]
+        # output file path should start with dummy_folder
+        assert call_args[1].startswith("dummy_folder")
 
 
 if __name__ == "__main__":

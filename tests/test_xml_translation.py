@@ -1,5 +1,7 @@
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
 
@@ -65,3 +67,51 @@ def test_translate_xml_exam_complex(tmp_path):
     assert translated_inner in result
     assert "height=&quot;528&quot;" in result
     assert "width=&quot;600&quot;" in result
+
+
+@patch("academic_doc_generator.exam_translator.xml_translator.LLMClient")
+def test_translate_xml_exam_default_client(mock_llm_class, tmp_path):
+    from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
+    mock_llm = mock_llm_class.return_value
+    mock_llm.chat_completion.return_value = "Translated XML content"
+
+    input_file = tmp_path / "exam.xml"
+    xml_content = """<mattext texttype="text/xhtml">XML content</mattext>"""
+    input_file.write_text(xml_content, encoding="utf-8")
+
+    output_path = translate_xml_exam(input_file, llm_client=None)
+    assert os.path.exists(output_path)
+    mock_llm_class.assert_called_once_with(api_choice="kiconnect", llm="openai-gpt-oss-120b")
+
+
+def test_translate_xml_exam_file_not_found():
+    from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
+    mock_llm = MagicMock()
+    with pytest.raises(FileNotFoundError):
+        translate_xml_exam("nonexistent_file.xml", llm_client=mock_llm)
+
+
+def test_translate_xml_exam_empty_section_and_verbose(tmp_path):
+    from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
+    # Test that empty sections are skipped (line 80) and verbose output is printed (line 94)
+    xml_content = """<questestinterop>
+<mattext texttype="text/xhtml">   </mattext>
+<mattext texttype="text/xhtml">Translate me</mattext>
+</questestinterop>"""
+    input_file = tmp_path / "empty_and_full.xml"
+    input_file.write_text(xml_content, encoding="utf-8")
+
+    mock_llm = MagicMock()
+    mock_llm.chat_completion.return_value = "Translated section"
+
+    output_path = translate_xml_exam(input_file, llm_client=mock_llm, verbose=True)
+    assert os.path.exists(output_path)
+
+    with open(output_path, encoding="utf-8") as f:
+        res = f.read()
+
+    assert '<mattext texttype="text/xhtml">   </mattext>' in res
+    assert '<mattext texttype="text/xhtml">Translated section</mattext>' in res

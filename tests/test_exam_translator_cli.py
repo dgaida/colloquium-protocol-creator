@@ -348,6 +348,58 @@ class TestExamTranslatorMain:
         finally:
             Path(tex_file).unlink(missing_ok=True)
 
+    @patch("academic_doc_generator.exam_translator.cli.LLMClient")
+    @patch("academic_doc_generator.exam_translator.cli.translate_xml_exam")
+    def test_exam_translator_main_xml(self, mock_translate, mock_llm_class):
+        """Test XML Translation via CLI."""
+        with tempfile.NamedTemporaryFile(suffix=".xml", mode="w", delete=False) as f:
+            f.write("<questestinterop></questestinterop>")
+            xml_file = f.name
+
+        try:
+            mock_client = MagicMock()
+            mock_client.api_choice = "openai"
+            mock_client.llm = "gpt-4o"
+            mock_llm_class.return_value = mock_client
+
+            mock_translate.return_value = xml_file.replace(".xml", "_engl.xml")
+
+            test_args = ["exam-translator", xml_file]
+
+            with patch.object(sys, "argv", test_args):
+                cli.exam_translator_main()
+
+            mock_llm_class.assert_called_once()
+            mock_translate.assert_called_once()
+
+        finally:
+            Path(xml_file).unlink(missing_ok=True)
+
+    @patch("llm_client.LLMClient")
+    @patch("academic_doc_generator.exam_translator.translator.translate_latex_exam")
+    def test_cli_run_main(self, mock_translate, mock_llm_class):
+        """Test running module as __main__."""
+        import runpy
+
+        with tempfile.NamedTemporaryFile(suffix=".tex", mode="w", delete=False) as f:
+            f.write("\\documentclass{exam}")
+            tex_file = f.name
+        try:
+            mock_client = MagicMock()
+            mock_client.api_choice = "openai"
+            mock_client.llm = "gpt-4o"
+            mock_llm_class.return_value = mock_client
+            mock_translate.return_value = tex_file.replace(".tex", "_engl.tex")
+
+            test_args = ["exam-translator", tex_file]
+            with patch("sys.argv", test_args):
+                runpy.run_module("academic_doc_generator.exam_translator.cli", run_name="__main__")
+
+            mock_llm_class.assert_called_once()
+            mock_translate.assert_called_once()
+        finally:
+            Path(tex_file).unlink(missing_ok=True)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

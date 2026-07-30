@@ -230,6 +230,42 @@ def test_translate_latex_exam_logging(mock_llm_class, tmp_path):
         logging.getLogger("exam_translator").handlers.clear()
 
 
+@patch("academic_doc_generator.exam_translator.translator.LLMClient")
+def test_translate_preamble_verbose_short(mock_llm_class):
+    from academic_doc_generator.exam_translator.translator import translate_preamble_to_english
+
+    mock_llm = mock_llm_class.return_value
+    mock_llm.chat_completion.return_value = "Short preamble"
+
+    preamble = "A" * 600
+    res = translate_preamble_to_english(preamble, mock_llm, verbose=True)
+    assert res == "Short preamble"
+
+
+@patch("academic_doc_generator.exam_translator.translator.LLMClient")
+def test_translate_latex_exam_default_output(mock_llm_class, tmp_path):
+    from academic_doc_generator.exam_translator.translator import translate_latex_exam
+
+    mock_llm = mock_llm_class.return_value
+    mock_llm.chat_completion.return_value = "Translated question"
+
+    input_file = tmp_path / "myexam.tex"
+    expected_output_file = tmp_path / "myexam_engl.tex"
+
+    latex_content = r"""\documentclass{exam}
+\begin{questions}
+\question Test Frage
+\end{questions}
+\end{document}"""
+    input_file.write_text(latex_content, encoding="utf-8")
+
+    try:
+        translate_latex_exam(input_file, llm_client=mock_llm, output_path=None)
+        assert expected_output_file.exists()
+    finally:
+        expected_output_file.unlink(missing_ok=True)
+
+
 @patch("academic_doc_generator.exam_translator.xml_translator.LLMClient")
 def test_translate_xml_exam_logging(mock_llm_class, tmp_path):
     import logging

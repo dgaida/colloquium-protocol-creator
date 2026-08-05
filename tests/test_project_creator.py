@@ -453,5 +453,73 @@ class TestProjectIntegration:
                 os.unlink(tex_path)
 
 
+# ============================================================================
+# Tests for DOCX support
+# ============================================================================
+
+
+class TestProjectDOCXSupport:
+    """Tests for Word document (.docx) support in project workflows."""
+
+    def test_extract_docx_text(self):
+        """Test extraction of paragraphs and tables from docx."""
+        import docx
+
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            # Create a simple DOCX file
+            doc = docx.Document()
+            doc.add_paragraph("This is a test paragraph.")
+            table = doc.add_table(rows=2, cols=2)
+            table.cell(0, 0).text = "Cell 1"
+            table.cell(0, 1).text = "Cell 2"
+            doc.save(tmp_path)
+
+            from academic_doc_generator.core.pdf import extract_docx_text
+
+            extracted = extract_docx_text(tmp_path)
+
+            assert "This is a test paragraph." in extracted
+            assert "Cell 1" in extracted
+            assert "Cell 2" in extracted
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+    def test_extract_text_per_page_docx(self):
+        """Test extract_text_per_page with a DOCX file."""
+        import docx
+
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            doc = docx.Document()
+            doc.add_paragraph("Praxisprojekt-Dokumentation.")
+            doc.save(tmp_path)
+
+            from academic_doc_generator.core.pdf import extract_text_per_page
+
+            res = extract_text_per_page(tmp_path)
+
+            assert 0 in res
+            assert "Praxisprojekt-Dokumentation." in res[0]
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+    def test_generate_feedback_summary_docx(self):
+        """Test generate_feedback_summary bypasses annotation extraction for DOCX."""
+        from academic_doc_generator.project.feedback_generator import generate_feedback_summary
+
+        mock_client = MagicMock()
+
+        res = generate_feedback_summary("dummy_project.docx", mock_client)
+        assert res == "- Keine spezifischen Anmerkungen im Dokument gefunden."
+        mock_client.chat_completion.assert_not_called()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

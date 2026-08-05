@@ -44,6 +44,9 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
     """
     import os
 
+    if pdf_path.lower().endswith(".docx"):
+        return {0: []}
+
     is_valid_pdf = True
     if os.path.exists(pdf_path):
         with open(pdf_path, "rb") as f:
@@ -244,6 +247,9 @@ def extract_annotations_with_positions(
         >>> annotations[0][0]['category']
         'llm'
     """
+    if pdf_path.lower().endswith(".docx"):
+        return {}, {"quelle": 0, "language": 0, "ignore": 0}
+
     reader = PdfReader(pdf_path)
     annotations: dict[int, list[AnnotationData]] = {}
     stats: CommentStats = {"quelle": 0, "language": 0, "ignore": 0}
@@ -496,11 +502,38 @@ def find_annotation_context(
     return context_dict
 
 
+def extract_docx_text(docx_path: str) -> str:
+    """Extract full text from a DOCX file including paragraphs and tables.
+
+    Args:
+        docx_path: Path to the DOCX file.
+
+    Returns:
+        The extracted plain text.
+    """
+    import docx
+
+    doc = docx.Document(docx_path)
+    text_parts = []
+    for para in doc.paragraphs:
+        if para.text.strip():
+            text_parts.append(para.text)
+    for table in doc.tables:
+        for row in table.rows:
+            row_text = []
+            for cell in row.cells:
+                if cell.text.strip():
+                    row_text.append(cell.text.strip())
+            if row_text:
+                text_parts.append(" | ".join(row_text))
+    return "\n".join(text_parts)
+
+
 def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[int, str]:
     """Extract plain text (without positions) for the first `max_pages` pages using LiteParse with docling and PyMuPDF fallbacks.
 
     This is faster than extracting word positions and is sufficient for metadata
-    extraction and thesis summarization.
+    extraction and thesis summarization. Supports Word documents (.docx) as well.
 
     Args:
         pdf_path: Path to the PDF file.
@@ -517,6 +550,14 @@ def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[
         'Introduction This thesis examines the impact of...'
     """
     import os
+
+    if pdf_path.lower().endswith(".docx"):
+        try:
+            full_text = extract_docx_text(pdf_path)
+            return {0: full_text}
+        except Exception as e:
+            print(f"❌ Error reading DOCX file: {e}")
+            return {}
 
     is_valid_pdf = True
     if os.path.exists(pdf_path):

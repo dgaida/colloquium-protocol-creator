@@ -21,6 +21,9 @@ def generate_feedback_summary(pdf_path: str, llm_client: LLMClient) -> str:
     Returns:
         A string containing 3-4 bullet points of summarized feedback in German.
     """
+    if pdf_path.lower().endswith(".docx"):
+        return "- Keine spezifischen Anmerkungen im Dokument gefunden."
+
     # 1. Extract annotations and text
     pages_words = extract_text_with_positions(pdf_path)
     annotations, _stats = extract_annotations_with_positions(pdf_path, ignore_source=True)

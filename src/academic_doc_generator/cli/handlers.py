@@ -41,7 +41,9 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
     # Validate PDF path
     try:
         pdf_filename = config.config["pdf"]["filename"]
-        pdf_path = validate_pdf_path(str(config.folder_path), pdf_filename)
+        pdf_path = validate_pdf_path(
+            str(config.folder_path), pdf_filename, allow_docx=(task == "project")
+        )
     except (KeyError, ValueError, FileNotFoundError) as e:
         print(f"❌ Fehler beim Validieren des PDF-Pfads: {e}")
         sys.exit(1)
@@ -202,7 +204,7 @@ def run_project_direct(args: argparse.Namespace) -> None:
     # Validate PDF path
     try:
         pdf_full_path = Path(args.pdf).resolve()
-        pdf_path = validate_pdf_path(str(pdf_full_path.parent), pdf_full_path.name)
+        pdf_path = validate_pdf_path(str(pdf_full_path.parent), pdf_full_path.name, allow_docx=True)
     except (ValueError, FileNotFoundError) as e:
         print(f"❌ Fehler beim Validieren des PDF-Pfads: {e}")
         sys.exit(1)

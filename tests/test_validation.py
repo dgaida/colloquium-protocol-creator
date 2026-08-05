@@ -111,7 +111,7 @@ class TestValidatePdfPath:
         """Test mit nicht existierender Datei."""
         with (
             tempfile.TemporaryDirectory() as tmpdir,
-            pytest.raises(FileNotFoundError, match="PDF not found"),
+            pytest.raises(FileNotFoundError, match="File not found"),
         ):
             validate_pdf_path(tmpdir, "nonexistent.pdf")
 
@@ -122,6 +122,25 @@ class TestValidatePdfPath:
             pytest.raises(ValueError, match="Only PDF files allowed"),
         ):
             validate_pdf_path(tmpdir, "test.txt")
+
+    def test_validate_pdf_path_docx_allowed(self):
+        """Test mit Word-Datei (.docx), wenn allow_docx=True."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            docx_file = Path(tmpdir) / "test.docx"
+            docx_file.write_text("dummy content")
+
+            result = validate_pdf_path(tmpdir, "test.docx", allow_docx=True)
+
+            assert result.exists()
+            assert result.name == "test.docx"
+
+    def test_validate_pdf_path_docx_not_allowed(self):
+        """Test mit Word-Datei (.docx), wenn allow_docx=False."""
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            pytest.raises(ValueError, match="Only PDF files allowed"),
+        ):
+            validate_pdf_path(tmpdir, "test.docx", allow_docx=False)
 
     def test_validate_pdf_path_directory_traversal_dotdot(self):
         """Test Directory Traversal mit ../"""

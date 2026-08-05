@@ -36,19 +36,20 @@ def validate_api_keys() -> list[str]:
     return available
 
 
-def validate_pdf_path(folder_path: str, filename: str) -> Path:
-    """Get validated PDF file path.
+def validate_pdf_path(folder_path: str, filename: str, allow_docx: bool = False) -> Path:
+    """Get validated PDF or DOCX file path.
 
     Args:
         folder_path: Base folder path.
-        filename: Name of the PDF file.
+        filename: Name of the PDF or DOCX file.
+        allow_docx: Whether to allow Word (.docx) files.
 
     Returns:
-        Absolute path to PDF file.
+        Absolute path to PDF or DOCX file.
 
     Raises:
         ValueError: If path attempts directory traversal or contains invalid characters.
-        FileNotFoundError: If PDF does not exist.
+        FileNotFoundError: If PDF or DOCX does not exist.
 
     Security:
         - Prevents directory traversal (../)
@@ -65,8 +66,13 @@ def validate_pdf_path(folder_path: str, filename: str) -> Path:
         raise ValueError(f"Path traversal detected: {filename}")
 
     # Enforce file extension
-    if not filename.lower().endswith(".pdf"):
-        raise ValueError(f"Only PDF files allowed: {filename}")
+    ext = filename.lower()
+    if allow_docx:
+        if not (ext.endswith(".pdf") or ext.endswith(".docx")):
+            raise ValueError(f"Only PDF and DOCX files allowed: {filename}")
+    else:
+        if not ext.endswith(".pdf"):
+            raise ValueError(f"Only PDF files allowed: {filename}")
 
     pdf_path = (base_path / filename).resolve()
 
@@ -77,6 +83,6 @@ def validate_pdf_path(folder_path: str, filename: str) -> Path:
         raise ValueError(f"Invalid PDF path (directory traversal): {filename}") from e
 
     if not pdf_path.exists():
-        raise FileNotFoundError(f"PDF not found: {pdf_path}")
+        raise FileNotFoundError(f"File not found: {pdf_path}")
 
     return pdf_path

@@ -42,7 +42,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
     try:
         pdf_filename = config.config["pdf"]["filename"]
         pdf_path = validate_pdf_path(
-            str(config.folder_path), pdf_filename, allow_docx=(task == "project")
+            str(config.folder_path), pdf_filename, allow_docx=(config.get_task() == "project")
         )
     except (KeyError, ValueError, FileNotFoundError) as e:
         print(f"❌ Fehler beim Validieren des PDF-Pfads: {e}")

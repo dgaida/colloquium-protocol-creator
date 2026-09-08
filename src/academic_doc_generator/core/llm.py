@@ -247,7 +247,9 @@ def summarize_thesis(
         True
     """
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
-    print(f"Summarizing thesis: {len(pages_text)} pages extracted, total text length: {len(full_text)} characters.")
+    print(
+        f"Summarizing thesis: {len(pages_text)} pages extracted, total text length: {len(full_text)} characters."
+    )
 
     if not full_text.strip():
         print("⚠️  Warning: Thesis text is empty. Summary generation skipped or will be empty.")

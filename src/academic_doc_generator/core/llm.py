@@ -247,13 +247,27 @@ def summarize_thesis(
         True
     """
     full_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
+    print(f"Summarizing thesis: {len(pages_text)} pages extracted, total text length: {len(full_text)} characters.")
+
+    if not full_text.strip():
+        print("⚠️  Warning: Thesis text is empty. Summary generation skipped or will be empty.")
+        return ""
 
     prompt = build_prompt(PromptTemplate.SUMMARIZE_THESIS, language=language, text=full_text)
 
     messages = [{"role": "user", "content": prompt}]
-    latex_summary_raw = llm_client.chat_completion(messages)
+    try:
+        latex_summary_raw = llm_client.chat_completion(messages)
+        print(f"Raw summary response received from LLM ({len(latex_summary_raw)} chars):")
+        print(f"--- Raw Summary Output ---\n{latex_summary_raw}\n--------------------------")
+        if not latex_summary_raw or not latex_summary_raw.strip():
+            print("⚠️  Warning: LLM returned an empty summary response.")
+    except Exception as e:
+        print(f"❌ Error during summarize_thesis LLM call: {e}")
+        raise
 
-    return latex.escape_for_latex(latex_summary_raw, preserve_latex=True)
+    summary = latex.escape_for_latex(latex_summary_raw, preserve_latex=True)
+    return summary
 
 
 def detect_language(
@@ -426,18 +440,24 @@ def get_summary_and_metadata_of_pdf(
 
     # get plain text (for metadata detection)
     pages_text = pdf.extract_text_per_page(pdf_path)
+    print(f"Extracted plain text from {len(pages_text)} pages of '{pdf_path}'.")
 
     # Extract metadata (mit pdf_path für Fallback)
     metadata = extract_document_metadata(pages_text, language, llm_client, pdf_path=pdf_path)
+    print(f"Extracted document metadata: {metadata}")
 
     if groq_free:
         print("Waiting for 20 seconds to avoid error: Too Many Requests")
         time.sleep(20)
 
+    print("Starting summary generation for thesis...")
     summary = summarize_thesis(pages_text, language, llm_client)
 
-    if verbose:
-        print("Summary of thesis:\n", summary)
+    if verbose or not summary:
+        if not summary:
+            print("⚠️  Summary generated is empty or failed!")
+        else:
+            print("Summary of thesis:\n", summary)
 
     if groq_free:
         time.sleep(2)

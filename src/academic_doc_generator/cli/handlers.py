@@ -28,7 +28,11 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
     # Create LLM client
     llm_config = config.get_llm_config()
     try:
-        llm_client = LLMClient(api_choice=llm_config.get("api_choice"), llm=llm_config.get("model"))
+        llm_client = LLMClient(
+            api_choice=llm_config.get("api_choice"),
+            llm=llm_config.get("model"),
+            max_tokens=2048,
+        )
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
@@ -138,7 +142,7 @@ def run_from_config(config_path: str | Path) -> ConfigLoader:
 def run_colloquium_direct(args: argparse.Namespace) -> None:
     """Execute colloquium task with direct CLI arguments."""
     try:
-        llm_client = LLMClient(api_choice=args.api, llm=args.model)
+        llm_client = LLMClient(api_choice=args.api, llm=args.model, max_tokens=2048)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")
@@ -276,7 +280,7 @@ def run_translator_direct(args: argparse.Namespace) -> None:
     try:
         api_choice = args.api if args.api is not None else "kiconnect"
         llm_model = args.model if args.model is not None else "openai-gpt-oss-120b"
-        llm_client = LLMClient(api_choice=api_choice, llm=llm_model)
+        llm_client = LLMClient(api_choice=api_choice, llm=llm_model, max_tokens=2048)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")

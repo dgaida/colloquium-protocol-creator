@@ -89,7 +89,7 @@ def _initialize_pipeline(config: ColloquiumWorkflowConfig) -> tuple[LLMClient, s
 
     llm_client = config.llm_client
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(max_tokens=2048)
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     return llm_client, output_folder

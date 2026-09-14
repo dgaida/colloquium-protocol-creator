@@ -87,7 +87,11 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
                                 px1 = px0 + word_width
                                 words.append({"text": part, "bbox": (px0, y0, px1, y1)})
                 pages_words[idx] = words
-            return pages_words
+
+            if any(words for words in pages_words.values()):
+                return pages_words
+            else:
+                print("⚠️  LiteParse returned empty text. Falling back to Docling...")
         except (Exception, MemoryError) as e:
             print(f"⚠️  LiteParse failed ({type(e).__name__}: {e}). Falling back to Docling...")
 
@@ -119,7 +123,10 @@ def extract_text_with_positions(pdf_path: str) -> dict[int, list[WordBox]]:
                     )
                 pages_words[zero_idx] = words
 
-            return pages_words
+            if any(words for words in pages_words.values()):
+                return pages_words
+            else:
+                print("⚠️  Docling returned empty text. Falling back to PyMuPDF...")
         except (Exception, MemoryError) as doc_err:
             print(
                 f"⚠️  Docling parser failed ({type(doc_err).__name__}: {doc_err}). Falling back to PyMuPDF..."
@@ -576,8 +583,12 @@ def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[
             for idx, page in enumerate(pdf_doc.pages):
                 if max_pages is not None and idx >= max_pages:
                     break
-                pages_text[idx] = page.text
-            return pages_text
+                pages_text[idx] = page.text or ""
+
+            if any(text.strip() for text in pages_text.values()):
+                return pages_text
+            else:
+                print("⚠️  LiteParse returned empty text. Falling back to Docling...")
         except (Exception, MemoryError) as e:
             print(f"⚠️  LiteParse failed ({type(e).__name__}: {e}). Falling back to Docling...")
 
@@ -593,7 +604,11 @@ def extract_text_per_page(pdf_path: str, max_pages: Optional[int] = 10) -> dict[
                 words = [cell.text for cell in pred_page.iterate_cells(unit_type=TextCellUnit.WORD)]
                 page_text = " ".join(words)
                 pages_text[zero_idx] = page_text
-            return pages_text
+
+            if any(text.strip() for text in pages_text.values()):
+                return pages_text
+            else:
+                print("⚠️  Docling returned empty text. Falling back to PyMuPDF...")
         except (Exception, MemoryError) as doc_err:
             print(
                 f"⚠️  Docling parser failed ({type(doc_err).__name__}: {doc_err}). Falling back to PyMuPDF..."

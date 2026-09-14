@@ -65,7 +65,7 @@ def run_project_pipeline(config: ProjectWorkflowConfig) -> ProjectWorkflowResult
 
     # Create LLMClient if not provided
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(max_tokens=2048)
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     # Load global config

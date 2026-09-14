@@ -612,6 +612,21 @@ class TestCoreLlm:
         result = llm.extract_document_metadata({}, "English", mock_llm_client)
         assert result == {}
 
+    def test_extract_document_metadata_markdown_fences(self, mock_llm_client):
+        mock_llm_client.chat_completion.return_value = (
+            '```json\n{"author": "Jane Doe", "id_number": "654321"}\n```'
+        )
+        pages_text = {0: "Bachelor Thesis by Jane Doe"}
+        result = llm.extract_document_metadata(pages_text, "German", mock_llm_client)
+        assert result["author"] == "Jane Doe"
+        assert result["id_number"] == "654321"
+
+    def test_extract_document_metadata_empty_sample_text_warning(self, mock_llm_client, capsys):
+        mock_llm_client.chat_completion.return_value = '{"author": "Jane"}'
+        llm.extract_document_metadata({}, "German", mock_llm_client)
+        captured = capsys.readouterr()
+        assert "Kein Text auf den ersten beiden Seiten" in captured.out
+
     def test_summarize_thesis(self, mock_llm_client):
         mock_llm_client.chat_completion.return_value = "A summary"
         result = llm.summarize_thesis({0: "text"}, "English", mock_llm_client)

@@ -7,7 +7,7 @@ from typing import Any, Optional
 
 from llm_client import LLMClient
 
-from . import latex, pdf
+from . import latex, pdf, utils
 from .prompts import PromptTemplate, build_prompt
 from .types import LLMClientProtocol, RewrittenComment, ThesisMetadata
 
@@ -190,16 +190,21 @@ def extract_document_metadata(
     # Collect first two pages of text (if available)
     sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())[:2]])
 
+    if not sample_text.strip():
+        print("   ⚠️  Warnung: Kein Text auf den ersten beiden Seiten des Dokuments gefunden.")
+
     prompt = build_prompt(PromptTemplate.EXTRACT_METADATA, language=language, text=sample_text)
 
     messages = [{"role": "user", "content": prompt}]
     content = llm_client.chat_completion(messages)
 
+    cleaned_content = utils.clean_json_response(content)
+
     try:
-        raw_metadata: dict[str, Any] = json.loads(content)
-    except json.JSONDecodeError:
-        # Return empty metadata or handle error as needed
-        # ThesisMetadata is TypedDict(total=False), so {} is valid
+        raw_metadata: dict[str, Any] = json.loads(cleaned_content)
+    except json.JSONDecodeError as e:
+        print(f"   ⚠️  Fehler beim Parsen der Metadaten-JSON vom LLM: {e}")
+        print(f"   📄 Roh-Antwort vom LLM:\n{content}")
         return {}
 
     # Rename sid to id_number if it exists in the raw LLM response

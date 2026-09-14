@@ -3,11 +3,47 @@
 
 import glob
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import yaml
+
+
+def clean_json_response(content: str) -> str:
+    """Clean LLM response string to extract a raw JSON string.
+
+    Removes markdown code fences (```json ... ```), trailing/leading commentary,
+    or extracts JSON objects/arrays using regex.
+
+    Args:
+        content: Raw string response from LLM.
+
+    Returns:
+        Cleaned string ready for json.loads().
+    """
+    if not content:
+        return ""
+
+    text = content.strip()
+
+    # If wrapped in markdown code fences, remove them
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+
+    # If there is still extra commentary around JSON, search for {...} or [...]
+    if not (text.startswith("{") or text.startswith("[")):
+        match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
+        if match:
+            text = match.group(1).strip()
+
+    return text
 
 
 def load_global_config() -> dict:

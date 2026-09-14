@@ -5,6 +5,7 @@ import json
 
 from llm_client import LLMClient
 
+from ..core import utils
 from ..core.pdf import extract_text_per_page
 from ..core.prompts import PromptTemplate, build_prompt
 from ..core.types import ProjectMetadata
@@ -36,14 +37,21 @@ def extract_project_metadata(pdf_path: str, llm_client: LLMClient) -> ProjectMet
     pages_text = extract_text_per_page(pdf_path, max_pages=2)
     sample_text = "\n\n".join([pages_text.get(i, "") for i in sorted(pages_text.keys())])
 
+    if not sample_text.strip():
+        print("   ⚠️  Warnung: Kein Text auf den ersten beiden Seiten der Projektarbeit gefunden.")
+
     prompt = build_prompt(PromptTemplate.EXTRACT_PROJECT_METADATA, text=sample_text)
 
     messages = [{"role": "user", "content": prompt}]
     content = llm_client.chat_completion(messages)
 
+    cleaned_content = utils.clean_json_response(content)
+
     try:
-        metadata = json.loads(content)
-    except json.JSONDecodeError:
+        metadata = json.loads(cleaned_content)
+    except json.JSONDecodeError as e:
+        print(f"   ⚠️  Fehler beim Parsen der Projekt-Metadaten-JSON vom LLM: {e}")
+        print(f"   📄 Roh-Antwort vom LLM:\n{content}")
         return {"error": "Could not parse JSON", "raw": content, "students": []}
 
     # Ensure "students" list exists

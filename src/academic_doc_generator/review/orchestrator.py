@@ -44,7 +44,7 @@ def run_review_pipeline(
 
     # Create LLMClient if not provided
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(max_tokens=2048)
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     pages_words = extract_text_with_positions(pdf_path_str)

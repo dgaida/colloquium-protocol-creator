@@ -365,7 +365,7 @@ def rewrite_comments_in_pdf(
         'llm'
     """
     if llm_client is None:
-        llm_client = LLMClient()
+        llm_client = LLMClient(max_tokens=2048)
         print(f"Using LLM API: {llm_client.api_choice} with model: {llm_client.llm}")
 
     if pdf_processor is None:

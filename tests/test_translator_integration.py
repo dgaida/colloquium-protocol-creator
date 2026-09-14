@@ -34,5 +34,5 @@ class TestTranslatorIntegration:
 
         run_translator_direct(args)
 
-        mock_llm.assert_called_once_with(api_choice="openai", llm="gpt-4")
+        mock_llm.assert_called_once_with(api_choice="openai", llm="gpt-4", max_tokens=2048)
         mock_translate_xml.assert_called_once()

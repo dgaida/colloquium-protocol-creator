@@ -71,6 +71,10 @@ GROQ_API_KEY=gsk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Ollama - no key needed
+
+# Discord Bot Secrets (for automatic event creation in room 1.242 on campus)
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_GUILD_ID=your_discord_server_id
 ```
 
 ## Verify Installation

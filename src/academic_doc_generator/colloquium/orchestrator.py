@@ -15,6 +15,7 @@ from ..core.types import (
 )
 from . import email_generator, pdf_form_filler
 from .calendar_generator import CalendarGenerator
+from .discord_event_generator import DiscordEventGenerator
 from .gemini_thesis_evaluator import GeminiThesisEvaluator
 from .outlook_mail_generator import OutlookMailGenerator
 
@@ -69,6 +70,9 @@ def run_pipeline(config: ColloquiumWorkflowConfig) -> ColloquiumWorkflowResult:
 
     # 7. Create Outlook mail draft
     _create_outlook_draft(metadata, registration_email_text, ics_path, email_path)
+
+    # 7b. Create Discord event if on campus in room 1.242
+    _create_discord_event(config, metadata)
 
     # 8. Generate web metadata
     web_md_path = _generate_web_metadata(config, metadata, pages_text, llm_client, output_folder)
@@ -335,6 +339,19 @@ def _generate_emails_and_calendar(
         ics_path = None
 
     return registration_email_text, email_path, ics_path
+
+
+def _create_discord_event(config: ColloquiumWorkflowConfig, metadata: dict):
+    """Create a Discord event if the colloquium is on campus in room 1.242."""
+    if config.location_type == "campus" and config.room and config.room.strip() == "1.242":
+        discord_gen = DiscordEventGenerator()
+        discord_gen.create_event_if_campus_room_1242(
+            student_name=metadata.get("author", "Unknown"),
+            date_colloquium=config.date,
+            time_colloquium=config.time,
+            location_type=config.location_type,
+            room=config.room,
+        )
 
 
 def _create_outlook_draft(

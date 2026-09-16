@@ -92,7 +92,7 @@ Falls die automatische Extraktion fehlschlägt, können Sie Felder manuell setze
 }
 ```
 
-## 🔑 API-Keys konfigurieren
+## 🔑 API-Keys & Secrets konfigurieren
 
 Erstellen Sie eine `secrets.env` im Projekt-Stammverzeichnis:
 
@@ -100,6 +100,10 @@ Erstellen Sie eine `secrets.env` im Projekt-Stammverzeichnis:
 OPENAI_API_KEY=sk-xxxxxxxx
 GROQ_API_KEY=gsk-xxxxxxxx
 GEMINI_API_KEY=AIzaSyxxxxxxxx
+
+# Discord Bot Secrets (für automatische Event-Erstellung in Raum 1.242 am Campus)
+DISCORD_BOT_TOKEN=dein_discord_bot_token
+DISCORD_GUILD_ID=deine_discord_server_id
 ```
 
 ## 📝 Konfigurations-Vorlagen

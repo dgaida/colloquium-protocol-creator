@@ -28,6 +28,9 @@ Eine fertige E-Mail für den Prüfungsservice. Falls Outlook geöffnet ist, wird
 **Dateiname:** `YYYY-MM-DD-titel.md`
 Ein Jekyll-kompatibler Steckbrief der Arbeit (Summary, Keywords, etc.) für die eigene Webseite. Der Pfad, wohin diese Dateien kopiert werden sollen, kann global in der `config.yaml` definiert werden.
 
+### 6. Discord Event (Raum 1.242 am Campus)
+Falls `location_type` auf `"campus"` und `room` auf `"1.242"` gesetzt ist, wird zusätzlich automatisch ein Discord-Termin (Scheduled Event) auf dem konfigurierten Discord-Server erstellt. Hierzu müssen `DISCORD_BOT_TOKEN` und `DISCORD_GUILD_ID` in `secrets.env` definiert sein.
+
 ---
 
 ## Anforderungen

@@ -124,6 +124,10 @@ OPENAI_API_KEY=sk-xxxxxxxx          # Paid, reliable
 GROQ_API_KEY=gsk-xxxxxxxx           # Free tier available
 GEMINI_API_KEY=AIzaSy-xxxxxxxx      # Free tier available
 # Or use Ollama (no key needed)
+
+# Discord Bot Secrets (optional: for campus room 1.242 events)
+DISCORD_BOT_TOKEN=your_token
+DISCORD_GUILD_ID=your_guild_id
 ```
 
 ### Usage Example

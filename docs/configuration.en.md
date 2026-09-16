@@ -107,7 +107,7 @@ You can add a `metadata` section to manually set fields if automatic extraction 
 }
 ```
 
-## 🔑 API Keys Configuration
+## 🔑 API Keys & Secrets Configuration
 
 Create `secrets.env` in project root:
 
@@ -115,6 +115,10 @@ Create `secrets.env` in project root:
 OPENAI_API_KEY=sk-xxxxxxxx
 GROQ_API_KEY=gsk-xxxxxxxx
 GEMINI_API_KEY=AIzaSyxxxxxxxx
+
+# Discord Bot Secrets (for automatic event creation in room 1.242 on campus)
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_GUILD_ID=your_discord_server_id
 ```
 
 ## 💡 Advanced Options

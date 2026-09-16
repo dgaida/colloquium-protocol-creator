@@ -28,6 +28,9 @@ A ready-to-send email for the examination office. If Outlook is open, a draft is
 **Filename:** `YYYY-MM-DD-title.md`
 A Jekyll-compatible profile of the work (summary, keywords, etc.) for your own website. The path where these files should be copied can be defined globally in `config.yaml`.
 
+### 6. Discord Event (Room 1.242 on Campus)
+If `location_type` is set to `"campus"` and `room` is set to `"1.242"`, a Discord scheduled event is automatically created on your Discord server. This requires `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` to be configured in `secrets.env`.
+
 ---
 
 ## Requirements

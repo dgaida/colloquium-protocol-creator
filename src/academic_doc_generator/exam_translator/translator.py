@@ -9,6 +9,8 @@ from llm_client import LLMClient
 
 from ..core.prompts import PromptTemplate, build_prompt
 
+logger = logging.getLogger("exam_translator")
+
 
 def setup_exam_translator_logger(log_file: str = "exam_translator.log") -> logging.Logger:
     """Sets up and configures the 'exam_translator' logger.
@@ -34,6 +36,14 @@ def setup_exam_translator_logger(log_file: str = "exam_translator.log") -> loggi
         logger.addHandler(file_handler)
 
     return logger
+
+
+def close_exam_translator_logger() -> None:
+    """Closes and removes all handlers for the 'exam_translator' logger."""
+    logger = logging.getLogger("exam_translator")
+    for handler in list(logger.handlers):
+        handler.close()
+        logger.removeHandler(handler)
 
 
 def mask_comments(text: str) -> tuple[str, dict[str, str]]:
@@ -72,6 +82,8 @@ def unmask_comments(text: str, comment_map: dict[str, str]) -> str:
     Returns:
         Der Text mit wiederhergestellten Kommentaren.
     """
+    if not text:
+        return ""
 
     def replace_func(match):
         return comment_map.get(match.group(0), match.group(0))
@@ -161,7 +173,34 @@ def translate_question_to_english(
     prompt = build_prompt(PromptTemplate.TRANSLATE_QUESTION, text=masked_text)
 
     messages = [{"role": "user", "content": prompt}]
-    translated = llm_client.chat_completion(messages)
+
+    max_retries = 3
+    translated = None
+    for attempt in range(max_retries):
+        response = llm_client.chat_completion(messages)
+        if response and response.strip():
+            translated = response
+            break
+
+        logger.warning(
+            f"Übersetzung von Frage lieferte leere Antwort (Versuch {attempt + 1}/{max_retries})."
+        )
+        if hasattr(llm_client, "provider") and hasattr(llm_client.provider, "max_tokens"):
+            curr_tokens = llm_client.provider.max_tokens or 2048
+            new_tokens = min(curr_tokens * 2, 16384)
+            if new_tokens > curr_tokens:
+                logger.info(
+                    f"Erhöhe max_tokens von {curr_tokens} auf {new_tokens} für erneuten Versuch."
+                )
+                llm_client.provider.max_tokens = new_tokens
+                if hasattr(llm_client, "max_tokens"):
+                    llm_client.max_tokens = new_tokens
+
+    if not translated or not translated.strip():
+        raise RuntimeError(
+            f"Übersetzung der Frage fehlgeschlagen: LLM lieferte nach {max_retries} Versuchen eine leere Antwort. "
+            "Möglicherweise wurde das Token-Limit (max_tokens) durch Reasoning oder Textlänge überschritten."
+        )
 
     if verbose:
         print(f"\n{'=' * 60}")
@@ -195,7 +234,34 @@ def translate_preamble_to_english(
     prompt = build_prompt(PromptTemplate.TRANSLATE_PREAMBLE, text=masked_text)
 
     messages = [{"role": "user", "content": prompt}]
-    translated = llm_client.chat_completion(messages)
+
+    max_retries = 3
+    translated = None
+    for attempt in range(max_retries):
+        response = llm_client.chat_completion(messages)
+        if response and response.strip():
+            translated = response
+            break
+
+        logger.warning(
+            f"Präambel-Übersetzung lieferte leere Antwort (Versuch {attempt + 1}/{max_retries})."
+        )
+        if hasattr(llm_client, "provider") and hasattr(llm_client.provider, "max_tokens"):
+            curr_tokens = llm_client.provider.max_tokens or 2048
+            new_tokens = min(curr_tokens * 2, 16384)
+            if new_tokens > curr_tokens:
+                logger.info(
+                    f"Erhöhe max_tokens von {curr_tokens} auf {new_tokens} für erneuten Versuch."
+                )
+                llm_client.provider.max_tokens = new_tokens
+                if hasattr(llm_client, "max_tokens"):
+                    llm_client.max_tokens = new_tokens
+
+    if not translated or not translated.strip():
+        raise RuntimeError(
+            f"Präambel-Übersetzung fehlgeschlagen: LLM lieferte nach {max_retries} Versuchen eine leere Antwort. "
+            "Möglicherweise wurde das Token-Limit (max_tokens) durch Reasoning oder Textlänge überschritten."
+        )
 
     if verbose:
         print(f"\n{'=' * 60}")
@@ -251,7 +317,7 @@ def translate_latex_exam(
 
     # Erstelle LLMClient falls nicht vorhanden
     if llm_client is None:
-        llm_client = LLMClient(api_choice="kiconnect", llm="openai-gpt-oss-120b")
+        llm_client = LLMClient(api_choice="kiconnect", llm="openai-gpt-oss-120b", max_tokens=8192)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
 
     # Konvertiere zu Path-Objekten

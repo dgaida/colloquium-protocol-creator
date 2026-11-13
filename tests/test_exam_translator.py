@@ -197,11 +197,11 @@ def test_translate_latex_exam_logging(mock_llm_class, tmp_path):
     output_file = tmp_path / "exam_engl.tex"
     log_file = Path("exam_translator.log")
 
-    # Clean log file if exists before test
-    log_file.unlink(missing_ok=True)
-
     # Clear handlers before test
-    logging.getLogger("exam_translator").handlers.clear()
+    for h in list(logging.getLogger("exam_translator").handlers):
+        h.close()
+        logging.getLogger("exam_translator").removeHandler(h)
+    log_file.unlink(missing_ok=True)
 
     latex_content = r"""\documentclass{exam}
 \begin{questions}
@@ -226,8 +226,10 @@ def test_translate_latex_exam_logging(mock_llm_class, tmp_path):
 
     finally:
         # Cleanup
+        for h in list(logging.getLogger("exam_translator").handlers):
+            h.close()
+            logging.getLogger("exam_translator").removeHandler(h)
         log_file.unlink(missing_ok=True)
-        logging.getLogger("exam_translator").handlers.clear()
 
 
 @patch("academic_doc_generator.exam_translator.translator.LLMClient")
@@ -283,10 +285,10 @@ def test_translate_xml_exam_logging(mock_llm_class, tmp_path):
     log_file = Path("exam_translator.log")
 
     # Clean log file if exists before test
+    for h in list(logging.getLogger("exam_translator").handlers):
+        h.close()
+        logging.getLogger("exam_translator").removeHandler(h)
     log_file.unlink(missing_ok=True)
-
-    # Clear handlers before test
-    logging.getLogger("exam_translator").handlers.clear()
 
     xml_content = """<questestinterop>
 <item>
@@ -315,5 +317,86 @@ def test_translate_xml_exam_logging(mock_llm_class, tmp_path):
 
     finally:
         # Cleanup
+        for h in list(logging.getLogger("exam_translator").handlers):
+            h.close()
+            logging.getLogger("exam_translator").removeHandler(h)
         log_file.unlink(missing_ok=True)
-        logging.getLogger("exam_translator").handlers.clear()
+
+
+def test_unmask_comments_none_and_empty():
+    """Test that unmask_comments gracefully handles None and empty strings."""
+    assert unmask_comments(None, {}) == ""
+    assert unmask_comments("", {}) == ""
+    assert unmask_comments("No comments", {}) == "No comments"
+
+
+def test_translate_question_retry_success():
+    """Test that translate_question_to_english retries on empty/None response and succeeds."""
+    from academic_doc_generator.exam_translator.translator import translate_question_to_english
+
+    mock_llm = MagicMock()
+    # First returns None, then returns translated text
+    mock_llm.chat_completion.side_effect = [None, r"\question Translated question"]
+    mock_llm.max_tokens = 2048
+    mock_llm.provider = MagicMock()
+    mock_llm.provider.max_tokens = 2048
+
+    result = translate_question_to_english(r"\question Original", mock_llm)
+    assert result == r"\question Translated question"
+    assert mock_llm.chat_completion.call_count == 2
+    # Verify max_tokens was increased for retry
+    assert mock_llm.provider.max_tokens == 4096
+
+
+def test_translate_question_all_retries_fail():
+    """Test that translate_question_to_english raises RuntimeError if all retries return empty."""
+    import pytest
+
+    from academic_doc_generator.exam_translator.translator import translate_question_to_english
+
+    mock_llm = MagicMock()
+    mock_llm.chat_completion.return_value = None
+    mock_llm.max_tokens = 2048
+    mock_llm.provider = MagicMock()
+    mock_llm.provider.max_tokens = 2048
+
+    with pytest.raises(RuntimeError, match="Übersetzung der Frage fehlgeschlagen"):
+        translate_question_to_english(r"\question Original", mock_llm)
+
+
+def test_translate_preamble_all_retries_fail():
+    """Test that translate_preamble_to_english raises RuntimeError if all retries return empty."""
+    import pytest
+
+    from academic_doc_generator.exam_translator.translator import translate_preamble_to_english
+
+    mock_llm = MagicMock()
+    mock_llm.chat_completion.return_value = ""
+    mock_llm.max_tokens = 2048
+    mock_llm.provider = MagicMock()
+    mock_llm.provider.max_tokens = 2048
+
+    with pytest.raises(RuntimeError, match="Präambel-Übersetzung fehlgeschlagen"):
+        translate_preamble_to_english(r"\documentclass{exam}", mock_llm)
+
+
+def test_translate_xml_all_retries_fail(tmp_path):
+    """Test that translate_xml_exam raises RuntimeError if all retries return empty."""
+    import pytest
+
+    from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam
+
+    mock_llm = MagicMock()
+    mock_llm.chat_completion.return_value = None
+    mock_llm.max_tokens = 2048
+    mock_llm.provider = MagicMock()
+    mock_llm.provider.max_tokens = 2048
+
+    input_file = tmp_path / "test.xml"
+    input_file.write_text(
+        '<questestinterop><item><presentation><material><mattext texttype="text/xhtml">Aufgabe</mattext></material></presentation></item></questestinterop>',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="XML-Übersetzung fehlgeschlagen"):
+        translate_xml_exam(input_file, llm_client=mock_llm)

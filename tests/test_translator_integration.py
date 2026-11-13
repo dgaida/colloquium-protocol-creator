@@ -34,5 +34,29 @@ class TestTranslatorIntegration:
 
         run_translator_direct(args)
 
-        mock_llm.assert_called_once_with(api_choice="openai", llm="gpt-4", max_tokens=2048)
+        mock_llm.assert_called_once_with(api_choice="openai", llm="gpt-4", max_tokens=8192)
         mock_translate_xml.assert_called_once()
+
+    @patch("academic_doc_generator.cli.handlers.translate_latex_exam")
+    @patch("academic_doc_generator.cli.handlers.LLMClient")
+    def test_run_translator_direct_custom_max_tokens(
+        self, mock_llm, mock_translate_latex, tmp_path
+    ):
+        tex_file = tmp_path / "test.tex"
+        tex_file.write_text(r"\documentclass{exam}\begin{document}\end{document}")
+
+        args = argparse.Namespace(
+            input=str(tex_file),
+            output=None,
+            api="kiconnect",
+            model="openai-gpt-oss-120b",
+            max_tokens=4096,
+            verbose=False,
+        )
+
+        run_translator_direct(args)
+
+        mock_llm.assert_called_once_with(
+            api_choice="kiconnect", llm="openai-gpt-oss-120b", max_tokens=4096
+        )
+        mock_translate_latex.assert_called_once()

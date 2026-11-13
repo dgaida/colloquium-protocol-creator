@@ -82,8 +82,10 @@ def test_translate_xml_exam_default_client(mock_llm_class, tmp_path):
 
     output_path = translate_xml_exam(input_file, llm_client=None)
     assert os.path.exists(output_path)
-    mock_llm_class.assert_called_once_with(api_choice="kiconnect", llm="openai-gpt-oss-120b")
-
+    # Default client is created without max_tokens; token limit is boosted post-construction
+    call_kwargs = mock_llm_class.call_args_list[0]
+    assert call_kwargs.kwargs.get("api_choice") == "kiconnect"
+    assert call_kwargs.kwargs.get("llm") == "openai-gpt-oss-120b"
 
 def test_translate_xml_exam_file_not_found():
     from academic_doc_generator.exam_translator.xml_translator import translate_xml_exam

@@ -143,6 +143,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="LLM model to use",
     )
     translator_parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=8192,
+        help="Maximum completion tokens for translation (default: 8192)",
+    )
+    translator_parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",

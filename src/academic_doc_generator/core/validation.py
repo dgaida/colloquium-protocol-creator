@@ -59,7 +59,7 @@ def validate_pdf_path(folder_path: str, filename: str, allow_docx: bool = False)
     base_path = Path(folder_path).resolve()
 
     # Additional security checks
-    if Path(filename).is_absolute():
+    if Path(filename).is_absolute() or filename.startswith(("/", "\\")):
         raise ValueError(f"Absolute paths not allowed: {filename}")
 
     if any(part == ".." for part in Path(filename).parts):

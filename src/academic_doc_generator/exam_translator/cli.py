@@ -44,6 +44,13 @@ def exam_translator_main() -> None:
     )
 
     parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Maximum completion tokens for translation (default: model default)",
+    )
+
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -69,7 +76,10 @@ def exam_translator_main() -> None:
     try:
         api_choice = args.api if args.api is not None else "kiconnect"
         llm_model = args.model if args.model is not None else "openai-gpt-oss-120b"
-        llm_client = LLMClient(api_choice=api_choice, llm=llm_model)
+        kwargs = {"api_choice": api_choice, "llm": llm_model}
+        if getattr(args, "max_tokens", None) is not None:
+            kwargs["max_tokens"] = args.max_tokens
+        llm_client = LLMClient(**kwargs)
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
     except Exception as e:
         print(f"❌ Fehler beim Initialisieren des LLM-Clients: {e}")

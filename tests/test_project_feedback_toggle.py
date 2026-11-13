@@ -148,7 +148,10 @@ def test_run_project_pipeline_orchestrator_edge_cases(
         output = fake_out.getvalue()
 
     # Verify we printed using signature found in data/
-    assert "Using signature found in data/signature.png" in output
+    assert (
+        "Using signature found in data/signature.png" in output
+        or "Using signature found in data\\signature.png" in output
+    )
 
     # Verify we caught Outlook exception for service mail (lines 226-227)
     assert "Fehler beim Erstellen der Outlook-Mail (Service)" in output

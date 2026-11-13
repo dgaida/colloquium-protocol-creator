@@ -185,7 +185,7 @@ CRITICAL RULES:
 5. Keep all \\choice, \\CorrectChoice commands unchanged
 6. Translate text inside solution environments (\\begin{{solutionordottedlines}}, \\begin{{solutionorgrid}}, etc.)
 7. Preserve line breaks and spacing
-8. Do NOT add explanations or comments
+8. Do NOT add explanations. Translate directly without extensive reasoning. or comments. Translate directly without extensive reasoning.
 9. Return ONLY the translated LaTeX code
 10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
 
@@ -215,7 +215,7 @@ CRITICAL RULES:
 5. Translate labels like "Aufgabe Nr.", "Punktzahl:", "Summe", etc.
 6. Keep all \\usepackage, \\newcommand, \\setlength commands unchanged
 7. Change babel language from ngerman to english where appropriate
-8. Do NOT add explanations
+8. Do NOT add explanations. Translate directly without extensive reasoning.
 9. Return ONLY the translated LaTeX code
 10. Preserve placeholders like %%COMMENT_N%% unchanged and at their original position
 
@@ -235,7 +235,7 @@ CRITICAL RULES:
 2. PRESERVE ALL attributes (e.g., alt="", height="", src="", title="", width="")
 3. PRESERVE ALL entities and special characters (e.g., &lt;, &gt;, &quot;, &#13;, &#10;)
 4. ONLY translate the actual German text content to English
-5. Do NOT add any explanations or extra text
+5. Do NOT add any explanations or extra text. Translate directly without extensive reasoning.
 6. Return ONLY the translated XML/XHTML content
 7. Maintain the same structure and formatting
 

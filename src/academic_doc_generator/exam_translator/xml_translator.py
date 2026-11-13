@@ -37,6 +37,10 @@ def translate_xml_exam(
 
     if llm_client is None:
         llm_client = LLMClient(api_choice="kiconnect", llm="openai-gpt-oss-120b")
+        if hasattr(llm_client, "provider") and hasattr(llm_client.provider, "max_tokens"):
+            llm_client.provider.max_tokens = 8192
+        if hasattr(llm_client, "max_tokens"):
+            llm_client.max_tokens = 8192
         print(f"✓ LLM: {llm_client.api_choice} / {llm_client.llm}")
 
     input_path = Path(input_path)
@@ -85,7 +89,34 @@ def translate_xml_exam(
 
         prompt = build_prompt(PromptTemplate.TRANSLATE_XML_XHTML, text=inner_text)
         messages = [{"role": "user", "content": prompt}]
-        translated_text = llm_client.chat_completion(messages).strip()
+
+        max_retries = 3
+        translated_text = None
+        for attempt in range(max_retries):
+            response = llm_client.chat_completion(messages)
+            if response and response.strip():
+                translated_text = response.strip()
+                break
+
+            logger.warning(
+                f"XML-Abschnitts-Übersetzung lieferte leere Antwort (Versuch {attempt + 1}/{max_retries})."
+            )
+            if hasattr(llm_client, "provider") and hasattr(llm_client.provider, "max_tokens"):
+                curr_tokens = llm_client.provider.max_tokens or 2048
+                new_tokens = min(curr_tokens * 2, 16384)
+                if new_tokens > curr_tokens:
+                    logger.info(
+                        f"Erhöhe max_tokens von {curr_tokens} auf {new_tokens} für erneuten Versuch."
+                    )
+                    llm_client.provider.max_tokens = new_tokens
+                    if hasattr(llm_client, "max_tokens"):
+                        llm_client.max_tokens = new_tokens
+
+        if not translated_text:
+            raise RuntimeError(
+                f"XML-Übersetzung fehlgeschlagen: LLM lieferte nach {max_retries} Versuchen eine leere Antwort für Abschnitt {count}. "
+                "Möglicherweise wurde das Token-Limit (max_tokens) durch Reasoning oder Textlänge überschritten."
+            )
 
         logger.info(f"Übersetzter XML-Abschnitt:\n{translated_text}")
         logger.info(f"--- Ende Übersetzung von XML-Abschnitt {count}/{len(matches)} ---\n")

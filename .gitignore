@@ -58,3 +58,4 @@ test_output/
 *.pdf
 !data/*.pdf
 site/
+/alt
